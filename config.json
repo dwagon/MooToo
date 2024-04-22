@@ -1,0 +1,44 @@
+{
+  "galaxy": {
+    "max_x": 1024,
+    "max_y": 768,
+    "num_systems": 30,
+    "num_blackholes": 2,
+    "star_colours": {
+      "blue": {
+        "probability": 2,
+        "draw_colour": "blue",
+        "prob_orbit": 20
+      },
+      "white": {
+        "probability": 3,
+        "draw_colour": "white",
+        "prob_orbit": 15
+      },
+      "yellow": {
+        "probability": 10,
+        "draw_colour": "yellow",
+        "prob_orbit": 25
+      },
+      "orange": {
+        "probability": 12,
+        "draw_colour": "orange",
+        "prob_orbit": 25
+      },
+      "red": {
+        "probability": 68,
+        "draw_colour": "red",
+        "prob_orbit": 15
+      },
+      "brown": {
+        "probability": 5,
+        "draw_colour": "brown",
+        "prob_orbit": 15
+      }
+    }
+  },
+  "display": {
+    "screen_width": 1024,
+    "screen_height": 768
+  }
+}
