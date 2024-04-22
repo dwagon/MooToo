@@ -23,6 +23,7 @@ class Planet:
         self.name = name
         self.categ = pick_planet_category()
         self.size = pick_planet_size()
+        self.arc = random.randint(0, 359)
 
 
 def pick_planet_size():

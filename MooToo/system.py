@@ -16,7 +16,8 @@ class System:
         self.name = pick_name()
         self.colour = self.pick_star_colour()
         self.draw_colour = self.config["galaxy"]["star_colours"][self.colour]["draw_colour"]
-        self.planets: list[Planet] = []
+        self.orbits: dict[int, Planet | None] = {}
+        self.make_orbits()
 
     def pick_star_colour(self) -> str:
         while True:
@@ -29,13 +30,15 @@ class System:
                     prev += details["probability"]
 
     def make_orbits(self):
+        name_index = 0
         for orbit in range(MAX_ORBITS):
             pct = random.randint(0, 100)
             if pct <= self.config["galaxy"]["star_colours"][self.colour]["prob_orbit"]:
-                name = f"{self.name} {ORBIT_NAMES[orbit]}"
-                self.planets[orbit] = Planet(name, self.colour)
-
-        pass
+                name = f"{self.name} {ORBIT_NAMES[name_index]}"
+                name_index += 1
+                self.orbits[orbit] = Planet(name, self.colour)
+            else:
+                self.orbits[orbit] = None
 
 
 def pick_name():

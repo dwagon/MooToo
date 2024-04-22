@@ -8,27 +8,27 @@
       "blue": {
         "probability": 2,
         "draw_colour": "blue",
-        "prob_orbit": 20
+        "prob_orbit": 30
       },
       "white": {
         "probability": 3,
         "draw_colour": "white",
-        "prob_orbit": 15
+        "prob_orbit": 25
       },
       "yellow": {
         "probability": 10,
         "draw_colour": "yellow",
-        "prob_orbit": 25
+        "prob_orbit": 35
       },
       "orange": {
         "probability": 12,
         "draw_colour": "orange",
-        "prob_orbit": 25
+        "prob_orbit": 35
       },
       "red": {
         "probability": 68,
         "draw_colour": "red",
-        "prob_orbit": 15
+        "prob_orbit": 25
       },
       "brown": {
         "probability": 5,

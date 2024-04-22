@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+import math
 from typing import Optional
 
 import pygame
@@ -6,6 +8,7 @@ from enum import Enum, auto
 from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
+from MooToo.planet import Planet
 
 
 class DisplayMode(Enum):
@@ -36,7 +39,11 @@ class Game:
                 if event.type == pygame.QUIT:
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.button_down()
+                    buttons = pygame.mouse.get_pressed()
+                    if buttons[0]:
+                        self.button_left_down()
+                    elif buttons[2]:
+                        self.button_right_down()
 
             # fill the screen with a color to wipe away anything from last frame
             self.screen.fill("black")
@@ -45,7 +52,11 @@ class Game:
 
             self.clock.tick(60)  # limits FPS to 60
 
-    def button_down(self):
+    def button_right_down(self):
+        """User has pressed the right button"""
+        self.display_mode = DisplayMode.GALAXY
+
+    def button_left_down(self):
         mouse = pygame.mouse.get_pos()
         match self.display_mode:
             case DisplayMode.GALAXY:
@@ -78,6 +89,32 @@ class Game:
 
     def draw_system(self):
         """Draw a solar system"""
+        size = self.screen.get_size()
+        mid_point = (size[0] / 2, size[1] / 2)
+        # Draw Sun
+        pygame.draw.circle(
+            self.screen,
+            self.system.draw_colour,
+            mid_point,
+            20,
+        )
+        for orbit, planet in self.system.orbits.items():
+            if planet is None:
+                continue
+            self.draw_planet_in_orbit(orbit, planet)
+
+    def draw_planet_in_orbit(self, orbit: int, planet: Planet):
+        size = self.screen.get_size()
+        mid_point = (size[0] / 2, size[1] / 2)
+        radius = 50 * orbit + 100
+        pygame.draw.circle(self.screen, self.system.draw_colour, mid_point, radius, width=1)
+        pos_x = radius * math.cos(planet.arc) + mid_point[0]
+        pos_y = radius * math.sin(planet.arc) + mid_point[1]
+        pygame.draw.circle(self.screen, "blue", (pos_x, pos_y), 10)
+        text_surface = self.font.render(planet.name, True, "white")
+        text_size = text_surface.get_size()
+        text_coord = (pos_x - text_size[0] / 2, pos_y + text_size[1] / 2)
+        self.screen.blit(text_surface, text_coord)
 
     def draw_planet(self):
         pass
