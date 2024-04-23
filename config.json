@@ -49,9 +49,12 @@
     }
   },
   "planets": {
-      "gas_giant": {
-          "image": "images/gas_giant.png"
-      }
+    "gas_giant": {
+      "image": "images/gas_giant.png"
+    },
+    "asteroid": {
+      "image": "images/asteroid.png"
+    }
   },
   "display": {
     "screen_width": 1024,

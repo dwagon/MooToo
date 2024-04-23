@@ -37,6 +37,7 @@ class Game:
         raw_images = {}
         images = {}
         raw_images["gas_giant"] = pygame.image.load(self.config["planets"]["gas_giant"]["image"])
+        raw_images["asteroid"] = pygame.image.load(self.config["planets"]["asteroid"]["image"])
 
         for image in raw_images:
             images[image] = pygame.transform.scale(raw_images[image], (48, 48))
@@ -172,10 +173,16 @@ class Game:
     #####################################################################################################
     def draw_asteroid(self, planet: Planet, position: tuple[float, float]) -> None:
         """Draw an asteroid belt"""
+        image_size = self.images["asteroid"].get_size()
+        image_position = (position[0] - image_size[0] / 2, position[1] - image_size[1] / 2)
+        self.screen.blit(self.images["asteroid"], image_position)
         # Label the planet
         text_surface = self.font.render(planet.name, True, "white")
         text_size = text_surface.get_size()
-        text_coord = (position[0] - text_size[0] / 2, position[1] + text_size[1] / 2)
+        text_coord = (
+            image_position[0] + image_size[0] / 2 - text_size[0] / 2,
+            image_position[1] + image_size[1] - text_size[1] / 2,
+        )
         self.screen.blit(text_surface, text_coord)
 
     #####################################################################################################
