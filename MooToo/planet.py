@@ -47,14 +47,26 @@ class PlanetClimate(StrEnum):
     GAIA = "G"
 
 
+class PopulationJobs(StrEnum):
+    FARMER = "F"
+    WORKERS = "W"
+    SCIENTISTS = "S"
+
+
 class Planet:
-    def __init__(self, name: str, config: dict[str, Any]):
+    def __init__(self, name: str, orbit: int, config: dict[str, Any]):
         self.name = name
+        self.orbit = orbit
         self.category = pick_planet_category()
         self.size = pick_planet_size()
         self.richness = pick_planet_richness(config["richness"])
         self.climate = pick_planet_climate(config["climate"])
         self.gravity = pick_planet_gravity(self.size, self.richness)
+        self.owner = None
+        self.population = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
+        self.buildings = {}
+        self.under_construction = None
+
         self.arc = random.randint(0, 359)
 
     def __repr__(self):

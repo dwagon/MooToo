@@ -36,7 +36,7 @@ class System:
             if pct <= self.config["galaxy"]["star_colours"][self.colour]["prob_orbit"]:
                 name = f"{self.name} {ORBIT_NAMES[name_index]}"
                 name_index += 1
-                self.orbits[orbit] = Planet(name, self.config["galaxy"]["star_colours"][self.colour])
+                self.orbits[orbit] = Planet(name, orbit, self.config["galaxy"]["star_colours"][self.colour])
             else:
                 self.orbits[orbit] = None
 
