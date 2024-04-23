@@ -2,38 +2,49 @@
   "galaxy": {
     "max_x": 1024,
     "max_y": 768,
-    "num_systems": 30,
-    "num_blackholes": 2,
+    "num_systems": 40,
     "star_colours": {
       "blue": {
         "probability": 2,
         "draw_colour": "blue",
-        "prob_orbit": 30
+        "prob_orbit": 30,
+        "climate":  {"TX": 16, "R": 50, "B": 27, "D": 7, "TU": 0, "O": 0, "S": 0, "A": 0, "TE": 0, "G": 0},
+        "richness": {"UP": 0, "P": 0, "A": 40, "R": 20, "UR": 20}
       },
       "white": {
         "probability": 3,
         "draw_colour": "white",
-        "prob_orbit": 25
+        "prob_orbit": 25,
+        "climate": {"TX": 16, "R": 37, "B": 27, "D": 6, "TU": 4, "O": 2, "S": 1, "A": 3, "TE": 3, "G": 1},
+        "richness": {"UP": 0, "P": 20, "A": 40, "R": 30, "UR": 10}
       },
       "yellow": {
         "probability": 10,
         "draw_colour": "yellow",
-        "prob_orbit": 35
+        "prob_orbit": 35,
+        "climate": {"TX": 12, "R": 27, "B": 30, "D": 6, "TU": 8, "O": 5, "S": 4, "A": 3, "TE": 4, "G": 1},
+        "richness": {"UP": 0, "P": 30, "A": 40, "R": 20, "UR": 10}
       },
       "orange": {
         "probability": 12,
         "draw_colour": "orange",
-        "prob_orbit": 35
+        "prob_orbit": 35,
+        "climate": {"TX": 16, "R": 17, "B": 23, "D": 8, "TU": 7, "O": 6, "S": 7, "A": 6, "TE": 7, "G": 1},
+        "richness": {"UP": 10, "P": 40, "A": 40, "R": 10, "UR": 0}
       },
       "red": {
         "probability": 68,
         "draw_colour": "red",
-        "prob_orbit": 25
+        "prob_orbit": 25,
+        "climate": {"TX": 16, "R": 13, "B": 50, "D": 3, "TU": 7, "O": 2, "S": 2, "A": 2, "TE": 4, "G": 1},
+        "richness": {"UP": 20, "P": 40, "A": 40, "R": 0, "UR": 0}
       },
       "brown": {
         "probability": 5,
         "draw_colour": "brown",
-        "prob_orbit": 15
+        "prob_orbit": 15,
+        "climate": {"TX": 20, "R": 30, "B": 10, "D": 20, "TU": 10, "O": 2, "S": 2, "A": 2, "TE": 3, "G": 1},
+        "richness": {"UP": 5, "P": 10, "A": 60, "R": 20, "UR": 5}
       }
     }
   },
