@@ -8,7 +8,7 @@ from enum import Enum, auto
 from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
-from MooToo.planet import Planet, PlanetSize, PlanetCategory
+from MooToo.planet import Planet, PlanetSize, PlanetCategory, PopulationJobs
 
 
 class DisplayMode(Enum):
@@ -23,13 +23,17 @@ class Game:
         self.galaxy = galaxy
         self.config = config
         pygame.init()
-        self.font = pygame.font.SysFont("Ariel", 14)
+        self.label_font = pygame.font.SysFont("Ariel", 14)
+        self.text_font = pygame.font.SysFont("Ariel", 18)
+        self.title_font = pygame.font.SysFont("Ariel", 24)
         self.screen = pygame.display.set_mode((config["display"]["screen_width"], config["display"]["screen_height"]))
         self.clock = pygame.time.Clock()
         self.display_mode = DisplayMode.GALAXY
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
         self.images = self.load_images()
+        size = self.screen.get_size()
+        self.mid_point = (size[0] / 2, size[1] / 2)
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
@@ -70,7 +74,13 @@ class Game:
     #####################################################################################################
     def button_right_down(self):
         """User has pressed the right button"""
-        self.display_mode = DisplayMode.GALAXY
+        match self.display_mode:
+            case DisplayMode.GALAXY:
+                pass
+            case DisplayMode.SYSTEM:
+                self.display_mode = DisplayMode.GALAXY
+            case DisplayMode.PLANET:
+                self.display_mode = DisplayMode.SYSTEM
 
     #####################################################################################################
     def button_left_down(self):
@@ -82,18 +92,35 @@ class Game:
                     self.display_mode = DisplayMode.SYSTEM
                     self.system = system
             case DisplayMode.SYSTEM:
+                planet = self.pick_planet(mouse)
+                if planet:
+                    self.display_mode = DisplayMode.PLANET
+                    self.planet = planet
                 pass
             case DisplayMode.PLANET:
                 pass
 
     #####################################################################################################
     def pick_system(self, coords: tuple[int, int]) -> Optional[System]:
-        """Return which system the coords are close to"""
+        """Return which system the mouse coords are close to"""
         for sys_coord, system in self.galaxy.systems.items():
             game_coords = self.screen_to_game(sys_coord)
             distance = get_distance(game_coords[0], game_coords[1], coords[0], coords[1])
             if distance < 20:
                 return system
+        return None
+
+    #####################################################################################################
+    def pick_planet(self, coords: tuple[int, int]) -> Optional[Planet]:
+        """Return which planet the mouse coords are close to"""
+        for orbit, planet in self.system.orbits.items():
+            if not planet:
+                continue
+            sys_coords = self.get_planet_position(planet)
+            game_coords = self.screen_to_game(sys_coords)
+            distance = get_distance(game_coords[0], game_coords[1], coords[0], coords[1])
+            if distance < 20:
+                return planet
         return None
 
     #####################################################################################################
@@ -107,30 +134,32 @@ class Game:
                 self.draw_planet_view()
 
     #####################################################################################################
+    def draw_title(self, text: str) -> None:
+        title_surface = self.title_font.render(text, True, "white")
+        self.screen.blit(title_surface, (5, 5))
+
+    #####################################################################################################
     def draw_system_view(self):
         """Draw a solar system"""
-        size = self.screen.get_size()
-        mid_point = (size[0] / 2, size[1] / 2)
+        self.draw_title(self.system.name)
         # Draw Sun
         pygame.draw.circle(
             self.screen,
             self.system.draw_colour,
-            mid_point,
+            self.mid_point,
             20,
         )
         for orbit, planet in self.system.orbits.items():
             if planet is None:
                 continue
-            self.draw_planet_in_orbit(orbit, planet)
+            self.draw_planet_in_orbit(planet)
 
     #####################################################################################################
-    def draw_planet_in_orbit(self, orbit: int, planet: Planet):
-        size = self.screen.get_size()
-        mid_point = (size[0] / 2, size[1] / 2)
-        radius = 50 * orbit + 100
+    def draw_planet_in_orbit(self, planet: Planet):
+        radius = 50 * planet.orbit + 100
         # Draw the orbit
-        pygame.draw.circle(self.screen, self.system.draw_colour, mid_point, radius, width=1)
-        position = (radius * math.cos(planet.arc) + mid_point[0], radius * math.sin(planet.arc) + mid_point[1])
+        pygame.draw.circle(self.screen, self.system.draw_colour, self.mid_point, radius, width=1)
+        position = self.get_planet_position(planet)
         match planet.category:
             case PlanetCategory.GAS_GIANT:
                 self.draw_gas_giant(planet, position)
@@ -140,13 +169,23 @@ class Game:
                 self.draw_asteroid(planet, position)
 
     #####################################################################################################
+    def get_planet_position(self, planet: Planet):
+        """Return the planets position and radius"""
+        radius = 50 * planet.orbit + 100
+        position = (
+            radius * math.cos(planet.arc) + self.mid_point[0],
+            radius * math.sin(planet.arc) + self.mid_point[1],
+        )
+        return position
+
+    #####################################################################################################
     def draw_gas_giant(self, planet: Planet, position: tuple[float, float]) -> None:
         """Draw a gas giant"""
         image_size = self.images["gas_giant"].get_size()
         image_position = (position[0] - image_size[0] / 2, position[1] - image_size[1] / 2)
         self.screen.blit(self.images["gas_giant"], image_position)
         # Label the planet
-        text_surface = self.font.render(planet.name, True, "white")
+        text_surface = self.label_font.render(planet.name, True, "white")
         text_size = text_surface.get_size()
         text_coord = (
             image_position[0] + image_size[0] / 2 - text_size[0] / 2,
@@ -155,17 +194,12 @@ class Game:
         self.screen.blit(text_surface, text_coord)
 
     #####################################################################################################
-    def draw_axis(self):
-        pygame.draw.line(self.screen, "red", (10, 10), (100, 10))
-        pygame.draw.line(self.screen, "blue", (10, 10), (10, 100))
-
-    #####################################################################################################
     def draw_planet(self, planet: Planet, position: tuple[float, float]) -> None:
         """Draw a specific planet"""
         radius = self.get_planet_draw_radius(planet)
         pygame.draw.circle(self.screen, "blue", position, radius)
         # Label the planet
-        text_surface = self.font.render(planet.name, True, "white")
+        text_surface = self.label_font.render(planet.name, True, "white")
         text_size = text_surface.get_size()
         text_coord = (position[0] - text_size[0] / 2, position[1] + text_size[1] / 2)
         self.screen.blit(text_surface, text_coord)
@@ -177,7 +211,7 @@ class Game:
         image_position = (position[0] - image_size[0] / 2, position[1] - image_size[1] / 2)
         self.screen.blit(self.images["asteroid"], image_position)
         # Label the planet
-        text_surface = self.font.render(planet.name, True, "white")
+        text_surface = self.label_font.render(planet.name, True, "white")
         text_size = text_surface.get_size()
         text_coord = (
             image_position[0] + image_size[0] / 2 - text_size[0] / 2,
@@ -200,8 +234,25 @@ class Game:
                 return 17
 
     #####################################################################################################
-    def draw_planet_view(self):
-        pass
+    def draw_planet_view(self) -> None:
+        self.draw_title(self.planet.name)
+        self.draw_text(f"Population:", (10, 30))
+        self.draw_text(f"Farmers: {self.planet.population[PopulationJobs.FARMER]}", (30, 50))
+        self.draw_text(f"Workers: {self.planet.population[PopulationJobs.WORKERS]}", (30, 70))
+        self.draw_text(f"Scientists: {self.planet.population[PopulationJobs.SCIENTISTS]}", (30, 90))
+
+        self.draw_text(f"Buildings:", (10, 120))
+        down = 140
+        for building in self.planet.buildings:
+            self.draw_text(building.name, (30, down))
+            down += 20
+        if self.planet.under_construction:
+            self.draw_text(f"Under Construction: {self.planet.under_construction}", (10, down))
+
+    #####################################################################################################
+    def draw_text(self, text: str, position: tuple[float, float]) -> None:
+        title_surface = self.text_font.render(text, True, "white")
+        self.screen.blit(title_surface, position)
 
     #####################################################################################################
     def draw_galaxy_view(self):
@@ -213,7 +264,7 @@ class Game:
         screen_coord = self.game_to_screen(sys_coord)
         pygame.draw.circle(self.screen, system.draw_colour, screen_coord, 5.0)
 
-        text_surface = self.font.render(system.name, True, "white")
+        text_surface = self.label_font.render(system.name, True, "white")
         text_size = text_surface.get_size()
         text_coord = (screen_coord[0] - text_size[0] / 2, screen_coord[1] + text_size[1] / 2)
         self.screen.blit(text_surface, text_coord)
