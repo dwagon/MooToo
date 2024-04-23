@@ -21,7 +21,7 @@ class PlanetSize(Enum):
 class Planet:
     def __init__(self, name, star_colour):
         self.name = name
-        self.categ = pick_planet_category()
+        self.category = pick_planet_category()
         self.size = pick_planet_size()
         self.arc = random.randint(0, 359)
 

@@ -37,6 +37,11 @@
       }
     }
   },
+  "planets": {
+      "gas_giant": {
+          "image": "images/gas_giant.png"
+      }
+  },
   "display": {
     "screen_width": 1024,
     "screen_height": 768
