@@ -236,6 +236,8 @@ class Game:
     #####################################################################################################
     def draw_planet_view(self) -> None:
         self.draw_title(self.planet.name)
+        if self.planet.category != PlanetCategory.PLANET:
+            return
         self.draw_text(f"Population:", (10, 30))
         self.draw_text(f"Farmers: {self.planet.population[PopulationJobs.FARMER]}", (30, 50))
         self.draw_text(f"Workers: {self.planet.population[PopulationJobs.WORKERS]}", (30, 70))
@@ -248,6 +250,11 @@ class Game:
             down += 20
         if self.planet.under_construction:
             self.draw_text(f"Under Construction: {self.planet.under_construction}", (10, down))
+
+        self.draw_text(f"Size: {self.planet.size}", (200, 30))
+        self.draw_text(f"Gravity: {self.planet.gravity}", (200, 50))
+        self.draw_text(f"Richness: {self.planet.richness}", (200, 70))
+        self.draw_text(f"Climate: {self.planet.climate}", (200, 90))
 
     #####################################################################################################
     def draw_text(self, text: str, position: tuple[float, float]) -> None:

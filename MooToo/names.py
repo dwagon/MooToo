@@ -794,3 +794,5 @@ system_names = [
     "Zubrah",
     "Zweig",
 ]
+
+empire_names = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon"]

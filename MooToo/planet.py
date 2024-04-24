@@ -13,38 +13,38 @@ class PlanetCategory(Enum):
 
 
 class PlanetSize(StrEnum):
-    TINY = "T"
-    SMALL = "S"
-    MEDIUM = "M"
-    LARGE = "L"
-    HUGE = "H"
+    TINY = "Tiny"
+    SMALL = "Small"
+    MEDIUM = "Medium"
+    LARGE = "Large"
+    HUGE = "Huge"
 
 
 class PlanetGravity(StrEnum):
-    LOW = "L"
-    NORMAL = "N"
-    HIGH = "H"
+    LOW = "Low"
+    NORMAL = "Normal"
+    HIGH = "High"
 
 
-class PlanetRichness(Enum):
-    ULTRA_POOR = "UP"
-    POOR = "P"
-    ABUNDANT = "A"
-    RICH = "R"
-    ULTRA_RICH = "UR"
+class PlanetRichness(StrEnum):
+    ULTRA_POOR = "Ultra Poor"
+    POOR = "Poor"
+    ABUNDANT = "Abundant"
+    RICH = "Rich"
+    ULTRA_RICH = "Ultra Rich"
 
 
 class PlanetClimate(StrEnum):
-    TOXIC = "TX"
-    RADIATED = "R"
-    BARREN = "B"
-    DESERT = "D"
-    TUNDRA = "TU"
-    OCEAN = "O"
-    SWAMP = "S"
-    ARID = "A"
-    TERRAN = "TE"
-    GAIA = "G"
+    TOXIC = "Toxic"
+    RADIATED = "Radiated"
+    BARREN = "Barren"
+    DESERT = "Desert"
+    TUNDRA = "Tundra"
+    OCEAN = "Ocean"
+    SWAMP = "Swamp"
+    ARID = "Arid"
+    TERRAN = "Terran"
+    GAIA = "Gaia"
 
 
 class PopulationJobs(StrEnum):
@@ -72,6 +72,13 @@ class Planet:
     def __repr__(self):
         return f"<Planet {self.name}: {self.category.name} {self.size.name} {self.richness.name} {self.climate.name} {self.gravity.name}>"
 
+    def make_home_world(self):
+        self.category = PlanetCategory.PLANET
+        self.size = PlanetSize.HUGE
+        self.richness = PlanetRichness.RICH
+        self.climate = PlanetClimate.TERRAN
+        self.gravity = PlanetGravity.NORMAL
+
 
 def pick_planet_climate(config: dict[str, int]) -> PlanetClimate:
     """Climate of the planet depends on the star colour"""
@@ -87,14 +94,44 @@ def pick_planet_richness(config: dict[str, int]) -> PlanetRichness:
 def pick_planet_gravity(size: PlanetSize, richness: PlanetRichness) -> PlanetGravity:
     """The bigger and richer the planet the higher the gravity"""
     grav_map = {
-        "T": {"UP": "L", "P": "L", "A": "L", "R": "N", "UR": "N"},
-        "S": {"UP": "L", "P": "L", "A": "N", "R": "N", "UR": "N"},
-        "M": {"UP": "L", "P": "N", "A": "N", "R": "N", "UR": "H"},
-        "L": {"UP": "N", "P": "N", "A": "N", "R": "H", "UR": "H"},
-        "H": {"UP": "N", "P": "N", "A": "H", "R": "H", "UR": "H"},
+        PlanetSize.TINY: {
+            PlanetRichness.ULTRA_POOR: PlanetGravity.LOW,
+            PlanetRichness.POOR: PlanetGravity.LOW,
+            PlanetRichness.ABUNDANT: PlanetGravity.LOW,
+            PlanetRichness.RICH: PlanetGravity.NORMAL,
+            PlanetRichness.ULTRA_RICH: PlanetGravity.NORMAL,
+        },
+        PlanetSize.SMALL: {
+            PlanetRichness.ULTRA_POOR: PlanetGravity.LOW,
+            PlanetRichness.POOR: PlanetGravity.LOW,
+            PlanetRichness.ABUNDANT: PlanetGravity.NORMAL,
+            PlanetRichness.RICH: PlanetGravity.NORMAL,
+            PlanetRichness.ULTRA_RICH: PlanetGravity.NORMAL,
+        },
+        PlanetSize.MEDIUM: {
+            PlanetRichness.ULTRA_POOR: PlanetGravity.LOW,
+            PlanetRichness.POOR: PlanetGravity.NORMAL,
+            PlanetRichness.ABUNDANT: PlanetGravity.NORMAL,
+            PlanetRichness.RICH: PlanetGravity.NORMAL,
+            PlanetRichness.ULTRA_RICH: PlanetGravity.HIGH,
+        },
+        PlanetSize.LARGE: {
+            PlanetRichness.ULTRA_POOR: PlanetGravity.NORMAL,
+            PlanetRichness.POOR: PlanetGravity.NORMAL,
+            PlanetRichness.ABUNDANT: PlanetGravity.NORMAL,
+            PlanetRichness.RICH: PlanetGravity.HIGH,
+            PlanetRichness.ULTRA_RICH: PlanetGravity.HIGH,
+        },
+        PlanetSize.HUGE: {
+            PlanetRichness.ULTRA_POOR: PlanetGravity.NORMAL,
+            PlanetRichness.POOR: PlanetGravity.NORMAL,
+            PlanetRichness.ABUNDANT: PlanetGravity.HIGH,
+            PlanetRichness.RICH: PlanetGravity.HIGH,
+            PlanetRichness.ULTRA_RICH: PlanetGravity.HIGH,
+        },
     }
-    gravity = grav_map[size.value][richness.value]
-    return PlanetGravity(gravity)
+    gravity = grav_map[size][richness]
+    return gravity
 
 
 def pick_planet_size() -> PlanetSize:

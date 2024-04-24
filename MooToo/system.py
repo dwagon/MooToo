@@ -1,12 +1,22 @@
 """ system class"""
 
 import random
+from enum import StrEnum
 from MooToo.planet import Planet
 from MooToo.config import Config
 from MooToo.names import system_names
 
 MAX_ORBITS = 6
 ORBIT_NAMES = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII")
+
+
+class StarColour(StrEnum):
+    BLUE = "blue"
+    WHITE = "white"
+    YELLOW = "yellow"
+    ORANGE = "orange"
+    RED = "red"
+    BROWN = "brown"
 
 
 class System:
@@ -17,7 +27,6 @@ class System:
         self.colour = self.pick_star_colour()
         self.draw_colour = self.config["galaxy"]["star_colours"][self.colour]["draw_colour"]
         self.orbits: dict[int, Planet | None] = {}
-        self.make_orbits()
 
     def pick_star_colour(self) -> str:
         while True:
@@ -25,13 +34,16 @@ class System:
             prev = 0
             for colour, details in self.config["galaxy"]["star_colours"].items():
                 if pct <= prev + details["probability"]:
-                    return colour
+                    return StarColour(colour)
                 else:
                     prev += details["probability"]
 
     def make_orbits(self):
         name_index = 0
         for orbit in range(MAX_ORBITS):
+            if orbit in self.orbits:  # Handle existing planets such as home planets
+                name_index += 1
+                continue
             pct = random.randint(0, 100)
             if pct <= self.config["galaxy"]["star_colours"][self.colour]["prob_orbit"]:
                 name = f"{self.name} {ORBIT_NAMES[name_index]}"
