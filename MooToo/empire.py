@@ -17,7 +17,7 @@ class Empire:
         p = Planet(f"{self.name} Home", orbit, self.config["galaxy"]["star_colours"][StarColour.YELLOW])
         p.make_home_world()
         p.owner = self
-        p.population[PopulationJobs.FARMER] = 2
+        p.population[PopulationJobs.FARMER] = 4
         p.population[PopulationJobs.WORKERS] = 2
         p.population[PopulationJobs.SCIENTISTS] = 2
         return p
