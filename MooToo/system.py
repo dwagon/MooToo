@@ -10,6 +10,7 @@ MAX_ORBITS = 6
 ORBIT_NAMES = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII")
 
 
+#####################################################################################################
 class StarColour(StrEnum):
     BLUE = "blue"
     WHITE = "white"
@@ -19,6 +20,7 @@ class StarColour(StrEnum):
     BROWN = "brown"
 
 
+#####################################################################################################
 class System:
     def __init__(self, position: tuple[int, int], config: Config):
         self.position = position
@@ -28,6 +30,7 @@ class System:
         self.draw_colour = self.config["galaxy"]["star_colours"][self.colour]["draw_colour"]
         self.orbits: dict[int, Planet | None] = {}
 
+    #####################################################################################################
     def pick_star_colour(self) -> str:
         while True:
             pct = random.randint(0, 100)
@@ -38,6 +41,14 @@ class System:
                 else:
                     prev += details["probability"]
 
+    #####################################################################################################
+    def turn(self):
+        """Turn"""
+        for planet in self.orbits.values():
+            if planet:
+                planet.turn()
+
+    #####################################################################################################
     def make_orbits(self):
         name_index = 0
         for orbit in range(MAX_ORBITS):
@@ -53,6 +64,7 @@ class System:
                 self.orbits[orbit] = None
 
 
+#####################################################################################################
 def pick_name():
     """Pick a system name"""
     name = random.choice(system_names)

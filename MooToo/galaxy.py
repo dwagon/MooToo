@@ -8,12 +8,16 @@ from MooToo.empire import Empire
 from MooToo.names import empire_names
 
 
+#####################################################################################################
+#####################################################################################################
 class Galaxy:
     def __init__(self, config):
         self.config = config
         self.systems = {}
         self.empires = {}
+        self.turn_number = 0
 
+    #####################################################################################################
     def populate(self):
         """Fill the galaxy with things"""
         positions = self.get_positions()
@@ -26,6 +30,7 @@ class Galaxy:
         for system in self.systems.values():
             system.make_orbits()
 
+    #####################################################################################################
     def find_home_systems(self) -> list[System]:
         """Find suitable planets for home planets"""
         # Create an arc around the galaxy and put home planets evenly spaced around that arc
@@ -49,6 +54,14 @@ class Galaxy:
             home_planets.append(min_system)
         return home_planets
 
+    #####################################################################################################
+    def turn(self):
+        """End of turn"""
+        self.turn_number += 1
+        for system in self.systems.values():
+            system.turn()
+
+    #####################################################################################################
     def make_empire(self, home_system: System):
         """ """
         name = random.choice(empire_names)
@@ -57,6 +70,7 @@ class Galaxy:
         self.empires[name] = Empire(name, home_system, self.config)
         home_system.orbits[3] = self.empires[name].make_home_planet(3)
 
+    #####################################################################################################
     def get_positions(self) -> list[tuple[int, int]]:
         """Return suitable positions"""
         positions = []
@@ -75,6 +89,7 @@ class Galaxy:
         return positions
 
 
+#####################################################################################################
 def get_distance(x1: int, y1: int, x2: int, y2: int) -> float:
     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     return dist

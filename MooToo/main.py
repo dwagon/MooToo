@@ -10,6 +10,7 @@ from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.constants import PlanetSize, PlanetCategory, PopulationJobs
+from MooToo.gui_button import Button
 
 
 class DisplayMode(Enum):
@@ -33,8 +34,9 @@ class Game:
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
         self.images = self.load_images()
-        size = self.screen.get_size()
-        self.mid_point = (size[0] / 2, size[1] / 2)
+        self.size = self.screen.get_size()
+        self.mid_point = (self.size[0] / 2, self.size[1] / 2)
+        self.turn_button = Button(self.screen, "Next Turn", br_point=pygame.Vector2(self.size[0] - 5, self.size[1] - 5))
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
@@ -92,6 +94,8 @@ class Game:
                 if system:
                     self.display_mode = DisplayMode.SYSTEM
                     self.system = system
+                if self.turn_button.clicked():
+                    self.galaxy.turn()
             case DisplayMode.SYSTEM:
                 planet = self.pick_planet(mouse)
                 if planet:
@@ -274,8 +278,10 @@ class Game:
 
     #####################################################################################################
     def draw_galaxy_view(self):
+        self.draw_title(f"Turn: {self.galaxy.turn_number}")
         for sys_coord, system in self.galaxy.systems.items():
             self.draw_galaxy_view_system(sys_coord, system)
+        self.turn_button.draw()
 
     #####################################################################################################
     def draw_galaxy_view_system(self, sys_coord, system):
