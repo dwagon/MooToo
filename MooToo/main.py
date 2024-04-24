@@ -8,7 +8,8 @@ from enum import Enum, auto
 from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
-from MooToo.planet import Planet, PlanetSize, PlanetCategory, PopulationJobs
+from MooToo.planet import Planet
+from MooToo.constants import PlanetSize, PlanetCategory, PopulationJobs
 
 
 class DisplayMode(Enum):
