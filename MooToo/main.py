@@ -240,9 +240,18 @@ class Game:
         if self.planet.category != PlanetCategory.PLANET:
             return
         self.draw_text(f"Population:", (10, 30))
-        self.draw_text(f"Farmers: {self.planet.population[PopulationJobs.FARMER]}", (30, 50))
-        self.draw_text(f"Workers: {self.planet.population[PopulationJobs.WORKERS]}", (30, 70))
-        self.draw_text(f"Scientists: {self.planet.population[PopulationJobs.SCIENTISTS]}", (30, 90))
+        self.draw_text(
+            f"Farmers: {self.planet.population[PopulationJobs.FARMER]} Food={self.planet.food_production()}-{self.planet.food_consumption()}={self.planet.food_production()-self.planet.food_consumption()}",
+            (30, 50),
+        )
+        self.draw_text(
+            f"Workers: {self.planet.population[PopulationJobs.WORKERS]} Producing={self.planet.work_production()}",
+            (30, 70),
+        )
+        self.draw_text(
+            f"Scientists: {self.planet.population[PopulationJobs.SCIENTISTS]} Science={self.planet.science_production()}",
+            (30, 90),
+        )
 
         self.draw_text(f"Buildings:", (10, 120))
         down = 140
