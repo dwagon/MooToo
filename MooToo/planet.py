@@ -2,55 +2,8 @@
 
 import random
 from typing import Any
-from enum import Enum, StrEnum, auto
 from MooToo.utils import prob_map
-
-
-class PlanetCategory(Enum):
-    ASTEROID = auto()
-    PLANET = auto()
-    GAS_GIANT = auto()
-
-
-class PlanetSize(StrEnum):
-    TINY = "Tiny"
-    SMALL = "Small"
-    MEDIUM = "Medium"
-    LARGE = "Large"
-    HUGE = "Huge"
-
-
-class PlanetGravity(StrEnum):
-    LOW = "Low"
-    NORMAL = "Normal"
-    HIGH = "High"
-
-
-class PlanetRichness(StrEnum):
-    ULTRA_POOR = "Ultra Poor"
-    POOR = "Poor"
-    ABUNDANT = "Abundant"
-    RICH = "Rich"
-    ULTRA_RICH = "Ultra Rich"
-
-
-class PlanetClimate(StrEnum):
-    TOXIC = "Toxic"
-    RADIATED = "Radiated"
-    BARREN = "Barren"
-    DESERT = "Desert"
-    TUNDRA = "Tundra"
-    OCEAN = "Ocean"
-    SWAMP = "Swamp"
-    ARID = "Arid"
-    TERRAN = "Terran"
-    GAIA = "Gaia"
-
-
-class PopulationJobs(StrEnum):
-    FARMER = "F"
-    WORKERS = "W"
-    SCIENTISTS = "S"
+from MooToo.constants import PlanetCategory, PopulationJobs, PlanetRichness, PlanetClimate, PlanetGravity, PlanetSize
 
 
 class Planet:
