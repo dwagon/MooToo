@@ -6,6 +6,9 @@ from MooToo.utils import prob_map
 from MooToo.constants import PlanetCategory, PopulationJobs, PlanetRichness, PlanetClimate, PlanetGravity, PlanetSize
 
 
+#####################################################################################################
+#####################################################################################################
+#####################################################################################################
 class Planet:
     def __init__(self, name: str, orbit: int, config: dict[str, Any]):
         self.name = name
@@ -26,6 +29,40 @@ class Planet:
             PlanetGravity.HIGH: 0.5,
         }
 
+    #####################################################################################################
+    def max_population(self) -> int:
+        """What's the maximum population this planet can support"""
+        pop_size_map: dict[PlanetSize, int] = {
+            PlanetSize.TINY: 1,
+            PlanetSize.SMALL: 2,
+            PlanetSize.MEDIUM: 4,
+            PlanetSize.LARGE: 5,
+            PlanetSize.HUGE: 6,
+        }
+        pop_climate_map: dict[PlanetClimate, int] = {
+            PlanetClimate.RADIATED: 1,
+            PlanetClimate.TOXIC: 1,
+            PlanetClimate.BARREN: 2,
+            PlanetClimate.DESERT: 2,
+            PlanetClimate.TUNDRA: 2,
+            PlanetClimate.OCEAN: 3,
+            PlanetClimate.SWAMP: 3,
+            PlanetClimate.ARID: 3,
+            PlanetClimate.TERRAN: 4,
+            PlanetClimate.GAIA: 5,
+        }
+        max_pop = pop_size_map[self.size] * pop_climate_map[self.climate]
+        return max_pop
+
+    #####################################################################################################
+    def current_population(self) -> int:
+        return (
+            self.population[PopulationJobs.FARMER]
+            + self.population[PopulationJobs.WORKERS]
+            + self.population[PopulationJobs.SCIENTISTS]
+        )
+
+    #####################################################################################################
     def food_production(self) -> int:
         food_map: dict[PlanetClimate:int] = {
             PlanetClimate.RADIATED: 0,
@@ -44,6 +81,7 @@ class Planet:
         production = max(self.population[PopulationJobs.FARMER], production)
         return int(production)
 
+    #####################################################################################################
     def food_consumption(self) -> int:
         consumption = (
             self.population[PopulationJobs.FARMER]
@@ -52,6 +90,7 @@ class Planet:
         )
         return consumption
 
+    #####################################################################################################
     def work_production(self) -> int:
         prod_map: dict[PlanetRichness:int] = {
             PlanetRichness.ULTRA_POOR: 1,
@@ -66,15 +105,18 @@ class Planet:
 
         return int(production)
 
+    #####################################################################################################
     def science_production(self) -> int:
         production = self.population[PopulationJobs.SCIENTISTS]
         production *= self.gravity_map[self.gravity]
         production = max(self.population[PopulationJobs.SCIENTISTS], production)
         return int(production)
 
+    #####################################################################################################
     def __repr__(self):
         return f"<Planet {self.name}: {self.category.name} {self.size.name} {self.richness.name} {self.climate.name} {self.gravity.name}>"
 
+    #####################################################################################################
     def make_home_world(self):
         self.category = PlanetCategory.PLANET
         self.size = PlanetSize.MEDIUM
@@ -83,17 +125,20 @@ class Planet:
         self.gravity = PlanetGravity.NORMAL
 
 
+#####################################################################################################
 def pick_planet_climate(config: dict[str, int]) -> PlanetClimate:
     """Climate of the planet depends on the star colour"""
     climate = prob_map(config)
     return PlanetClimate(climate)
 
 
+#####################################################################################################
 def pick_planet_richness(config: dict[str, int]) -> PlanetRichness:
     richness = prob_map(config)
     return PlanetRichness(richness)
 
 
+#####################################################################################################
 def pick_planet_gravity(size: PlanetSize, richness: PlanetRichness) -> PlanetGravity:
     """The bigger and richer the planet the higher the gravity"""
     grav_map = {
@@ -137,6 +182,7 @@ def pick_planet_gravity(size: PlanetSize, richness: PlanetRichness) -> PlanetGra
     return gravity
 
 
+#####################################################################################################
 def pick_planet_size() -> PlanetSize:
     pct = random.randrange(1, 100)
     if pct < 10:
@@ -150,6 +196,7 @@ def pick_planet_size() -> PlanetSize:
     return PlanetSize.HUGE
 
 
+#####################################################################################################
 def pick_planet_category() -> PlanetCategory:
     """What sort of planet is this?"""
     pct = random.randrange(1, 100)
