@@ -5,6 +5,54 @@ from typing import Any
 from MooToo.utils import prob_map
 from MooToo.constants import PlanetCategory, PopulationJobs, PlanetRichness, PlanetClimate, PlanetGravity, PlanetSize
 
+#####################################################################################################
+GRAVITY_MAP: dict[PlanetGravity, float] = {
+    PlanetGravity.LOW: 0.75,
+    PlanetGravity.NORMAL: 1.0,
+    PlanetGravity.HIGH: 0.5,
+}
+
+POP_SIZE_MAP: dict[PlanetSize, int] = {
+    PlanetSize.TINY: 1,
+    PlanetSize.SMALL: 2,
+    PlanetSize.MEDIUM: 4,
+    PlanetSize.LARGE: 5,
+    PlanetSize.HUGE: 6,
+}
+POP_CLIMATE_MAP: dict[PlanetClimate, int] = {
+    PlanetClimate.RADIATED: 1,
+    PlanetClimate.TOXIC: 1,
+    PlanetClimate.BARREN: 2,
+    PlanetClimate.DESERT: 2,
+    PlanetClimate.TUNDRA: 2,
+    PlanetClimate.OCEAN: 3,
+    PlanetClimate.SWAMP: 3,
+    PlanetClimate.ARID: 3,
+    PlanetClimate.TERRAN: 4,
+    PlanetClimate.GAIA: 5,
+}
+
+FOOD_CLIMATE_MAP: dict[PlanetClimate:int] = {
+    PlanetClimate.RADIATED: 0,
+    PlanetClimate.TOXIC: 0,
+    PlanetClimate.BARREN: 0,
+    PlanetClimate.DESERT: 1,
+    PlanetClimate.TUNDRA: 1,
+    PlanetClimate.OCEAN: 2,
+    PlanetClimate.SWAMP: 2,
+    PlanetClimate.ARID: 1,
+    PlanetClimate.TERRAN: 2,
+    PlanetClimate.GAIA: 3,
+}
+
+PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
+    PlanetRichness.ULTRA_POOR: 1,
+    PlanetRichness.POOR: 2,
+    PlanetRichness.ABUNDANT: 3,
+    PlanetRichness.RICH: 5,
+    PlanetRichness.ULTRA_RICH: 8,
+}
+
 
 #####################################################################################################
 #####################################################################################################
@@ -23,36 +71,18 @@ class Planet:
         self.buildings = {}
         self.under_construction = None
         self.arc = random.randint(0, 359)
-        self.gravity_map: dict[PlanetGravity, float] = {
-            PlanetGravity.LOW: 0.75,
-            PlanetGravity.NORMAL: 1.0,
-            PlanetGravity.HIGH: 0.5,
-        }
 
     #####################################################################################################
     def max_population(self) -> int:
         """What's the maximum population this planet can support"""
-        pop_size_map: dict[PlanetSize, int] = {
-            PlanetSize.TINY: 1,
-            PlanetSize.SMALL: 2,
-            PlanetSize.MEDIUM: 4,
-            PlanetSize.LARGE: 5,
-            PlanetSize.HUGE: 6,
-        }
-        pop_climate_map: dict[PlanetClimate, int] = {
-            PlanetClimate.RADIATED: 1,
-            PlanetClimate.TOXIC: 1,
-            PlanetClimate.BARREN: 2,
-            PlanetClimate.DESERT: 2,
-            PlanetClimate.TUNDRA: 2,
-            PlanetClimate.OCEAN: 3,
-            PlanetClimate.SWAMP: 3,
-            PlanetClimate.ARID: 3,
-            PlanetClimate.TERRAN: 4,
-            PlanetClimate.GAIA: 5,
-        }
-        max_pop = pop_size_map[self.size] * pop_climate_map[self.climate]
+
+        max_pop = POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
         return max_pop
+
+    #####################################################################################################
+    def turn(self):
+        """New turn"""
+        self.arc = random.randint(0, 359)
 
     #####################################################################################################
     def current_population(self) -> int:
@@ -64,20 +94,8 @@ class Planet:
 
     #####################################################################################################
     def food_production(self) -> int:
-        food_map: dict[PlanetClimate:int] = {
-            PlanetClimate.RADIATED: 0,
-            PlanetClimate.TOXIC: 0,
-            PlanetClimate.BARREN: 0,
-            PlanetClimate.DESERT: 1,
-            PlanetClimate.TUNDRA: 1,
-            PlanetClimate.OCEAN: 2,
-            PlanetClimate.SWAMP: 2,
-            PlanetClimate.ARID: 1,
-            PlanetClimate.TERRAN: 2,
-            PlanetClimate.GAIA: 3,
-        }
-        production = food_map[self.climate] * self.population[PopulationJobs.FARMER]
-        production *= self.gravity_map[self.gravity]
+        production = FOOD_CLIMATE_MAP[self.climate] * self.population[PopulationJobs.FARMER]
+        production *= GRAVITY_MAP[self.gravity]
         production = max(self.population[PopulationJobs.FARMER], production)
         return int(production)
 
@@ -92,15 +110,8 @@ class Planet:
 
     #####################################################################################################
     def work_production(self) -> int:
-        prod_map: dict[PlanetRichness:int] = {
-            PlanetRichness.ULTRA_POOR: 1,
-            PlanetRichness.POOR: 2,
-            PlanetRichness.ABUNDANT: 3,
-            PlanetRichness.RICH: 5,
-            PlanetRichness.ULTRA_RICH: 8,
-        }
-        production = prod_map[self.richness] * self.population[PopulationJobs.WORKERS]
-        production *= self.gravity_map[self.gravity]
+        production = PROD_RICHNESS_MAP[self.richness] * self.population[PopulationJobs.WORKERS]
+        production *= GRAVITY_MAP[self.gravity]
         production = max(self.population[PopulationJobs.WORKERS], production)
 
         return int(production)
@@ -108,7 +119,7 @@ class Planet:
     #####################################################################################################
     def science_production(self) -> int:
         production = self.population[PopulationJobs.SCIENTISTS]
-        production *= self.gravity_map[self.gravity]
+        production *= GRAVITY_MAP[self.gravity]
         production = max(self.population[PopulationJobs.SCIENTISTS], production)
         return int(production)
 
