@@ -3,6 +3,7 @@
 import random
 from typing import Any
 from MooToo.utils import prob_map
+from MooToo.building import Building
 from MooToo.constants import PlanetCategory, PopulationJobs, PlanetRichness, PlanetClimate, PlanetGravity, PlanetSize
 
 #####################################################################################################
@@ -70,6 +71,7 @@ class Planet:
         self.population = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.buildings = {}
         self.under_construction = None
+        self.construction_cost = 0
         self.arc = random.randint(0, 359)
 
     #####################################################################################################
@@ -83,6 +85,40 @@ class Planet:
     def turn(self):
         """New turn"""
         self.arc = random.randint(0, 359)
+        if not self.owner:
+            return
+        self.owner.money += self.money_production()
+        if self.under_construction:
+            self.keep_making_building()
+
+    #####################################################################################################
+    def money_production(self) -> int:
+        prod = (
+            self.population[PopulationJobs.FARMER]
+            + self.population[PopulationJobs.WORKERS]
+            + self.population[PopulationJobs.SCIENTISTS]
+        )
+        maintenance = sum([_.maintenance for _ in self.buildings])
+        profit = prod - maintenance
+        return profit
+
+    #####################################################################################################
+    def start_make_building(self, building: Building):
+        self.under_construction = building
+        self.construction_cost = 0
+
+    #####################################################################################################
+    def keep_making_building(self):
+        prod = self.work_production()
+        self.construction_cost += prod
+        if self.construction_cost >= self.under_construction.cost:
+            self.build_building()
+
+    #####################################################################################################
+    def build_building(self):
+        """the building under construction has finished"""
+        self.buildings[self.under_construction.name] = self.under_construction
+        self.under_construction = None
 
     #####################################################################################################
     def current_population(self) -> int:
@@ -96,6 +132,8 @@ class Planet:
     def food_production(self) -> int:
         production = FOOD_CLIMATE_MAP[self.climate] * self.population[PopulationJobs.FARMER]
         production *= GRAVITY_MAP[self.gravity]
+        for building in self.buildings.values():
+            production += building.food_bonus()
         production = max(self.population[PopulationJobs.FARMER], production)
         return int(production)
 

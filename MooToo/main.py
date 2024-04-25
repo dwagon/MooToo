@@ -261,10 +261,13 @@ class Game:
         self.draw_text(f"Buildings:", (10, 130))
         down = 160
         for building in self.planet.buildings:
-            self.draw_text(building.name, (30, down))
+            self.draw_text(building, (30, down))
             down += 20
         if self.planet.under_construction:
-            self.draw_text(f"Under Construction: {self.planet.under_construction}", (10, down))
+            self.draw_text(
+                f"Under Construction: {self.planet.under_construction} {self.planet.construction_cost}/{self.planet.under_construction.cost}",
+                (10, down),
+            )
 
         self.draw_text(f"Size: {self.planet.size}", (200, 30))
         self.draw_text(f"Gravity: {self.planet.gravity}", (200, 50))
