@@ -3,6 +3,7 @@
 from MooToo.system import System, StarColour
 from MooToo.planet import Planet, PopulationJobs
 from MooToo.config import Config
+from MooToo.building import HydroponicFarm
 
 
 class Empire:
@@ -11,6 +12,7 @@ class Empire:
         self.config = config
         self.home_planet = home_planet
         self.home_planet.draw_colour = "Green"
+        self.money = 100
 
     def make_home_planet(self, orbit: int) -> Planet:
         """Return a suitable home planet"""
@@ -20,4 +22,5 @@ class Empire:
         p.population[PopulationJobs.FARMER] = 4
         p.population[PopulationJobs.WORKERS] = 2
         p.population[PopulationJobs.SCIENTISTS] = 2
+        p.under_construction = HydroponicFarm()
         return p
