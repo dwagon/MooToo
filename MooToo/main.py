@@ -243,41 +243,46 @@ class Game:
         self.draw_title(self.planet.name)
         if self.planet.category != PlanetCategory.PLANET:
             return
-        self.draw_text(f"Population:", (10, 30))
-        self.draw_text(f"Current: {self.planet.current_population()} / Max: {self.planet.max_population()}", (30, 50))
+
+        self.draw_text(f"Population:", 1, 1)
+        self.draw_text(f"Current: {self.planet.current_population()} / Max: {self.planet.max_population()}", 2, 1)
         self.draw_text(
             f"Farmers: {self.planet.population[PopulationJobs.FARMER]} Food={self.planet.food_production()}-{self.planet.food_consumption()}={self.planet.food_production()-self.planet.food_consumption()}",
-            (30, 70),
+            3,
+            1,
         )
         self.draw_text(
             f"Workers: {self.planet.population[PopulationJobs.WORKERS]} Producing={self.planet.work_production()}",
-            (30, 90),
+            4,
+            1,
         )
         self.draw_text(
             f"Scientists: {self.planet.population[PopulationJobs.SCIENTISTS]} Science={self.planet.science_production()}",
-            (30, 110),
+            5,
+            1,
         )
 
-        self.draw_text(f"Buildings:", (10, 130))
-        down = 160
+        self.draw_text(f"Buildings:", 7, 1)
+        down = 8
         for building in self.planet.buildings:
-            self.draw_text(building, (30, down))
-            down += 20
+            self.draw_text(building, down, 1)
+            down += 1
         if self.planet.under_construction:
             self.draw_text(
                 f"Under Construction: {self.planet.under_construction} {self.planet.construction_cost}/{self.planet.under_construction.cost}",
-                (10, down),
+                down,
+                1,
             )
 
-        self.draw_text(f"Size: {self.planet.size}", (200, 30))
-        self.draw_text(f"Gravity: {self.planet.gravity}", (200, 50))
-        self.draw_text(f"Richness: {self.planet.richness}", (200, 70))
-        self.draw_text(f"Climate: {self.planet.climate}", (200, 90))
+        self.draw_text(f"Size: {self.planet.size}", 1, 3)
+        self.draw_text(f"Gravity: {self.planet.gravity}", 2, 3)
+        self.draw_text(f"Richness: {self.planet.richness}", 3, 3)
+        self.draw_text(f"Climate: {self.planet.climate}", 4, 3)
 
     #####################################################################################################
-    def draw_text(self, text: str, position: tuple[float, float]) -> None:
+    def draw_text(self, text: str, row: int, col: int) -> None:
         title_surface = self.text_font.render(text, True, "white")
-        self.screen.blit(title_surface, position)
+        self.screen.blit(title_surface, (col * 200, row * 20))
 
     #####################################################################################################
     def draw_galaxy_view(self):
