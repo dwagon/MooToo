@@ -16,6 +16,9 @@ class Building:
     def food_bonus(self) -> int:
         return 0
 
+    def prod_bonus(self) -> int:
+        return 0
+
 
 #####################################################################################################
 class HydroponicFarm(Building):
@@ -25,4 +28,15 @@ class HydroponicFarm(Building):
         self.cost = 60
 
     def food_bonus(self) -> int:
+        return 2
+
+
+#####################################################################################################
+class AutomatedFactory(Building):
+    def __init__(self):
+        super().__init__("Automated Factory")
+        self.maintenance = 2
+        self.cost = 60
+
+    def prod_bonus(self) -> int:
         return 2
