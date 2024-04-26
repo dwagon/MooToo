@@ -98,7 +98,7 @@ class Planet:
             + self.population[PopulationJobs.WORKERS]
             + self.population[PopulationJobs.SCIENTISTS]
         )
-        maintenance = sum([_.maintenance for _ in self.buildings])
+        maintenance = sum([_.maintenance for _ in self.buildings.values()])
         profit = prod - maintenance
         return profit
 
@@ -150,6 +150,8 @@ class Planet:
     def work_production(self) -> int:
         production = PROD_RICHNESS_MAP[self.richness] * self.population[PopulationJobs.WORKERS]
         production *= GRAVITY_MAP[self.gravity]
+        for building in self.buildings.values():
+            production += building.prod_bonus()
         production = max(self.population[PopulationJobs.WORKERS], production)
 
         return int(production)

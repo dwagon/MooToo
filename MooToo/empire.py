@@ -3,7 +3,7 @@
 from MooToo.system import System, StarColour
 from MooToo.planet import Planet, PopulationJobs
 from MooToo.config import Config
-from MooToo.building import HydroponicFarm
+from MooToo import building
 
 
 class Empire:
@@ -22,5 +22,6 @@ class Empire:
         p.population[PopulationJobs.FARMER] = 4
         p.population[PopulationJobs.WORKERS] = 2
         p.population[PopulationJobs.SCIENTISTS] = 2
-        p.under_construction = HydroponicFarm()
+        p.buildings["Hydroponic Farm"] = building.HydroponicFarm()
+        p.under_construction = building.AutomatedFactory()
         return p
