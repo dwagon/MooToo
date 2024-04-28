@@ -70,7 +70,10 @@ class Graphic:
     ##############################################################################
     def load(self, fd, palette) -> None:
         """Process the filename"""
-        self.width = dread(fd)
+        try:
+            self.width = dread(fd)
+        except struct.error:
+            raise UserWarning("Empty file")
         self.height = dread(fd)
         self.palette = palette
         _ = fd.read(2)  # Nothing in the next two chars
@@ -80,24 +83,28 @@ class Graphic:
         self.flags = self.image_flags(dread(fd))
         # print(f"{self.width} x {self.height} frames={self.num_frames} {self.flags}")
         frame_offsets = []
-        for _ in range(self.num_frames + 1):
-            offset = dread(fd, "<L", 4)
-            frame_offsets.append(offset)
+        try:
+            for _ in range(self.num_frames + 1):
+                offset = dread(fd, "<L", 4)
+                frame_offsets.append(offset)
+        except struct.error:
+            raise UserWarning("Not an image file")
         if self.flags["internal"]:
             colour_shift = dread(fd)
             num_colours = dread(fd)
             for colour in range(num_colours):
                 alpha = struct.unpack("B", fd.read(1))[0]
                 if alpha not in (0, 1):
-                    print(f"Alpha badness ({alpha})")
-                    sys.exit(1)
+                    print(f"Alpha badness ({alpha}) {fd.name} {colour}")
+                    continue
                 red = struct.unpack("B", fd.read(1))[0]
                 green = struct.unpack("B", fd.read(1))[0]
                 blue = struct.unpack("B", fd.read(1))[0]
                 self.palette[colour + colour_shift] = (red * 4, green * 4, blue * 4)
         for offset in frame_offsets[:-1]:
             fd.seek(offset)
-            self.frames.append(self.process_frame(fd))
+            if frame := self.process_frame(fd):
+                self.frames.append(frame)
 
     ##############################################################################
     def image_flags(self, flag_seq: int) -> dict[str, bool]:
@@ -113,7 +120,10 @@ class Graphic:
     ##############################################################################
     def process_frame(self, fd) -> Optional[Frame]:
         """Process the frame data"""
-        frame_indicator = dread(fd)
+        try:
+            frame_indicator = dread(fd)
+        except struct.error:
+            return None
 
         if frame_indicator != 1:
             return None
@@ -131,7 +141,11 @@ class Graphic:
             else:
                 x_indent = dread(fd)
                 byte_fmt = "<" + "B" * pixels
-                colour_array = struct.unpack(byte_fmt, fd.read(pixels))
+                try:
+                    colour_array = struct.unpack(byte_fmt, fd.read(pixels))
+                except struct.error:
+                    print(f"{fd.name} Couldn't read colour array")
+                    return None
                 line = Line(indent=x_indent, pixels=colour_array)
                 if pixels % 2:
                     fd.read(1)
@@ -141,7 +155,11 @@ class Graphic:
     ##############################################################################
     def save_frame(self, filename: str, palette: dict[int, tuple[int, int, int]], frame: int = 0) -> None:
         """Same frame as an image"""
-        f = self.frames[frame]
+        try:
+            f = self.frames[frame]
+        except IndexError:
+            print(f"{filename}: Unknown frame {frame}")
+            return
         image = Image.new("P", (self.width, self.height), "white")
         draw = ImageDraw.Draw(image)
         rel_x = 0
@@ -168,19 +186,23 @@ def dread(fd, format: str = "<H", bytes: int = 2) -> Any:
 ##############################################################################
 def main() -> None:
     """Do the stuff"""
-    palettes = [f"../foo/FONTS.LBX_{_}" for _ in range(1, 14)] + [f"../foo/IFONTS.LBX_{_}" for _ in range(1, 4)]
-    # palettes = ["../foo/FONTS.LBX_1"]
+    # palettes = [f"../foo/FONTS.LBX_{_}" for _ in range(1, 14)] + [f"../foo/IFONTS.LBX_{_}" for _ in range(1, 4)]
+    palettes = ["../foo/FONTS.LBX_1"]
     for num, palfile in enumerate(palettes):
         palette = load_palette(palfile)
-        for file in sys.argv[1:]:
+        for filename in sys.argv[1:]:
             try:
                 g = Graphic()
-                with open(file, "rb") as fd:
-                    g.load(fd, palette)
-                save_file = f"{os.path.basename(file)}_pal{num}.png"
-                g.save_frame(save_file, palette)
+                with open(filename, "rb") as fd:
+                    try:
+                        g.load(fd, palette.copy())
+                    except UserWarning:
+                        continue
+                if g.frames:
+                    save_file = f"{os.path.basename(filename)}_pal{num}.png"
+                    g.save_frame(save_file, palette)
             except Exception as exc:
-                print(f"Failure on {file}: {exc}")
+                print(f"Failure on {filename}: {exc}")
                 raise
 
 
