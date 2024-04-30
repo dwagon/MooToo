@@ -81,7 +81,7 @@ class Graphic:
         self.num_frames = dread(fd)
         self.delay = dread(fd)
         self.flags = self.image_flags(dread(fd))
-        # print(f"{self.width} x {self.height} frames={self.num_frames} {self.flags}")
+        print(f"{self.width} x {self.height} frames={self.num_frames} {self.flags}")
         frame_offsets = []
         try:
             for _ in range(self.num_frames + 1):
