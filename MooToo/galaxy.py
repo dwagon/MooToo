@@ -74,7 +74,7 @@ class Galaxy:
     def get_positions(self) -> list[tuple[int, int]]:
         """Return suitable positions"""
         positions = []
-        min_dist = 40
+        min_dist = 30
         num_objects = self.config["galaxy"]["num_systems"]
         for _ in range(num_objects):
             while True:
@@ -90,7 +90,7 @@ class Galaxy:
 
 
 #####################################################################################################
-def get_distance(x1: int, y1: int, x2: int, y2: int) -> float:
+def get_distance(x1: float, y1: float, x2: float, y2: float) -> float:
     dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
     return dist
 

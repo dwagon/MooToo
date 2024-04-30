@@ -11,12 +11,18 @@ from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.constants import PlanetSize, PlanetCategory, PopulationJobs
 from MooToo.gui_button import Button
+from MooToo.lbx_image import LBXImage
 
 
+#####################################################################################################
 class DisplayMode(Enum):
     GALAXY = auto()
     SYSTEM = auto()
     PLANET = auto()
+
+
+#####################################################################################################
+IMAGE_CACHE = {}
 
 
 #####################################################################################################
@@ -28,7 +34,7 @@ class Game:
         self.label_font = pygame.font.SysFont("Ariel", 14)
         self.text_font = pygame.font.SysFont("Ariel", 18)
         self.title_font = pygame.font.SysFont("Ariel", 24)
-        self.screen = pygame.display.set_mode((config["display"]["screen_width"], config["display"]["screen_height"]))
+        self.screen = pygame.display.set_mode((640, 480))
         self.clock = pygame.time.Clock()
         self.display_mode = DisplayMode.GALAXY
         self.system = None  # System we are looking at
@@ -90,18 +96,15 @@ class Game:
         mouse = pygame.mouse.get_pos()
         match self.display_mode:
             case DisplayMode.GALAXY:
-                system = self.pick_system(mouse)
-                if system:
+                if system := self.pick_system(mouse):
                     self.display_mode = DisplayMode.SYSTEM
                     self.system = system
                 if self.turn_button.clicked():
                     self.galaxy.turn()
             case DisplayMode.SYSTEM:
-                planet = self.pick_planet(mouse)
-                if planet:
+                if planet := self.pick_planet(mouse):
                     self.display_mode = DisplayMode.PLANET
                     self.planet = planet
-                pass
             case DisplayMode.PLANET:
                 pass
 
@@ -109,8 +112,7 @@ class Game:
     def pick_system(self, coords: tuple[int, int]) -> Optional[System]:
         """Return which system the mouse coords are close to"""
         for sys_coord, system in self.galaxy.systems.items():
-            game_coords = self.screen_to_game(sys_coord)
-            distance = get_distance(game_coords[0], game_coords[1], coords[0], coords[1])
+            distance = get_distance(sys_coord[0], sys_coord[1], coords[0], coords[1])
             if distance < 20:
                 return system
         return None
@@ -122,8 +124,7 @@ class Game:
             if not planet:
                 continue
             sys_coords = self.get_planet_position(planet)
-            game_coords = self.screen_to_game(sys_coords)
-            distance = get_distance(game_coords[0], game_coords[1], coords[0], coords[1])
+            distance = get_distance(sys_coords[0], sys_coords[1], coords[0], coords[1])
             if distance < 20:
                 return planet
         return None
@@ -140,7 +141,7 @@ class Game:
 
     #####################################################################################################
     def draw_title(self, text: str) -> None:
-        title_surface = self.title_font.render(text, True, "white")
+        title_surface = self.title_font.render(text, True, "red")
         self.screen.blit(title_surface, (5, 5))
 
     #####################################################################################################
@@ -244,7 +245,7 @@ class Game:
         if self.planet.category != PlanetCategory.PLANET:
             return
 
-        self.draw_text(f"Population:", 1, 1)
+        self.draw_text("Population:", 1, 1)
         self.draw_text(f"Current: {self.planet.current_population()} / Max: {self.planet.max_population()}", 2, 1)
         self.draw_text(
             f"Farmers: {self.planet.population[PopulationJobs.FARMER]} Food={self.planet.food_production()}-{self.planet.food_consumption()}={self.planet.food_production()-self.planet.food_consumption()}",
@@ -262,7 +263,7 @@ class Game:
             1,
         )
 
-        self.draw_text(f"Buildings:", 7, 1)
+        self.draw_text("Buildings:", 7, 1)
         down = 8
         for building in self.planet.buildings:
             self.draw_text(building, down, 1)
@@ -285,7 +286,18 @@ class Game:
         self.screen.blit(title_surface, (col * 200, row * 20))
 
     #####################################################################################################
+    def load_image(self, lbx_file: str, lbx_index: int) -> pygame.Surface:
+        img_key = (lbx_file, lbx_index)
+        if img_key not in IMAGE_CACHE:
+            pil_image = LBXImage(lbx_file, lbx_index, self.config["moo_path"]).png_image()
+            IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "foo.png")
+            pygame.image.save(IMAGE_CACHE[img_key], f"{lbx_file}_{lbx_index}.png")  # DBG
+        return IMAGE_CACHE[img_key]
+
+    #####################################################################################################
     def draw_galaxy_view(self):
+        image = self.load_image("BUFFER0.LBX", 0)
+        self.screen.blit(image, (0, 0))
         self.draw_title(f"Turn: {self.galaxy.turn_number}")
         for sys_coord, system in self.galaxy.systems.items():
             self.draw_galaxy_view_system(sys_coord, system)
@@ -293,25 +305,12 @@ class Game:
 
     #####################################################################################################
     def draw_galaxy_view_system(self, sys_coord, system):
-        screen_coord = self.game_to_screen(sys_coord)
-        pygame.draw.circle(self.screen, system.draw_colour, screen_coord, 5.0)
+        pygame.draw.circle(self.screen, system.draw_colour, sys_coord, 5.0)
 
         text_surface = self.label_font.render(system.name, True, "white")
         text_size = text_surface.get_size()
-        text_coord = (screen_coord[0] - text_size[0] / 2, screen_coord[1] + text_size[1] / 2)
+        text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + text_size[1] / 2)
         self.screen.blit(text_surface, text_coord)
-
-    #####################################################################################################
-    def game_to_screen(self, game_coord: tuple[int, int]) -> tuple[float, float]:
-        x = game_coord[0] * self.config["galaxy"]["max_x"] / self.config["display"]["screen_width"]
-        y = game_coord[1] * self.config["galaxy"]["max_y"] / self.config["display"]["screen_height"]
-        return x, y
-
-    #####################################################################################################
-    def screen_to_game(self, screen_coord: tuple[float, float]) -> tuple[int, int]:
-        x = screen_coord[0] * self.config["display"]["screen_width"] / self.config["galaxy"]["max_x"]
-        y = screen_coord[1] * self.config["display"]["screen_height"] / self.config["galaxy"]["max_y"]
-        return x, y
 
 
 #####################################################################################################

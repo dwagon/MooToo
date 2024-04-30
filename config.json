@@ -3,8 +3,8 @@
     "number": 4
   },
   "galaxy": {
-    "max_x": 1024,
-    "max_y": 768,
+    "max_x": 530,
+    "max_y": 420,
     "num_systems": 60,
     "star_colours": {
       "blue": {
@@ -59,8 +59,5 @@
       "image": "images/asteroid.png"
     }
   },
-  "display": {
-    "screen_width": 1024,
-    "screen_height": 768
-  }
+  "moo_path": "/Applications/Master of Orion 2.app/Contents/Resources/game"
 }
