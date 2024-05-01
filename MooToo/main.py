@@ -316,12 +316,10 @@ class Game:
         text_surface = self.label_font.render(system.name, True, "red")
         text_size = text_surface.get_size()
 
-        self.screen.blit(star_image, sys_coord)
         img_size = star_image.get_size()
-        text_coord = (
-            sys_coord[0] + img_size[0] / 2 - text_size[0] / 2,
-            sys_coord[1] + img_size[1] / 2 + text_size[1] / 2,
-        )
+        img_coord = (sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
+        self.screen.blit(star_image, img_coord)
+        text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
 
         self.screen.blit(text_surface, text_coord)
 
