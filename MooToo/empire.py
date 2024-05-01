@@ -11,7 +11,6 @@ class Empire:
         self.name = name
         self.config = config
         self.home_planet = home_planet
-        self.home_planet.draw_colour = "Green"
         self.money = 100
 
     def make_home_planet(self, orbit: int) -> Planet:

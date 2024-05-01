@@ -46,7 +46,6 @@ def load_palette(fname: str) -> dict[int, tuple[int, int, int]]:
         for counter in range(256):
             alpha = struct.unpack("B", infd.read(1))[0]
             if alpha not in (0, 1):
-                print(f"Alpha badness ({alpha})")
                 sys.exit(1)
             red = struct.unpack("B", infd.read(1))[0]
             green = struct.unpack("B", infd.read(1))[0]
@@ -160,7 +159,7 @@ class Graphic:
         except IndexError:
             print(f"{filename}: Unknown frame {frame}")
             return
-        image = Image.new("P", (self.width, self.height), "white")
+        image = Image.new("RGBA", (self.width, self.height), (255, 0, 0, 0))
         draw = ImageDraw.Draw(image)
         rel_x = 0
         rel_y = f.indent
@@ -187,7 +186,7 @@ def dread(fd, format: str = "<H", bytes: int = 2) -> Any:
 def main() -> None:
     """Do the stuff"""
     # palettes = [f"../foo/FONTS.LBX_{_}" for _ in range(1, 14)] + [f"../foo/IFONTS.LBX_{_}" for _ in range(1, 4)]
-    palettes = ["../lbx/FONTS.LBX_1"]
+    palettes = ["./lbx/FONTS.LBX_1"]
     for num, palfile in enumerate(palettes):
         palette = load_palette(palfile)
         for filename in sys.argv[1:]:

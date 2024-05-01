@@ -54,6 +54,13 @@ class Game:
 
         for image in raw_images:
             images[image] = pygame.transform.scale(raw_images[image], (48, 48))
+        images["blue_star"] = self.load_image("BUFFER0.LBX", 83)
+        images["white_star"] = self.load_image("BUFFER0.LBX", 84)
+        images["yellow_star"] = self.load_image("BUFFER0.LBX", 85)
+        images["orange_star"] = self.load_image("BUFFER0.LBX", 86)
+        images["red_star"] = self.load_image("BUFFER0.LBX", 87)
+        images["brown_star"] = self.load_image("BUFFER0.LBX", 88)
+
         return images
 
     #####################################################################################################
@@ -162,7 +169,7 @@ class Game:
 
     #####################################################################################################
     def draw_planet_in_orbit(self, planet: Planet):
-        radius = 50 * planet.orbit + 100
+        radius = 25 * planet.orbit + 50
         # Draw the orbit
         pygame.draw.circle(self.screen, self.system.draw_colour, self.mid_point, radius, width=1)
         position = self.get_planet_position(planet)
@@ -291,7 +298,6 @@ class Game:
         if img_key not in IMAGE_CACHE:
             pil_image = LBXImage(lbx_file, lbx_index, self.config["moo_path"]).png_image()
             IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "foo.png")
-            pygame.image.save(IMAGE_CACHE[img_key], f"{lbx_file}_{lbx_index}.png")  # DBG
         return IMAGE_CACHE[img_key]
 
     #####################################################################################################
@@ -305,11 +311,18 @@ class Game:
 
     #####################################################################################################
     def draw_galaxy_view_system(self, sys_coord, system):
-        pygame.draw.circle(self.screen, system.draw_colour, sys_coord, 5.0)
+        star_image = self.images[system.draw_colour]
 
-        text_surface = self.label_font.render(system.name, True, "white")
+        text_surface = self.label_font.render(system.name, True, "red")
         text_size = text_surface.get_size()
-        text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + text_size[1] / 2)
+
+        self.screen.blit(star_image, sys_coord)
+        img_size = star_image.get_size()
+        text_coord = (
+            sys_coord[0] + img_size[0] / 2 - text_size[0] / 2,
+            sys_coord[1] + img_size[1] / 2 + text_size[1] / 2,
+        )
+
         self.screen.blit(text_surface, text_coord)
 
 

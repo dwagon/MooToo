@@ -157,7 +157,7 @@ class LBXImage:
     ##############################################################################
     def save_frame(self, frame: Frame) -> Image:
         """Same frame as an image"""
-        image = Image.new("P", (self.width, self.height), "white")
+        image = Image.new("RGBA", (self.width, self.height), (255, 0, 0, 0))
         draw = ImageDraw.Draw(image)
         rel_x = 0
         rel_y = frame.indent
