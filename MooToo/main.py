@@ -22,7 +22,7 @@ class DisplayMode(Enum):
 
 
 #####################################################################################################
-IMAGE_CACHE = {}
+IMAGE_CACHE: dict[tuple[str, int], pygame.Surface] = {}
 
 
 #####################################################################################################
@@ -42,7 +42,7 @@ class Game:
         self.images = self.load_images()
         self.size = self.screen.get_size()
         self.mid_point = (self.size[0] / 2, self.size[1] / 2)
-        self.turn_button = Button(self.screen, "Next Turn", br_point=pygame.Vector2(self.size[0] - 5, self.size[1] - 5))
+        self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
@@ -301,7 +301,7 @@ class Game:
         self.draw_title(f"Turn: {self.galaxy.turn_number}")
         for sys_coord, system in self.galaxy.systems.items():
             self.draw_galaxy_view_system(sys_coord, system)
-        self.turn_button.draw()
+        self.turn_button.draw(self.screen)
 
     #####################################################################################################
     def draw_galaxy_view_system(self, sys_coord, system):

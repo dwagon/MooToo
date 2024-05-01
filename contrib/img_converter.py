@@ -81,7 +81,7 @@ class Graphic:
         self.num_frames = dread(fd)
         self.delay = dread(fd)
         self.flags = self.image_flags(dread(fd))
-        print(f"{self.width} x {self.height} frames={self.num_frames} {self.flags}")
+        print(f"{fd.name}: {self.width} x {self.height} frames={self.num_frames} {self.flags}")
         frame_offsets = []
         try:
             for _ in range(self.num_frames + 1):
@@ -187,7 +187,7 @@ def dread(fd, format: str = "<H", bytes: int = 2) -> Any:
 def main() -> None:
     """Do the stuff"""
     # palettes = [f"../foo/FONTS.LBX_{_}" for _ in range(1, 14)] + [f"../foo/IFONTS.LBX_{_}" for _ in range(1, 4)]
-    palettes = ["../foo/FONTS.LBX_1"]
+    palettes = ["../lbx/FONTS.LBX_1"]
     for num, palfile in enumerate(palettes):
         palette = load_palette(palfile)
         for filename in sys.argv[1:]:

@@ -5,43 +5,16 @@ import pygame
 class Button:
     def __init__(
         self,
-        surface: pygame.surface.Surface,
-        text: str,
-        tl_point: pygame.Vector2 | None = None,
-        br_point: pygame.Vector2 | None = None,
-        color="red",
-        font="Ariel",
-        font_size=24,
+        image: pygame.Surface,
+        tl_point: pygame.Vector2,
     ):
-        self.surface = surface
-        self.text = text
-        self.tl_point = tl_point
-        self.br_point = br_point
-        self.color = color
-        self.font = pygame.font.SysFont(font, font_size)
-        self.text_surface = self.font.render(self.text, True, self.color)
-        text_size = self.text_surface.get_size()
-        if self.tl_point:
-            self.rect = pygame.Rect(self.tl_point[0], self.tl_point[1], text_size[0], text_size[1])
-        elif self.br_point:
-            self.rect = pygame.Rect(
-                self.br_point[0] - text_size[0],
-                self.br_point[1] - text_size[1],
-                text_size[0],
-                text_size[1],
-            )
-        else:
-            raise NotImplemented
+        self.image = image
+        self.size = self.image.get_size()
+        self.rect = pygame.Rect(tl_point[0], tl_point[1], self.size[0], self.size[1])
 
     #####################################################################################################
-    def draw(self) -> None:
-
-        pygame.draw.rect(
-            self.surface,
-            "white",
-            self.rect,
-        )
-        self.surface.blit(self.text_surface, self.rect)
+    def draw(self, surface) -> None:
+        surface.blit(self.image, self.rect)
 
     #####################################################################################################
     def clicked(self) -> bool:

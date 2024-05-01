@@ -77,7 +77,7 @@ class LBXImage:
         num_frames = dread(fd)
         delay = dread(fd)
         flags = self.image_flags(dread(fd))
-        print(f"{self.width} x {self.height} frames={num_frames} delay={delay} {flags}")
+        # print(f"{self.width} x {self.height} frames={num_frames} delay={delay} {flags}")
         frame_offsets = []
         try:
             for _ in range(num_frames + 1):
