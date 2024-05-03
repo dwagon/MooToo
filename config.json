@@ -51,13 +51,5 @@
       }
     }
   },
-  "planets": {
-    "gas_giant": {
-      "image": "images/gas_giant.png"
-    },
-    "asteroid": {
-      "image": "images/asteroid.png"
-    }
-  },
   "moo_path": "/Applications/Master of Orion 2.app/Contents/Resources/game"
 }
