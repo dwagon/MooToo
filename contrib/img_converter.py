@@ -185,8 +185,8 @@ def dread(fd, format: str = "<H", bytes: int = 2) -> Any:
 ##############################################################################
 def main() -> None:
     """Do the stuff"""
-    # palettes = [f"../foo/FONTS.LBX_{_}" for _ in range(1, 14)] + [f"../foo/IFONTS.LBX_{_}" for _ in range(1, 4)]
-    palettes = ["./lbx/FONTS.LBX_1"]
+    # palettes = [f"FONTS.LBX_{_}" for _ in range(1, 14)] + [f"IFONTS.LBX_{_}" for _ in range(1, 4)]
+    palettes = ["FONTS.LBX_1"]
     for num, palfile in enumerate(palettes):
         palette = load_palette(palfile)
         for filename in sys.argv[1:]:
@@ -198,8 +198,15 @@ def main() -> None:
                     except UserWarning:
                         continue
                 if g.frames:
-                    save_file = f"{os.path.basename(filename)}_pal{num}.png"
-                    g.save_frame(save_file, palette)
+                    dirname = os.path.basename(os.path.splitext(filename)[0])
+                    suffix = os.path.basename(os.path.splitext(filename)[1]).replace(".", "")
+                    try:
+                        os.mkdir(dirname)
+                    except IOError:
+                        pass
+                    for frame in range(g.num_frames):
+                        save_file = f"{dirname}/{dirname}_{suffix}_{g.width}x{g.height}_f{frame}_p{num}.png"
+                        g.save_frame(save_file, palette, frame=frame)
             except Exception as exc:
                 print(f"Failure on {filename}: {exc}")
                 raise

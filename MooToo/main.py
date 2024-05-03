@@ -54,12 +54,19 @@ class Game:
 
         for image in raw_images:
             images[image] = pygame.transform.scale(raw_images[image], (48, 48))
-        images["blue_star"] = self.load_image("BUFFER0.LBX", 83)
-        images["white_star"] = self.load_image("BUFFER0.LBX", 84)
-        images["yellow_star"] = self.load_image("BUFFER0.LBX", 85)
-        images["orange_star"] = self.load_image("BUFFER0.LBX", 86)
-        images["red_star"] = self.load_image("BUFFER0.LBX", 87)
-        images["brown_star"] = self.load_image("BUFFER0.LBX", 88)
+        images["small_blue_star"] = self.load_image("BUFFER0.LBX", 149)
+        images["small_white_star"] = self.load_image("BUFFER0.LBX", 155)
+        images["small_yellow_star"] = self.load_image("BUFFER0.LBX", 161)
+        images["small_orange_star"] = self.load_image("BUFFER0.LBX", 167)
+        images["small_red_star"] = self.load_image("BUFFER0.LBX", 173)
+        images["small_brown_star"] = self.load_image("BUFFER0.LBX", 179)
+
+        images["big_blue_star"] = self.load_image("BUFFER0.LBX", 83)
+        images["big_white_star"] = self.load_image("BUFFER0.LBX", 154)
+        images["big_yellow_star"] = self.load_image("BUFFER0.LBX", 160)
+        images["big_orange_star"] = self.load_image("BUFFER0.LBX", 166)
+        images["big_red_star"] = self.load_image("BUFFER0.LBX", 172)
+        images["big_brown_star"] = self.load_image("BUFFER0.LBX", 178)
 
         return images
 
@@ -68,6 +75,7 @@ class Game:
         running = True
 
         while running:
+            self.screen.fill("black")
             # poll for events
             # pygame.QUIT event means the user clicked X to close your window
             for event in pygame.event.get():
@@ -81,7 +89,6 @@ class Game:
                         self.button_right_down()
 
             # fill the screen with a color to wipe away anything from last frame
-            self.screen.fill("black")
             self.draw_screen()
             pygame.display.flip()
 
@@ -154,14 +161,14 @@ class Game:
     #####################################################################################################
     def draw_system_view(self):
         """Draw a solar system"""
-        self.draw_title(self.system.name)
+        system = self.system
+        self.draw_title(system.name)
         # Draw Sun
-        pygame.draw.circle(
-            self.screen,
-            self.system.draw_colour,
-            self.mid_point,
-            20,
-        )
+        star_image = self.images[f"big_{system.draw_colour}_star"]
+        img_size = star_image.get_size()
+        img_coord = (self.mid_point[0] - img_size[0] / 2, self.mid_point[1] - img_size[1] / 2)
+        self.screen.blit(star_image, img_coord)
+
         for orbit, planet in self.system.orbits.items():
             if planet is None:
                 continue
@@ -169,7 +176,7 @@ class Game:
 
     #####################################################################################################
     def draw_planet_in_orbit(self, planet: Planet):
-        radius = 25 * planet.orbit + 50
+        radius = self.orbit_radius(planet.orbit)
         # Draw the orbit
         pygame.draw.circle(self.screen, self.system.draw_colour, self.mid_point, radius, width=1)
         position = self.get_planet_position(planet)
@@ -182,9 +189,13 @@ class Game:
                 self.draw_asteroid(planet, position)
 
     #####################################################################################################
+    def orbit_radius(self, orbit: int) -> int:
+        return 40 * orbit + 50
+
+    #####################################################################################################
     def get_planet_position(self, planet: Planet):
         """Return the planets position and radius"""
-        radius = 50 * planet.orbit + 100
+        radius = self.orbit_radius(planet.orbit)
         position = (
             radius * math.cos(planet.arc) + self.mid_point[0],
             radius * math.sin(planet.arc) + self.mid_point[1],
@@ -304,24 +315,21 @@ class Game:
     def draw_galaxy_view(self):
         image = self.load_image("BUFFER0.LBX", 0)
         self.screen.blit(image, (0, 0))
-        self.draw_title(f"Turn: {self.galaxy.turn_number}")
         for sys_coord, system in self.galaxy.systems.items():
             self.draw_galaxy_view_system(sys_coord, system)
         self.turn_button.draw(self.screen)
 
     #####################################################################################################
     def draw_galaxy_view_system(self, sys_coord, system):
-        star_image = self.images[system.draw_colour]
+        star_image = self.images[f"small_{system.draw_colour}_star"]
 
         text_surface = self.label_font.render(system.name, True, "red")
         text_size = text_surface.get_size()
 
-        self.screen.blit(star_image, sys_coord)
         img_size = star_image.get_size()
-        text_coord = (
-            sys_coord[0] + img_size[0] / 2 - text_size[0] / 2,
-            sys_coord[1] + img_size[1] / 2 + text_size[1] / 2,
-        )
+        img_coord = (sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
+        self.screen.blit(star_image, img_coord)
+        text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
 
         self.screen.blit(text_surface, text_coord)
 

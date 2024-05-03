@@ -6,7 +6,7 @@ from MooToo.planet import Planet
 from MooToo.config import Config
 from MooToo.names import system_names
 
-MAX_ORBITS = 6
+MAX_ORBITS = 5
 ORBIT_NAMES = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII")
 
 

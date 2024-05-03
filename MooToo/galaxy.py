@@ -80,7 +80,7 @@ class Galaxy:
             while True:
                 x = random.randrange(min_dist, self.config["galaxy"]["max_x"] - min_dist)
                 y = random.randrange(min_dist, self.config["galaxy"]["max_y"] - min_dist)
-                for a, b in positions:
+                for a, b in positions:  # Find a spot not too close to existing positions
                     if get_distance(x, y, a, b) < min_dist:
                         break
                 else:
