@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import math
 from typing import Optional
 
 import pygame
@@ -9,9 +8,10 @@ from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
 from MooToo.planet import Planet
-from MooToo.constants import PlanetSize, PlanetCategory, PopulationJobs, PlanetClimate
+from MooToo.constants import PlanetCategory, PopulationJobs
 from MooToo.gui_button import Button
-from MooToo.lbx_image import LBXImage
+from MooToo.orbit_window import OrbitWindow
+from MooToo.base_graphics import BaseGraphics
 
 
 #####################################################################################################
@@ -22,26 +22,15 @@ class DisplayMode(Enum):
 
 
 #####################################################################################################
-IMAGE_CACHE: dict[tuple[str, int], pygame.Surface] = {}
-
-
-#####################################################################################################
-class Game:
+class Game(BaseGraphics):
     def __init__(self, galaxy: Galaxy, config: Config):
-        self.galaxy = galaxy
-        self.config = config
-        pygame.init()
-        self.label_font = pygame.font.SysFont("Ariel", 14)
-        self.text_font = pygame.font.SysFont("Ariel", 18)
-        self.title_font = pygame.font.SysFont("Ariel", 24)
-        self.screen = pygame.display.set_mode((640, 480), flags=pygame.SCALED)
-        self.clock = pygame.time.Clock()
+        super().__init__(config)
         self.display_mode = DisplayMode.GALAXY
+        self.galaxy = galaxy
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
+        self.orbit_window = OrbitWindow(self.screen, config)
         self.images = self.load_images()
-        self.size = self.screen.get_size()
-        self.mid_point = (self.size[0] / 2, self.size[1] / 2)
         self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
 
     #####################################################################################################
@@ -54,33 +43,6 @@ class Game:
         images["small_orange_star"] = self.load_image("BUFFER0.LBX", 167)
         images["small_red_star"] = self.load_image("BUFFER0.LBX", 173)
         images["small_brown_star"] = self.load_image("BUFFER0.LBX", 179)
-
-        images["big_blue_star"] = self.load_image("BUFFER0.LBX", 83)
-        images["big_white_star"] = self.load_image("BUFFER0.LBX", 154)
-        images["big_yellow_star"] = self.load_image("BUFFER0.LBX", 160)
-        images["big_orange_star"] = self.load_image("BUFFER0.LBX", 166)
-        images["big_red_star"] = self.load_image("BUFFER0.LBX", 172)
-        images["big_brown_star"] = self.load_image("BUFFER0.LBX", 178)
-
-        images["gas_giant"] = self.load_image("BUFFER0.LBX", 142)
-
-        index = 92
-        for climate in [
-            PlanetClimate.TOXIC,
-            PlanetClimate.SWAMP,
-            PlanetClimate.OCEAN,
-            PlanetClimate.RADIATED,
-            PlanetClimate.BARREN,
-            PlanetClimate.DESERT,
-            PlanetClimate.TOXIC,
-            PlanetClimate.TUNDRA,
-            PlanetClimate.TERRAN,
-            PlanetClimate.GAIA,
-        ]:
-            for size in [PlanetSize.TINY, PlanetSize.SMALL, PlanetSize.MEDIUM, PlanetSize.LARGE, PlanetSize.HUGE]:
-                images[f"planet_{climate.name}_{size.name}"] = self.load_image("BUFFER0.LBX", index)
-                index += 1
-
         return images
 
     #####################################################################################################
@@ -150,7 +112,7 @@ class Game:
         for orbit, planet in self.system.orbits.items():
             if not planet:
                 continue
-            sys_coords = self.get_planet_position(planet)
+            sys_coords = self.get_planet_position(planet.arc, planet.orbit)
             distance = get_distance(sys_coords[0], sys_coords[1], coords[0], coords[1])
             if distance < 20:
                 return planet
@@ -162,7 +124,8 @@ class Game:
             case DisplayMode.GALAXY:
                 self.draw_galaxy_view()
             case DisplayMode.SYSTEM:
-                self.draw_system_view()
+                self.draw_galaxy_view()
+                self.orbit_window.draw(self.system)
             case DisplayMode.PLANET:
                 self.draw_planet_view()
 
@@ -170,93 +133,6 @@ class Game:
     def draw_title(self, text: str) -> None:
         title_surface = self.title_font.render(text, True, "red")
         self.screen.blit(title_surface, (5, 5))
-
-    #####################################################################################################
-    def draw_system_view(self):
-        """Draw a solar system"""
-        system = self.system
-        self.draw_title(system.name)
-        # Draw Sun
-        star_image = self.images[f"big_{system.draw_colour}_star"]
-        img_size = star_image.get_size()
-        img_coord = (self.mid_point[0] - img_size[0] / 2, self.mid_point[1] - img_size[1] / 2)
-        self.screen.blit(star_image, img_coord)
-
-        for orbit, planet in self.system.orbits.items():
-            if planet is None:
-                continue
-            self.draw_planet_in_orbit(planet)
-
-    #####################################################################################################
-    def draw_planet_in_orbit(self, planet: Planet):
-        radius = self.orbit_radius(planet.orbit)
-        # Draw the orbit
-        pygame.draw.circle(self.screen, self.system.draw_colour, self.mid_point, radius, width=1)
-        position = self.get_planet_position(planet)
-        match planet.category:
-            case PlanetCategory.GAS_GIANT:
-                self.draw_gas_giant(planet, position)
-            case PlanetCategory.PLANET:
-                self.draw_planet(planet, position)
-            case PlanetCategory.ASTEROID:
-                self.draw_asteroid(planet, position)
-
-    #####################################################################################################
-    def orbit_radius(self, orbit: int) -> int:
-        return 40 * orbit + 50
-
-    #####################################################################################################
-    def get_planet_position(self, planet: Planet):
-        """Return the planets position and radius"""
-        radius = self.orbit_radius(planet.orbit)
-        position = (
-            radius * math.cos(planet.arc) + self.mid_point[0],
-            radius * math.sin(planet.arc) + self.mid_point[1],
-        )
-        return position
-
-    #####################################################################################################
-    def draw_gas_giant(self, planet: Planet, position: tuple[float, float]) -> None:
-        """Draw a gas giant"""
-        image = self.images["gas_giant"]
-        self.draw_label_planet(image, position, planet.name)
-
-    #####################################################################################################
-    def draw_planet(self, planet: Planet, position: tuple[float, float]) -> None:
-        """Draw a specific planet"""
-        image = self.images[f"planet_{planet.climate.name}_{planet.size.name}"]
-        self.draw_label_planet(image, position, planet.name)
-
-    #####################################################################################################
-    def draw_label_planet(self, image: pygame.surface.Surface, position: tuple[float, float], name: str) -> None:
-        """Draw a specific planet"""
-        image_size = image.get_size()
-        image_position = (position[0] - image_size[0] / 2, position[1] - image_size[1] / 2)
-        self.screen.blit(image, image_position)
-        # Label the planet
-        text_surface = self.label_font.render(name, True, "white")
-        text_size = text_surface.get_size()
-        text_coord = (
-            image_position[0] + image_size[0] / 2 - text_size[0] / 2,
-            image_position[1] + image_size[1] - text_size[1] / 2,
-        )
-        self.screen.blit(text_surface, text_coord)
-
-    #####################################################################################################
-    def draw_asteroid(self, planet: Planet, position: tuple[float, float]) -> None:
-        return
-        """Draw an asteroid belt"""
-        image_size = self.images["asteroid"].get_size()
-        image_position = (position[0] - image_size[0] / 2, position[1] - image_size[1] / 2)
-        self.screen.blit(self.images["asteroid"], image_position)
-        # Label the planet
-        text_surface = self.label_font.render(planet.name, True, "white")
-        text_size = text_surface.get_size()
-        text_coord = (
-            image_position[0] + image_size[0] / 2 - text_size[0] / 2,
-            image_position[1] + image_size[1] - text_size[1] / 2,
-        )
-        self.screen.blit(text_surface, text_coord)
 
     #####################################################################################################
     def draw_planet_view(self) -> None:
@@ -303,14 +179,6 @@ class Game:
     def draw_text(self, text: str, row: int, col: int) -> None:
         title_surface = self.text_font.render(text, True, "white")
         self.screen.blit(title_surface, (col * 150, row * 20))
-
-    #####################################################################################################
-    def load_image(self, lbx_file: str, lbx_index: int) -> pygame.Surface:
-        img_key = (lbx_file, lbx_index)
-        if img_key not in IMAGE_CACHE:
-            pil_image = LBXImage(lbx_file, lbx_index, self.config["moo_path"]).png_image()
-            IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "foo.png")
-        return IMAGE_CACHE[img_key]
 
     #####################################################################################################
     def draw_galaxy_view(self):

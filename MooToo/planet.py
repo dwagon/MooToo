@@ -78,8 +78,7 @@ class Planet:
     def max_population(self) -> int:
         """What's the maximum population this planet can support"""
 
-        max_pop = POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
-        return max_pop
+        return POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
 
     #####################################################################################################
     def turn(self):
@@ -99,8 +98,7 @@ class Planet:
             + self.population[PopulationJobs.SCIENTISTS]
         )
         maintenance = sum([_.maintenance for _ in self.buildings.values()])
-        profit = prod - maintenance
-        return profit
+        return prod - maintenance
 
     #####################################################################################################
     def start_make_building(self, building: Building):
@@ -139,12 +137,11 @@ class Planet:
 
     #####################################################################################################
     def food_consumption(self) -> int:
-        consumption = (
+        return (
             self.population[PopulationJobs.FARMER]
             + self.population[PopulationJobs.WORKERS]
             + self.population[PopulationJobs.SCIENTISTS]
         )
-        return consumption
 
     #####################################################################################################
     def work_production(self) -> int:

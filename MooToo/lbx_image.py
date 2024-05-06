@@ -43,7 +43,7 @@ class Frame:
 #####################################################################################################
 # lbx_file="BUFFER0.LBX", lbx_index=1, palette=1, moo_path="..."
 class LBXImage:
-    def __init__(self, lbx_file: str, lbx_index: int, moo_path: str, palette_file: str = "FONTS.LBX"):
+    def __init__(self, lbx_file: str, lbx_index: int, moo_path: str, frame: int = 0, palette_file: str = "FONTS.LBX"):
         self.width: int = 0
         self.height: int = 0
         self.palette = load_palette(moo_path, palette_file)
@@ -51,9 +51,7 @@ class LBXImage:
         if not file_data:
             raise UserWarning("Couldn't load LBX file")
         frames = self.load_frames(io.BytesIO(file_data))
-        self.pil_image = self.save_frame(frames[0])
-        with open("foo.png", "wb") as outfh:
-            self.pil_image.save(outfh, "PNG")
+        self.pil_image = self.save_frame(frames[frame])
 
     ##############################################################################
     def png_image(self) -> io.BytesIO:
