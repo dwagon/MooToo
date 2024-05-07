@@ -91,6 +91,8 @@ class Game(BaseGraphics):
                 if self.turn_button.clicked():
                     self.galaxy.turn()
             case DisplayMode.SYSTEM:
+                if self.orbit_window.button_left_down():
+                    self.display_mode = DisplayMode.GALAXY
                 if planet := self.pick_planet(mouse):
                     self.display_mode = DisplayMode.PLANET
                     self.planet = planet

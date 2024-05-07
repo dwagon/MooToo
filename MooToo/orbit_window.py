@@ -4,6 +4,7 @@ import pygame
 from MooToo.planet import Planet
 from MooToo.base_graphics import BaseGraphics
 from MooToo.system import System
+from MooToo.gui_button import Button
 from MooToo.config import Config
 from MooToo.constants import PlanetCategory, PlanetClimate, PlanetSize
 
@@ -15,6 +16,7 @@ class OrbitWindow(BaseGraphics):
         super().__init__(config)
         self.screen = screen
         self.images = self.load_images()
+        self.close_button = Button(self.load_image("BUFFER0.LBX", 82), self.mid_point + pygame.Vector2(90, 100))
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
@@ -54,6 +56,12 @@ class OrbitWindow(BaseGraphics):
         return images
 
     #####################################################################################################
+    def button_left_down(self) -> bool:
+        if self.close_button.clicked():
+            return True
+        return False
+
+    #####################################################################################################
     def draw_centered_image(self, image):
         tl = self.top_left(image, self.mid_point)
         self.screen.blit(image, tl)
@@ -78,6 +86,7 @@ class OrbitWindow(BaseGraphics):
             if planet is None:
                 continue
             self.draw_planet_in_orbit(planet)
+        self.close_button.draw(self.screen)
 
     #####################################################################################################
     def draw_planet_in_orbit(self, planet: Planet) -> None:

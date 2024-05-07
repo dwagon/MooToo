@@ -13,7 +13,7 @@ class Button:
         self.rect = pygame.Rect(tl_point[0], tl_point[1], self.size[0], self.size[1])
 
     #####################################################################################################
-    def draw(self, surface) -> None:
+    def draw(self, surface: pygame.Surface) -> None:
         surface.blit(self.image, self.rect)
 
     #####################################################################################################
