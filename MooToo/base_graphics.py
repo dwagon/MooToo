@@ -1,6 +1,5 @@
 """ Class to base all other pygame classes from"""
 
-import math
 import pygame
 from MooToo.lbx_image import LBXImage
 from MooToo.config import Config
@@ -26,8 +25,11 @@ class BaseGraphics:
 
     #####################################################################################################
     def top_left(self, image: pygame.Surface, center: pygame.Vector2) -> pygame.Vector2:
+        """Return the top left coords of an image around the center
+        If you want to draw an image in the center you need the top left coords
+        """
         img_size = image.get_size()
-        return center[0] - img_size[0] / 2, center[1] - img_size[1] / 2
+        return pygame.Vector2(center[0] - img_size[0] / 2, center[1] - img_size[1] / 2)
 
     #####################################################################################################
     def load_image(self, lbx_file: str, lbx_index: int, frame: int = 0) -> pygame.Surface:
@@ -36,9 +38,3 @@ class BaseGraphics:
             pil_image = LBXImage(lbx_file, lbx_index, self.config["moo_path"], frame).png_image()
             IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "_.png")
         return IMAGE_CACHE[img_key]
-
-    #####################################################################################################
-    def get_planet_position(self, arc: float, orbit: int) -> pygame.Vector2:
-        x = (91 / 2 + orbit * 47 / 2) * math.cos(math.radians(arc))
-        y = (46 / 2 + orbit * 27 / 2) * math.sin(math.radians(arc))
-        return pygame.Vector2(x, y)

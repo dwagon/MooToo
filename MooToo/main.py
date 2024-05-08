@@ -7,7 +7,6 @@ from enum import Enum, auto
 from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
-from MooToo.planet import Planet
 from MooToo.constants import PlanetCategory, PopulationJobs
 from MooToo.gui_button import Button
 from MooToo.orbit_window import OrbitWindow
@@ -62,6 +61,8 @@ class Game(BaseGraphics):
                         self.button_left_down()
                     elif buttons[2]:
                         self.button_right_down()
+                if event.type == pygame.MOUSEMOTION:
+                    self.mouse_pos()
 
             # fill the screen with a color to wipe away anything from last frame
             self.draw_screen()
@@ -70,13 +71,24 @@ class Game(BaseGraphics):
             self.clock.tick(60)  # limits FPS to 60
 
     #####################################################################################################
+    def mouse_pos(self):
+        """Display changes based on where the mouse is"""
+        match self.display_mode:
+            case DisplayMode.GALAXY:
+                pass
+            case DisplayMode.SYSTEM:
+                self.orbit_window.mouse_pos()
+            case DisplayMode.PLANET:
+                pass
+
+    #####################################################################################################
     def button_right_down(self):
         """User has pressed the right button"""
         match self.display_mode:
             case DisplayMode.GALAXY:
                 pass
             case DisplayMode.SYSTEM:
-                self.display_mode = DisplayMode.GALAXY
+                pass
             case DisplayMode.PLANET:
                 self.display_mode = DisplayMode.SYSTEM
 
@@ -93,9 +105,6 @@ class Game(BaseGraphics):
             case DisplayMode.SYSTEM:
                 if self.orbit_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
-                if planet := self.pick_planet(mouse):
-                    self.display_mode = DisplayMode.PLANET
-                    self.planet = planet
             case DisplayMode.PLANET:
                 pass
 
@@ -106,18 +115,6 @@ class Game(BaseGraphics):
             distance = get_distance(sys_coord[0], sys_coord[1], coords[0], coords[1])
             if distance < 20:
                 return system
-        return None
-
-    #####################################################################################################
-    def pick_planet(self, coords: tuple[int, int]) -> Optional[Planet]:
-        """Return which planet the mouse coords are close to"""
-        for orbit, planet in self.system.orbits.items():
-            if not planet:
-                continue
-            sys_coords = self.get_planet_position(planet.arc, planet.orbit)
-            distance = get_distance(sys_coords[0], sys_coords[1], coords[0], coords[1])
-            if distance < 20:
-                return planet
         return None
 
     #####################################################################################################
