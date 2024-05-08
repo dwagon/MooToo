@@ -10,42 +10,42 @@
       "blue": {
         "probability": 2,
         "draw_colour": "blue",
-        "prob_orbit": 30,
+        "prob_orbit": 40,
         "climate":  {"Toxic": 16, "Radiated": 50, "Barren": 27, "Desert": 7, "Tundra": 0, "Ocean": 0, "Swamp": 0, "Arid": 0, "Terran": 0, "Gaia": 0},
         "richness": {"Ultra Poor": 0, "Poor": 0, "Abundant": 40, "Rich": 20, "Ultra Rich": 20}
       },
       "white": {
         "probability": 3,
         "draw_colour": "white",
-        "prob_orbit": 25,
+        "prob_orbit": 35,
         "climate": {"Toxic": 16, "Radiated": 37, "Barren": 27, "Desert": 6, "Tundra": 4, "Ocean": 2, "Swamp": 1, "Arid": 3, "Terran": 3, "Gaia": 1},
         "richness": {"Ultra Poor": 0, "Poor": 20, "Abundant": 40, "Rich": 30, "Ultra Rich": 10}
       },
       "yellow": {
         "probability": 10,
         "draw_colour": "yellow",
-        "prob_orbit": 35,
+        "prob_orbit": 45,
         "climate": {"Toxic": 12, "Radiated": 27, "Barren": 30, "Desert": 6, "Tundra": 8, "Ocean": 5, "Swamp": 4, "Arid": 3, "Terran": 4, "Gaia": 1},
         "richness": {"Ultra Poor": 0, "Poor": 30, "Abundant": 40, "Rich": 20, "Ultra Rich": 10}
       },
       "orange": {
         "probability": 12,
         "draw_colour": "orange",
-        "prob_orbit": 35,
+        "prob_orbit": 45,
         "climate": {"Toxic": 16, "Radiated": 17, "Barren": 23, "Desert": 8, "Tundra": 7, "Ocean": 6, "Swamp": 7, "Arid": 6, "Terran": 7, "Gaia": 1},
         "richness": {"Ultra Poor": 10, "Poor": 40, "Abundant": 40, "Rich": 10, "Ultra Rich": 0}
       },
       "red": {
         "probability": 68,
         "draw_colour": "red",
-        "prob_orbit": 25,
+        "prob_orbit": 35,
         "climate": {"Toxic": 16, "Radiated": 13, "Barren": 50, "Desert": 3, "Tundra": 7, "Ocean": 2, "Swamp": 2, "Arid": 2, "Terran": 4, "Gaia": 1},
         "richness": {"Ultra Poor": 20, "Poor": 40, "Abundant": 40, "Rich": 0, "Ultra Rich": 0}
       },
       "brown": {
         "probability": 5,
         "draw_colour": "brown",
-        "prob_orbit": 15,
+        "prob_orbit": 25,
         "climate": {"Toxic": 20, "Radiated": 30, "Barren": 10, "Desert": 20, "Tundra": 10, "Ocean": 2, "Swamp": 2, "Arid": 2, "Terran": 3, "Gaia": 1},
         "richness": {"Ultra Poor": 5, "Poor": 10, "Abundant": 60, "Rich": 20, "Ultra Rich": 5}
       }
