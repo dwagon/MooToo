@@ -131,7 +131,7 @@ class Planet:
         production = FOOD_CLIMATE_MAP[self.climate] * self.population[PopulationJobs.FARMER]
         production *= GRAVITY_MAP[self.gravity]
         for building in self.buildings.values():
-            production += building.food_bonus()
+            production += building.food_bonus(self)
         production = max(self.population[PopulationJobs.FARMER], production)
         return int(production)
 
@@ -148,7 +148,7 @@ class Planet:
         production = PROD_RICHNESS_MAP[self.richness] * self.population[PopulationJobs.WORKERS]
         production *= GRAVITY_MAP[self.gravity]
         for building in self.buildings.values():
-            production += building.prod_bonus()
+            production += building.prod_bonus(self)
         production = max(self.population[PopulationJobs.WORKERS], production)
 
         return int(production)
