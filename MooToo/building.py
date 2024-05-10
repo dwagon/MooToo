@@ -1,7 +1,10 @@
 """ Buildings"""
 
-from MooToo.planet import Planet
+from typing import TYPE_CHECKING
 from MooToo.constants import PlanetRichness
+
+if TYPE_CHECKING:
+    from MooToo.planet import Planet
 
 
 #####################################################################################################
@@ -16,10 +19,10 @@ class Building:
     def __str__(self):
         return self.name
 
-    def food_bonus(self, planet: Planet) -> int:
+    def food_bonus(self, planet: "Planet") -> int:
         return 0
 
-    def prod_bonus(self, planet: Planet) -> int:
+    def prod_bonus(self, planet: "Planet") -> int:
         return 0
 
 
@@ -33,7 +36,7 @@ class HydroponicFarm(Building):
         self.maintenance = 2
         self.cost = 60
 
-    def food_bonus(self, planet: Planet) -> int:
+    def food_bonus(self, planet: "Planet") -> int:
         return 2
 
 
@@ -47,7 +50,7 @@ class AutomatedFactory(Building):
         self.maintenance = 2
         self.cost = 60
 
-    def prod_bonus(self, planet: Planet) -> int:
+    def prod_bonus(self, planet: "Planet") -> int:
         return planet.current_population() + 5
 
 
@@ -64,7 +67,7 @@ class RoboticFactory(Building):
         self.maintenance = 3
         self.cost = 200
 
-    def prod_bonus(self, planet: Planet) -> int:
+    def prod_bonus(self, planet: "Planet") -> int:
         """ """
         match planet.richness:
             case PlanetRichness.ULTRA_POOR:

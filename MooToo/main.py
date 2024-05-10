@@ -142,17 +142,17 @@ class Game(BaseGraphics):
         self.draw_text("Population:", 1, 1)
         self.draw_text(f"Current: {self.planet.current_population()} / Max: {self.planet.max_population()}", 2, 1)
         self.draw_text(
-            f"Farmers: {self.planet.population[PopulationJobs.FARMER]} Food={self.planet.food_production()}-{self.planet.food_consumption()}={self.planet.food_production()-self.planet.food_consumption()}",
+            f"Farmers: {self.planet.jobs[PopulationJobs.FARMER]} Food={self.planet.food_production()}-{self.planet.food_consumption()}={self.planet.food_production() - self.planet.food_consumption()}",
             3,
             1,
         )
         self.draw_text(
-            f"Workers: {self.planet.population[PopulationJobs.WORKERS]} Producing={self.planet.work_production()}",
+            f"Workers: {self.planet.jobs[PopulationJobs.WORKERS]} Producing={self.planet.work_production()}",
             4,
             1,
         )
         self.draw_text(
-            f"Scientists: {self.planet.population[PopulationJobs.SCIENTISTS]} Science={self.planet.science_production()}",
+            f"Scientists: {self.planet.jobs[PopulationJobs.SCIENTISTS]} Science={self.planet.science_production()}",
             5,
             1,
         )
