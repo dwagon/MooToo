@@ -1,5 +1,6 @@
 """ Planet class """
 
+import math
 import random
 from typing import Any
 from MooToo.utils import prob_map
@@ -68,17 +69,18 @@ class Planet:
         self.climate = pick_planet_climate(config["climate"])
         self.gravity = pick_planet_gravity(self.size, self.richness)
         self.owner = None
-        self.population = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
+        self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
+        self.population = 0.0
         self.buildings = {}
         self.under_construction = None
         self.construction_cost = 0
         self.arc = random.randint(0, 359)
 
     #####################################################################################################
-    def max_population(self) -> int:
+    def max_population(self) -> float:
         """What's the maximum population this planet can support"""
 
-        return POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
+        return POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate] * 1e6
 
     #####################################################################################################
     def turn(self):
@@ -89,15 +91,47 @@ class Planet:
         self.owner.money += self.money_production()
         if self.under_construction:
             self.keep_making_building()
+        self.grow_population()
+
+    #####################################################################################################
+    def grow_population(self) -> None:
+        old_pop = int(self.population / 1e6)
+        self.population += self.population_increment()
+        if int(self.population / 1e6) > old_pop:
+            for _ in range(int(self.population / 1e6) - old_pop):  # Assign to new jobs
+                self.jobs[PopulationJobs.FARMER] += 1  # TODO: Make this cleverer
+
+    #####################################################################################################
+    def population_increment(self) -> int:
+        """How much population will grow this turn
+        See https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations
+        """
+        race_bonus = 0  # TBA: Racial growth bonus
+        medicine_bonus = 0  # TBA: medical skill bonus
+        housing_bonus = 0  # TBA: building housing
+        food_lack_penalty = 50 * self.food_lack()
+        free_space = self.max_population() - self.population
+        basic_increment = int(math.sqrt(2000 * self.population * free_space / self.max_population()))
+        population_inc = (
+            int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
+        )
+        if "Cloning Center" in self.buildings:
+            population_inc += 100
+        return population_inc
+
+    #####################################################################################################
+    def food_lack(self) -> int:
+        """How much food do we lack"""
+        if self.food_production() > int(self.current_population() / 1e6):
+            return 0
+        return int(self.current_population() / 1e6) - self.food_production()
 
     #####################################################################################################
     def money_production(self) -> int:
         prod = (
-            self.population[PopulationJobs.FARMER]
-            + self.population[PopulationJobs.WORKERS]
-            + self.population[PopulationJobs.SCIENTISTS]
+            self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
-        maintenance = sum([_.maintenance for _ in self.buildings.values()])
+        maintenance = sum(_.maintenance for _ in self.buildings.values())
         return prod - maintenance
 
     #####################################################################################################
@@ -120,44 +154,38 @@ class Planet:
 
     #####################################################################################################
     def current_population(self) -> int:
-        return (
-            self.population[PopulationJobs.FARMER]
-            + self.population[PopulationJobs.WORKERS]
-            + self.population[PopulationJobs.SCIENTISTS]
-        )
+        return int(self.population)
 
     #####################################################################################################
     def food_production(self) -> int:
-        production = FOOD_CLIMATE_MAP[self.climate] * self.population[PopulationJobs.FARMER]
+        production = FOOD_CLIMATE_MAP[self.climate] * self.jobs[PopulationJobs.FARMER]
         production *= GRAVITY_MAP[self.gravity]
         for building in self.buildings.values():
             production += building.food_bonus(self)
-        production = max(self.population[PopulationJobs.FARMER], production)
+        production = max(self.jobs[PopulationJobs.FARMER], production)
         return int(production)
 
     #####################################################################################################
     def food_consumption(self) -> int:
         return (
-            self.population[PopulationJobs.FARMER]
-            + self.population[PopulationJobs.WORKERS]
-            + self.population[PopulationJobs.SCIENTISTS]
+            self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
 
     #####################################################################################################
     def work_production(self) -> int:
-        production = PROD_RICHNESS_MAP[self.richness] * self.population[PopulationJobs.WORKERS]
+        production = PROD_RICHNESS_MAP[self.richness] * self.jobs[PopulationJobs.WORKERS]
         production *= GRAVITY_MAP[self.gravity]
         for building in self.buildings.values():
             production += building.prod_bonus(self)
-        production = max(self.population[PopulationJobs.WORKERS], production)
+        production = max(self.jobs[PopulationJobs.WORKERS], production)
 
         return int(production)
 
     #####################################################################################################
     def science_production(self) -> int:
-        production = self.population[PopulationJobs.SCIENTISTS]
+        production = self.jobs[PopulationJobs.SCIENTISTS]
         production *= GRAVITY_MAP[self.gravity]
-        production = max(self.population[PopulationJobs.SCIENTISTS], production)
+        production = max(self.jobs[PopulationJobs.SCIENTISTS], production)
         return int(production)
 
     #####################################################################################################
@@ -226,8 +254,7 @@ def pick_planet_gravity(size: PlanetSize, richness: PlanetRichness) -> PlanetGra
             PlanetRichness.ULTRA_RICH: PlanetGravity.HIGH,
         },
     }
-    gravity = grav_map[size][richness]
-    return gravity
+    return grav_map[size][richness]
 
 
 #####################################################################################################
