@@ -6,12 +6,26 @@ from MooToo.config import Config
 from MooToo import building
 
 
+#####################################################################################################
+#####################################################################################################
 class Empire:
     def __init__(self, name: str, home_planet: System, config: Config):
         self.name = name
         self.config = config
         self.home_planet = home_planet
         self.money = 100
+        self.known: dict[System, bool] = {}
+
+    #####################################################################################################
+    def know(self, system: System) -> None:
+        self.known[system] = True
+
+    #####################################################################################################
+    def is_known(self, system: System) -> bool:
+        """Is the system known to this empire"""
+        return system in self.known
+
+    #####################################################################################################
 
     def make_home_planet(self, orbit: int) -> Planet:
         """Return a suitable home planet"""

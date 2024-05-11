@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-
+import random
 from typing import Optional
 
 import pygame
 from enum import Enum, auto
 from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
+from MooToo.empire import Empire
 from MooToo.system import System
 from MooToo.constants import PlanetCategory, PopulationJobs
 from MooToo.gui_button import Button
@@ -22,10 +23,11 @@ class DisplayMode(Enum):
 
 #####################################################################################################
 class Game(BaseGraphics):
-    def __init__(self, galaxy: Galaxy, config: Config):
+    def __init__(self, galaxy: Galaxy, empire_name: Empire, config: Config):
         super().__init__(config)
         self.display_mode = DisplayMode.GALAXY
         self.galaxy = galaxy
+        self.empire = galaxy.empires[empire_name]
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
         self.orbit_window = OrbitWindow(self.screen, config)
@@ -190,16 +192,15 @@ class Game(BaseGraphics):
     #####################################################################################################
     def draw_galaxy_view_system(self, sys_coord, system):
         star_image = self.images[f"small_{system.draw_colour}_star"]
-
-        text_surface = self.label_font.render(system.name, True, "red")
-        text_size = text_surface.get_size()
-
         img_size = star_image.get_size()
         img_coord = (sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
         self.screen.blit(star_image, img_coord)
-        text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
 
-        self.screen.blit(text_surface, text_coord)
+        if self.empire.is_known(system):
+            text_surface = self.label_font.render(system.name, True, "red")
+            text_size = text_surface.get_size()
+            text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
+            self.screen.blit(text_surface, text_coord)
 
 
 #####################################################################################################
@@ -208,7 +209,9 @@ def main():
     galaxy = Galaxy(config)
     galaxy.populate()
 
-    g = Game(galaxy, config)
+    empire_name = random.choice(list(galaxy.empires.keys()))
+
+    g = Game(galaxy, empire_name, config)
     g.loop()
     pygame.quit()
 
