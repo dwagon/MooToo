@@ -68,7 +68,7 @@ class OrbitWindow(BaseGraphics):
         text_list = (
             planet.name,
             f"{planet.size}, {planet.climate}",
-            f"Max Pop {planet.max_population()}",
+            f"Max Pop: {int(planet.max_population()/1e6)}",
             f"{planet.richness}",
         )
         if planet.category == PlanetCategory.GAS_GIANT:
