@@ -152,7 +152,7 @@ class Graphic:
         return frame
 
     ##############################################################################
-    def save_frame(self, filename: str, palette: dict[int, tuple[int, int, int]], frame: int = 0) -> None:
+    def save_frame(self, filename: str, frame: int = 0) -> None:
         """Same frame as an image"""
         try:
             f = self.frames[frame]
@@ -168,7 +168,7 @@ class Graphic:
             if line.special == LineType.NORMAL:
                 rel_x += line.indent
                 for x in range(len(line.pixels)):
-                    colour = palette[line.pixels[x]]
+                    colour = self.palette[line.pixels[x]]
                     draw.point((rel_x + x, rel_y), fill=colour)
             else:
                 rel_y += line.indent
@@ -185,8 +185,8 @@ def dread(fd, format: str = "<H", bytes: int = 2) -> Any:
 ##############################################################################
 def main() -> None:
     """Do the stuff"""
-    # palettes = [f"FONTS.LBX_{_}" for _ in range(1, 14)] + [f"IFONTS.LBX_{_}" for _ in range(1, 4)]
     palettes = ["FONTS.LBX_1"]
+    # palettes = [f"FONTS.LBX_{_}" for _ in range(1, 14)] + [f"IFONTS.LBX_{_}" for _ in range(1, 4)]
     for num, palfile in enumerate(palettes):
         palette = load_palette(palfile)
         for filename in sys.argv[1:]:
@@ -206,7 +206,7 @@ def main() -> None:
                         pass
                     for frame in range(g.num_frames):
                         save_file = f"{dirname}/{dirname}_{suffix}_{g.width}x{g.height}_f{frame}_p{num}.png"
-                        g.save_frame(save_file, palette, frame=frame)
+                        g.save_frame(save_file, frame=frame)
             except Exception as exc:
                 print(f"Failure on {filename}: {exc}")
                 raise
