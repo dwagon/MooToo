@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import random
+import time
 from typing import Optional
 
 import pygame
@@ -37,6 +38,7 @@ class Game(BaseGraphics):
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
         """Load all the images from disk"""
+        start = time.time()
         images = {}
         images["small_blue_star"] = self.load_image("BUFFER0.LBX", 149)
         images["small_white_star"] = self.load_image("BUFFER0.LBX", 155)
@@ -44,6 +46,9 @@ class Game(BaseGraphics):
         images["small_orange_star"] = self.load_image("BUFFER0.LBX", 167)
         images["small_red_star"] = self.load_image("BUFFER0.LBX", 173)
         images["small_brown_star"] = self.load_image("BUFFER0.LBX", 179)
+        end = time.time()
+        print(f"Main: Loaded {len(images)} in {end-start} seconds")
+
         return images
 
     #####################################################################################################

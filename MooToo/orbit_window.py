@@ -1,6 +1,7 @@
 """ Stuff relating to drawing the orbit window"""
 
 import math
+import time
 from typing import Optional
 
 import pygame
@@ -27,6 +28,7 @@ class OrbitWindow(BaseGraphics):
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
+        start = time.time()
         images = {}
         images["orbit_window"] = self.load_image("BUFFER0.LBX", 73)
         images["gas_giant"] = self.load_image("BUFFER0.LBX", 142)
@@ -60,6 +62,9 @@ class OrbitWindow(BaseGraphics):
             images[f"asteroid_{orbit}"] = self.load_image("BUFFER0.LBX", 91, frame=orbit)
             images[f"orbit_{orbit}"] = self.load_image("BUFFER0.LBX", index)
             index += 1
+        end = time.time()
+        print(f"Orbit: Loaded {len(images)} in {end-start} seconds")
+
         return images
 
     #####################################################################################################
