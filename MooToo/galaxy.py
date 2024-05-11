@@ -13,8 +13,8 @@ from MooToo.names import empire_names
 class Galaxy:
     def __init__(self, config):
         self.config = config
-        self.systems = {}
-        self.empires = {}
+        self.systems: dict[tuple[int, int], System] = {}
+        self.empires: dict[str, Empire] = {}
         self.turn_number = 0
 
     #####################################################################################################
@@ -69,6 +69,7 @@ class Galaxy:
         home_system.colour = StarColour.YELLOW
         self.empires[name] = Empire(name, home_system, self.config)
         home_system.orbits[3] = self.empires[name].make_home_planet(3)
+        self.empires[name].know(home_system)
 
     #####################################################################################################
     def get_positions(self) -> list[tuple[int, int]]:
