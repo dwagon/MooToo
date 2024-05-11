@@ -68,6 +68,8 @@ class Planet:
         self.richness = pick_planet_richness(config["richness"])
         self.climate = pick_planet_climate(config["climate"])
         self.gravity = pick_planet_gravity(self.size, self.richness)
+        num = random.randint(0, 2)
+        self.climate_image = f"surface_{self.climate}_{num}"
         self.owner = None
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.population = 0.0

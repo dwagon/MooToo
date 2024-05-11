@@ -159,6 +159,7 @@ class Graphic:
         except IndexError:
             print(f"{filename}: Unknown frame {frame}")
             return
+
         image = Image.new("RGBA", (self.width, self.height), (255, 0, 0, 0))
         draw = ImageDraw.Draw(image)
         rel_x = 0
@@ -185,8 +186,8 @@ def dread(fd, format: str = "<H", bytes: int = 2) -> Any:
 ##############################################################################
 def main() -> None:
     """Do the stuff"""
+    palettes = [f"FONTS.LBX_{_}" for _ in range(1, 14)] + [f"IFONTS.LBX_{_}" for _ in range(1, 4)]
     palettes = ["FONTS.LBX_1"]
-    # palettes = [f"FONTS.LBX_{_}" for _ in range(1, 14)] + [f"IFONTS.LBX_{_}" for _ in range(1, 4)]
     for num, palfile in enumerate(palettes):
         palette = load_palette(palfile)
         for filename in sys.argv[1:]:

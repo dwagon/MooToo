@@ -7,24 +7,25 @@ import pygame
 from enum import Enum, auto
 from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
-from MooToo.empire import Empire
 from MooToo.system import System
+from MooToo.planet import Planet
 from MooToo.constants import PlanetCategory, PopulationJobs
 from MooToo.gui_button import Button
 from MooToo.orbit_window import OrbitWindow
 from MooToo.base_graphics import BaseGraphics
+from MooToo.planet_window import PlanetWindow
 
 
 #####################################################################################################
 class DisplayMode(Enum):
     GALAXY = auto()
     SYSTEM = auto()
-    PLANET = auto()
+    ORBIT = auto()
 
 
 #####################################################################################################
 class Game(BaseGraphics):
-    def __init__(self, galaxy: Galaxy, empire_name: Empire, config: Config):
+    def __init__(self, galaxy: Galaxy, empire_name: str, config: Config):
         super().__init__(config)
         self.display_mode = DisplayMode.GALAXY
         self.galaxy = galaxy
@@ -32,6 +33,7 @@ class Game(BaseGraphics):
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
         self.orbit_window = OrbitWindow(self.screen, config)
+        self.planet_window = PlanetWindow(self.screen, config)
         self.images = self.load_images()
         self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
 
@@ -83,9 +85,9 @@ class Game(BaseGraphics):
         match self.display_mode:
             case DisplayMode.GALAXY:
                 pass
-            case DisplayMode.SYSTEM:
+            case DisplayMode.ORBIT:
                 self.orbit_window.mouse_pos()
-            case DisplayMode.PLANET:
+            case DisplayMode.SYSTEM:
                 pass
 
     #####################################################################################################
@@ -96,7 +98,7 @@ class Game(BaseGraphics):
                 pass
             case DisplayMode.SYSTEM:
                 pass
-            case DisplayMode.PLANET:
+            case DisplayMode.ORBIT:
                 self.display_mode = DisplayMode.SYSTEM
 
     #####################################################################################################
@@ -105,15 +107,33 @@ class Game(BaseGraphics):
         match self.display_mode:
             case DisplayMode.GALAXY:
                 if system := self.pick_system(mouse):
-                    self.display_mode = DisplayMode.SYSTEM
+                    if self.empire.is_known(system):
+                        self.planet_window.planet = self.pick_planet(system)
+                        self.display_mode = DisplayMode.SYSTEM
+                    else:
+                        self.display_mode = DisplayMode.ORBIT
                     self.system = system
                 if self.turn_button.clicked():
                     self.galaxy.turn()
-            case DisplayMode.SYSTEM:
+            case DisplayMode.ORBIT:
                 if self.orbit_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
-            case DisplayMode.PLANET:
-                pass
+            case DisplayMode.SYSTEM:
+                if self.planet_window.button_left_down():
+                    self.display_mode = DisplayMode.GALAXY
+
+    #####################################################################################################
+    def pick_planet(self, system: System) -> Planet:
+        """When we look at a system which planet should we start with"""
+        max_pop = -1
+        pick_planet = None
+        for planet in system.orbits.values():
+            if not planet:
+                continue
+            if planet.population > max_pop:
+                max_pop = planet.population
+                pick_planet = planet
+        return pick_planet
 
     #####################################################################################################
     def pick_system(self, coords: tuple[int, int]) -> Optional[System]:
@@ -129,62 +149,11 @@ class Game(BaseGraphics):
         match self.display_mode:
             case DisplayMode.GALAXY:
                 self.draw_galaxy_view()
-            case DisplayMode.SYSTEM:
+            case DisplayMode.ORBIT:
                 self.draw_galaxy_view()
                 self.orbit_window.draw(self.system)
-            case DisplayMode.PLANET:
-                self.draw_planet_view()
-
-    #####################################################################################################
-    def draw_title(self, text: str) -> None:
-        title_surface = self.title_font.render(text, True, "red")
-        self.screen.blit(title_surface, (5, 5))
-
-    #####################################################################################################
-    def draw_planet_view(self) -> None:
-        self.draw_title(self.planet.name)
-        if self.planet.category != PlanetCategory.PLANET:
-            return
-
-        self.draw_text("Population:", 1, 1)
-        self.draw_text(f"Current: {self.planet.current_population()} / Max: {self.planet.max_population()}", 2, 1)
-        self.draw_text(
-            f"Farmers: {self.planet.jobs[PopulationJobs.FARMER]} Food={self.planet.food_production()}-{self.planet.food_consumption()}={self.planet.food_production() - self.planet.food_consumption()}",
-            3,
-            1,
-        )
-        self.draw_text(
-            f"Workers: {self.planet.jobs[PopulationJobs.WORKERS]} Producing={self.planet.work_production()}",
-            4,
-            1,
-        )
-        self.draw_text(
-            f"Scientists: {self.planet.jobs[PopulationJobs.SCIENTISTS]} Science={self.planet.science_production()}",
-            5,
-            1,
-        )
-
-        self.draw_text("Buildings:", 7, 1)
-        down = 8
-        for building in self.planet.buildings:
-            self.draw_text(building, down, 1)
-            down += 1
-        if self.planet.under_construction:
-            self.draw_text(
-                f"Under Construction: {self.planet.under_construction} {self.planet.construction_cost}/{self.planet.under_construction.cost}",
-                down,
-                1,
-            )
-
-        self.draw_text(f"Size: {self.planet.size}", 1, 3)
-        self.draw_text(f"Gravity: {self.planet.gravity}", 2, 3)
-        self.draw_text(f"Richness: {self.planet.richness}", 3, 3)
-        self.draw_text(f"Climate: {self.planet.climate}", 4, 3)
-
-    #####################################################################################################
-    def draw_text(self, text: str, row: int, col: int) -> None:
-        title_surface = self.text_font.render(text, True, "white")
-        self.screen.blit(title_surface, (col * 150, row * 20))
+            case DisplayMode.SYSTEM:
+                self.planet_window.draw(self.system)
 
     #####################################################################################################
     def draw_galaxy_view(self):
