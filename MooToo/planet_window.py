@@ -114,33 +114,33 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def draw_orbits(self, system: System):
         """Draw the system summary"""
-        height_space = 24
-        top_left = pygame.Vector2(12, 30)
+        height_of_a_row = 25
+        top_left = pygame.Vector2(12, 25)
         arrow_col = top_left.x
         planet_col = arrow_col + 9
         label_col = planet_col + 33
         for orbit in range(MAX_ORBITS):
-            row_height = top_left.y + orbit * height_space
-            self.draw_orbit_arrow(arrow_col, row_height)
+            row_middle = top_left.y + orbit * height_of_a_row + height_of_a_row / 2
+            self.draw_orbit_arrow(arrow_col, row_middle)
 
             if planet := system.orbits[orbit]:
-                self.draw_orbit_planet(planet, planet_col, row_height - height_space / 2)
-                self.draw_orbit_text(planet, label_col, row_height - height_space / 2)
+                self.draw_orbit_planet(planet, planet_col, row_middle)
+                self.draw_orbit_text(planet, label_col, row_middle)
 
     #####################################################################################################
-    def draw_orbit_arrow(self, arrow_col: float, row_height: float) -> None:
+    def draw_orbit_arrow(self, arrow_col: float, row_middle: float) -> None:
         # Draw the arrow
-        arrow_size = self.images["orbit_arrow"].get_size()
+        image_size = self.images["orbit_arrow"].get_size()
         arrow_dest = pygame.Rect(
             arrow_col,
-            row_height,
-            arrow_size[0],
-            arrow_size[1],
+            row_middle - image_size[1] / 2,
+            image_size[0],
+            image_size[1],
         )
         self.screen.blit(self.images["orbit_arrow"], arrow_dest)
 
     #####################################################################################################
-    def draw_orbit_planet(self, planet: Planet, planet_col: float, row_top: float) -> None:
+    def draw_orbit_planet(self, planet: Planet, planet_col: float, row_middle: float) -> None:
         # Draw the planet image
         match planet.category:
             case PlanetCategory.ASTEROID:
@@ -149,26 +149,26 @@ class PlanetWindow(BaseGraphics):
                 image = self.images["orbit_gas_giant"]
             case _:
                 image = self.images[f"orbit_{planet.climate}_{planet.size}"]
-        planet_size = image.get_size()
+        image_size = image.get_size()
         planet_dest = pygame.Rect(
             planet_col,
-            row_top,
-            planet_size[0],
-            planet_size[1],
+            row_middle - image_size[1] / 2,
+            image_size[0],
+            image_size[1],
         )
         self.screen.blit(image, planet_dest)
         if planet.category == PlanetCategory.PLANET:
             self.system_rects[(planet_dest.left, planet_dest.top, planet_dest.width, planet_dest.height)] = planet
 
     #####################################################################################################
-    def draw_orbit_text(self, planet: Planet, label_col: float, row_top: float) -> None:
+    def draw_orbit_text(self, planet: Planet, label_col: float, row_middle: float) -> None:
         # Draw the text
         text = self.orbit_label(planet)
         label_surface = self.label_font.render(text, True, "white")
-        label_size = label_surface.get_size()
+        image_size = label_surface.get_size()
         label_dest = pygame.Rect(
             label_col,
-            row_top,
+            row_middle - image_size[1] / 2,
             label_surface.get_size()[0],
             label_surface.get_size()[1],
         )
@@ -178,7 +178,7 @@ class PlanetWindow(BaseGraphics):
 
     #####################################################################################################
     def orbit_label(self, planet: Planet) -> str:
-        """Empire\n (pop/max)"""
+        """Empire name (pop/max)"""
         owner = ""
         match planet.category:
             case PlanetCategory.PLANET:
