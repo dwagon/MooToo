@@ -110,6 +110,8 @@ class OrbitWindow(BaseGraphics):
     #####################################################################################################
     def pick_planet(self, coords: tuple[int, int]) -> Optional[Planet]:
         """Return which planet the mouse coords are close to"""
+        if not self.system.orbits:
+            return None
         for orbit, planet in self.system.orbits.items():
             if not planet:
                 continue
@@ -119,11 +121,6 @@ class OrbitWindow(BaseGraphics):
             if distance < 20:
                 return planet
         return None
-
-    #####################################################################################################
-    def draw_centered_image(self, image: pygame.Surface) -> pygame.Rect:
-        tl = self.top_left(image, self.mid_point)
-        return self.screen.blit(image, tl)
 
     #####################################################################################################
     def draw_asteroid(self, planet: Planet) -> None:
