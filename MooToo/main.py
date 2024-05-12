@@ -9,7 +9,6 @@ from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
 from MooToo.planet import Planet
-from MooToo.constants import PlanetCategory, PopulationJobs
 from MooToo.gui_button import Button
 from MooToo.orbit_window import OrbitWindow
 from MooToo.base_graphics import BaseGraphics

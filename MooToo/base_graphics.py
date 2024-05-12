@@ -42,3 +42,8 @@ class BaseGraphics:
             ).png_image()
             IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "_.png")
         return IMAGE_CACHE[img_key]
+
+    #####################################################################################################
+    def draw_centered_image(self, image: pygame.Surface) -> pygame.Rect:
+        tl = self.top_left(image, self.mid_point)
+        return self.screen.blit(image, tl)
