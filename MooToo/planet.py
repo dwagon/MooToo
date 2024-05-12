@@ -115,14 +115,15 @@ class Planet:
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
         housing_bonus = 0  # TBA: building housing
+        max_pop = self.max_population() * 1e6
         food_lack_penalty = 50 * self.food_lack()
-        free_space = self.max_population() * 1e6 - self.population
-        basic_increment = int(math.sqrt(2000 * self.population * free_space / self.max_population() * 1e6))
+        free_space = max_pop - self.population
+        basic_increment = int(math.sqrt(2000 * self.population * free_space / max_pop))
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )
         if "Cloning Center" in self.buildings:
-            population_inc += 100
+            population_inc += 100_000
         return population_inc
 
     #####################################################################################################
