@@ -21,6 +21,7 @@ class PlanetWindow(BaseGraphics):
         self.images = self.load_images()
         self.return_button = Button(self.load_image("COLPUPS.LBX", 4), pygame.Vector2(555, 460))
         self.system_rects: dict[tuple[float, float, float, float], Planet] = {}
+        self.colony_font = pygame.font.SysFont("Ariel", 18, bold=True)
 
     #####################################################################################################
     def load_images(self):
@@ -100,7 +101,8 @@ class PlanetWindow(BaseGraphics):
         self.draw_centered_image(self.images[self.planet.climate_image])
         self.window = self.draw_centered_image(self.images["window"])
         self.draw_orbits(system)
-        label_surface = self.label_font.render(f"{self.planet.name}", True, "white")
+        self.draw_pop_label(self.planet)
+        label_surface = self.colony_font.render(f"{self.planet.name}", True, "white")
         self.screen.blit(
             label_surface,
             pygame.Rect(
@@ -110,6 +112,13 @@ class PlanetWindow(BaseGraphics):
                 label_surface.get_size()[1],
             ),
         )
+
+    #####################################################################################################
+    def draw_pop_label(self, planet: Planet) -> None:
+        text = f"Pop {int(planet.population/1000):,}k (+{int(planet.population_increment()/1000):,}k)"
+        text_surface = self.label_font.render(text, True, "white")
+        text_size = text_surface.get_size()
+        self.screen.blit(text_surface, pygame.Rect(640 - text_size[0], 0, text_size[0], text_size[1]))
 
     #####################################################################################################
     def draw_orbits(self, system: System):
