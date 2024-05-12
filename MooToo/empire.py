@@ -38,4 +38,5 @@ class Empire:
         p.jobs[PopulationJobs.SCIENTISTS] = 2
         p.buildings["Hydroponic Farm"] = building.HydroponicFarm()
         p.under_construction = building.AutomatedFactory()
+        p.gen_climate_image()
         return p
