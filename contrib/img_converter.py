@@ -170,7 +170,8 @@ class Graphic:
                 rel_x += line.indent
                 for x in range(len(line.pixels)):
                     colour = self.palette[line.pixels[x]]
-                    draw.point((rel_x + x, rel_y), fill=colour)
+                    draw.point((rel_x, rel_y), fill=colour)
+                    rel_x += 1
             else:
                 rel_y += line.indent
                 rel_x = 0
