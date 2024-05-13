@@ -95,6 +95,7 @@ class Planet:
         if not self.owner:
             return
         self.owner.money += self.money_production()
+        self.owner.money -= self.money_cost()
         if self.under_construction:
             self.keep_making_building()
         self.grow_population()
@@ -135,11 +136,15 @@ class Planet:
 
     #####################################################################################################
     def money_production(self) -> int:
-        prod = (
+        """How much money the planet produces"""
+        return (
             self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
-        maintenance = sum(_.maintenance for _ in self.buildings.values())
-        return prod - maintenance
+
+    #####################################################################################################
+    def money_cost(self) -> int:
+        """How much money the planet costs"""
+        return sum(_.maintenance for _ in self.buildings.values())
 
     #####################################################################################################
     def start_make_building(self, building: Building):
@@ -187,6 +192,10 @@ class Planet:
         production = max(self.jobs[PopulationJobs.WORKERS], production)
 
         return int(production)
+
+    #####################################################################################################
+    def pollution(self) -> int:
+        return 0
 
     #####################################################################################################
     def science_production(self) -> int:

@@ -25,55 +25,36 @@ class PlanetWindow(BaseGraphics):
 
     #####################################################################################################
     def load_images(self):
-        # Toxic 0, 1
-        # 2
-        # 3
-        # 4
-        # 5 Radiated (Shielded)
-        # 6 Barren
-        # 7
-        # 8
-        # 9
-        # 10
-        # 11 Desert
-        # Tundra 12, 14
-        # 13
-        # 15
-        # 16
-        # 17
-        # 18
-        # 19 Swamp
-        # 20
-        # 21
-        # 22 Arid
-        # 23
-        # 24
-        # 25 Terran
-        # 26
-        # 27
-        # 28 Gaia
-        # 29
         start = time.time()
         images = {}
-        images["window"] = self.load_image("COLPUPS.LBX", 5, 0, "FONTS.LBX", 2)
-        images["orbit_arrow"] = self.load_image("COLSYSDI.LBX", 64, 0, "FONTS.LBX", 2)
-        index = 0
-        for climate in [
-            PlanetClimate.TOXIC,
-            PlanetClimate.RADIATED,
-            PlanetClimate.BARREN,
-            PlanetClimate.DESERT,
-            PlanetClimate.TUNDRA,
-            PlanetClimate.OCEAN,
-            PlanetClimate.SWAMP,
-            PlanetClimate.ARID,
-            PlanetClimate.TERRAN,
-            PlanetClimate.GAIA,
-        ]:
-            for number in range(3):
-                images[f"surface_{climate}_{number}"] = self.load_image("PLANETS.LBX", index)
-                index += 1
+        images["window"] = self.load_image("COLPUPS.LBX", 5, palette_index=2)
+        images["orbit_arrow"] = self.load_image("COLSYSDI.LBX", 64, palette_index=2)
+        images.update(self.load_climate_images())
+        images.update(self.load_orbit_images())
+        images.update(self.load_resource_images())
+        end = time.time()
+        print(f"Planet: Loaded {len(images)} in {end-start} seconds")
+        return images
+
+    #####################################################################################################
+    def load_resource_images(self) -> dict[str, pygame.Surface]:
+        images = {}
+        images["food_1"] = self.load_image("COLONY2.LBX", 0, palette_index=2)
+        images["work_1"] = self.load_image("COLONY2.LBX", 1, palette_index=2)
+        images["science_1"] = self.load_image("COLONY2.LBX", 2, palette_index=2)
+        images["coin_1"] = self.load_image("COLONY2.LBX", 3, palette_index=2)
+        images["food_5"] = self.load_image("COLONY2.LBX", 4, palette_index=2)
+        images["work_5"] = self.load_image("COLONY2.LBX", 5, palette_index=2)
+        images["science_5"] = self.load_image("COLONY2.LBX", 6, palette_index=2)
+        images["coin_5"] = self.load_image("COLONY2.LBX", 7, palette_index=2)
+
+        return images
+
+    #####################################################################################################
+    def load_orbit_images(self) -> dict[str, pygame.Surface]:
+        images = {}
         index = 6
+
         for climate in [
             PlanetClimate.TOXIC,
             PlanetClimate.RADIATED,
@@ -91,9 +72,27 @@ class PlanetWindow(BaseGraphics):
                 index += 1
         images["orbit_gas_giant"] = self.load_image("COLSYSDI.LBX", 62, 0, "FONTS.LBX", 2)
         images["orbit_asteroid"] = self.load_image("COLSYSDI.LBX", 63, 0, "FONTS.LBX", 2)
+        return images
 
-        end = time.time()
-        print(f"Planet: Loaded {len(images)} in {end-start} seconds")
+    #####################################################################################################
+    def load_climate_images(self) -> dict[str, pygame.Surface]:
+        images = {}
+        index = 0
+        for climate in [
+            PlanetClimate.TOXIC,
+            PlanetClimate.RADIATED,
+            PlanetClimate.BARREN,
+            PlanetClimate.DESERT,
+            PlanetClimate.TUNDRA,
+            PlanetClimate.OCEAN,
+            PlanetClimate.SWAMP,
+            PlanetClimate.ARID,
+            PlanetClimate.TERRAN,
+            PlanetClimate.GAIA,
+        ]:
+            for number in range(3):
+                images[f"surface_{climate}_{number}"] = self.load_image("PLANETS.LBX", index)
+                index += 1
         return images
 
     #####################################################################################################
@@ -101,6 +100,7 @@ class PlanetWindow(BaseGraphics):
         self.draw_centered_image(self.images[self.planet.climate_image])
         self.window = self.draw_centered_image(self.images["window"])
         self.draw_orbits(system)
+        self.draw_resources(self.planet)
         self.draw_pop_label(self.planet)
         label_surface = self.colony_font.render(f"{self.planet.name}", True, "white")
         self.screen.blit(
@@ -112,6 +112,65 @@ class PlanetWindow(BaseGraphics):
                 label_surface.get_size()[1],
             ),
         )
+
+    #####################################################################################################
+    def draw_resources(self, planet: Planet) -> None:
+        """Draw the income, food, etc."""
+        self.draw_income(planet)
+        self.draw_food(planet)
+        self.draw_work(planet)
+        self.draw_science(planet)
+
+    #####################################################################################################
+    def draw_income(self, planet: Planet) -> None:
+        income = planet.money_production()
+        cost = planet.money_cost()
+        dest = pygame.Vector2(126, 31)
+        self.draw_resource(dest, self.images["coin_1"], self.images["coin_5"], income, cost)
+
+    #####################################################################################################
+    def draw_food(self, planet: Planet) -> None:
+        income = planet.food_production()
+        cost = planet.food_lack()
+        dest = pygame.Vector2(126, 60)
+        self.draw_resource(dest, self.images["food_1"], self.images["food_5"], income, cost)
+
+    #####################################################################################################
+    def draw_work(self, planet: Planet) -> None:
+        income = planet.work_production()
+        cost = planet.pollution()
+        dest = pygame.Vector2(126, 90)
+        self.draw_resource(dest, self.images["work_1"], self.images["work_5"], income, cost)
+
+    #####################################################################################################
+    def draw_science(self, planet: Planet) -> None:
+        labs = planet.science_production()
+        dest = pygame.Vector2(126, 120)
+        self.draw_resource(dest, self.images["science_1"], self.images["science_5"], labs, 0)
+
+    #####################################################################################################
+    def draw_resource(
+        self, top_left: pygame.Vector2, image_1: pygame.Surface, image_5: pygame.Surface, in_value: int, out_value: int
+    ) -> None:
+        """Display a resource"""
+        if out_value:
+            top_left = self.draw_resource_sequence(top_left, image_1, image_5, out_value)
+            top_left.x += 10  # Gap
+        surplus = in_value - out_value
+        self.draw_resource_sequence(top_left, image_1, image_5, surplus)
+
+    #####################################################################################################
+    def draw_resource_sequence(
+        self, top_left: pygame.Vector2, image_1: pygame.Surface, image_5: pygame.Surface, value: int
+    ) -> pygame.Vector2:
+        """Display a sequence of resource images"""
+        for _ in range(value // 5):
+            self.screen.blit(image_5, top_left)
+            top_left.x += image_5.get_size()[0]
+        for _ in range(value % 5):
+            self.screen.blit(image_1, top_left)
+            top_left.x += image_1.get_size()[0]
+        return top_left
 
     #####################################################################################################
     def draw_pop_label(self, planet: Planet) -> None:
