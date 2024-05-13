@@ -3,7 +3,7 @@
 import time
 import pygame
 from MooToo.base_graphics import BaseGraphics
-from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize
+from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
 from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
 from MooToo.config import Config
@@ -29,11 +29,34 @@ class PlanetWindow(BaseGraphics):
         images = {}
         images["window"] = self.load_image("COLPUPS.LBX", 5, palette_index=2)
         images["orbit_arrow"] = self.load_image("COLSYSDI.LBX", 64, palette_index=2)
-        images.update(self.load_climate_images())
-        images.update(self.load_orbit_images())
-        images.update(self.load_resource_images())
+        images |= self.load_climate_images()
+        images |= self.load_orbit_images()
+        images |= self.load_resource_images()
+        images |= self.load_race_images()
         end = time.time()
         print(f"Planet: Loaded {len(images)} in {end-start} seconds")
+        return images
+
+    #####################################################################################################
+    def load_race_images(self) -> dict[str, pygame.Surface]:
+        """Load farmer/worker/scientist/etc race images"""
+        # 1  Farmer
+        # 2  Unknown
+        # 3  Worker
+        # 4  Scientist?
+        # 5  Scientist?
+        # 6  Marine
+        # 7  Militia
+        # 8  Mech?
+        # 9  Tank
+        # 10 Mech
+        # 11 Spy?
+        # 12 Prisoner
+        images = {}
+        images["farmer"] = self.load_image("RACEICON.LBX", 0, palette_index=2)
+        images["worker"] = self.load_image("RACEICON.LBX", 3, palette_index=2)
+        images["scientist"] = self.load_image("RACEICON.LBX", 5, palette_index=2)
+
         return images
 
     #####################################################################################################
@@ -102,6 +125,7 @@ class PlanetWindow(BaseGraphics):
         self.draw_orbits(system)
         self.draw_resources(self.planet)
         self.draw_pop_label(self.planet)
+        self.draw_population(self.planet)
         label_surface = self.colony_font.render(f"{self.planet.name}", True, "white")
         self.screen.blit(
             label_surface,
@@ -112,6 +136,28 @@ class PlanetWindow(BaseGraphics):
                 label_surface.get_size()[1],
             ),
         )
+
+    #####################################################################################################
+    def draw_population(self, planet: Planet) -> None:
+        """Draw farmers etc"""
+        dest = pygame.Vector2(309, 62)
+        self.draw_population_sequence(dest, self.images["farmer"], planet.jobs[PopulationJobs.FARMER])
+
+        dest = pygame.Vector2(309, 92)
+        self.draw_population_sequence(dest, self.images["worker"], planet.jobs[PopulationJobs.WORKERS])
+
+        dest = pygame.Vector2(309, 122)
+        self.draw_population_sequence(dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS])
+
+    #####################################################################################################
+    def draw_population_sequence(
+        self, top_left: pygame.Vector2, worker_image: pygame.Surface, value: int
+    ) -> pygame.Vector2:
+        """Display a sequence of population images"""
+        for _ in range(value):
+            self.screen.blit(worker_image, top_left)
+            top_left.x += worker_image.get_size()[0]
+        return top_left
 
     #####################################################################################################
     def draw_resources(self, planet: Planet) -> None:
