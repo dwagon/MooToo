@@ -43,10 +43,18 @@ class Frame:
 #####################################################################################################
 # lbx_file="BUFFER0.LBX", lbx_index=1, palette=1, moo_path="..."
 class LBXImage:
-    def __init__(self, lbx_file: str, lbx_index: int, moo_path: str, frame: int = 0, palette_file: str = "FONTS.LBX"):
+    def __init__(
+        self,
+        lbx_file: str,
+        lbx_index: int,
+        moo_path: str,
+        frame: int = 0,
+        palette_file: str = "FONTS.LBX",
+        palette_index: int = 1,
+    ):
         self.width: int = 0
         self.height: int = 0
-        self.palette = load_palette(moo_path, palette_file)
+        self.palette = load_palette(moo_path, palette_file, palette_index)
         file_data = load_lbx(moo_path, lbx_file, lbx_index)
         if not file_data:
             raise UserWarning("Couldn't load LBX file")
@@ -165,7 +173,8 @@ class LBXImage:
                 rel_x += line.indent
                 for x in range(len(line.pixels)):
                     colour = self.palette[line.pixels[x]]
-                    draw.point((rel_x + x, rel_y), fill=colour)
+                    draw.point((rel_x, rel_y), fill=colour)
+                    rel_x += 1
             else:
                 rel_y += line.indent
                 rel_x = 0
@@ -173,8 +182,8 @@ class LBXImage:
 
 
 ##############################################################################
-def load_palette(moo_path: str, fname: str) -> dict[int, tuple[int, int, int]]:
-    font_data = load_lbx(moo_path, fname, 1)
+def load_palette(moo_path: str, fname: str, index: int = 1) -> dict[int, tuple[int, int, int]]:
+    font_data = load_lbx(moo_path, fname, index)
     infd = io.BytesIO(font_data)
     palette: dict[int, tuple[int, int, int]] = {}
     for counter in range(256):

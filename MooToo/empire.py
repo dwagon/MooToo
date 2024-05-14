@@ -12,6 +12,7 @@ class Empire:
     def __init__(self, name: str, home_planet: System, config: Config):
         self.name = name
         self.config = config
+        self.government = "Feudal"  # Fix me
         self.home_planet = home_planet
         self.money = 100
         self.known: dict[System, bool] = {}
@@ -38,4 +39,5 @@ class Empire:
         p.jobs[PopulationJobs.SCIENTISTS] = 2
         p.buildings["Hydroponic Farm"] = building.HydroponicFarm()
         p.under_construction = building.AutomatedFactory()
+        p.gen_climate_image()
         return p

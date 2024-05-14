@@ -1,6 +1,7 @@
 """ Stuff relating to drawing the orbit window"""
 
 import math
+import time
 from typing import Optional
 
 import pygame
@@ -27,6 +28,7 @@ class OrbitWindow(BaseGraphics):
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
+        start = time.time()
         images = {}
         images["orbit_window"] = self.load_image("BUFFER0.LBX", 73)
         images["gas_giant"] = self.load_image("BUFFER0.LBX", 142)
@@ -60,6 +62,9 @@ class OrbitWindow(BaseGraphics):
             images[f"asteroid_{orbit}"] = self.load_image("BUFFER0.LBX", 91, frame=orbit)
             images[f"orbit_{orbit}"] = self.load_image("BUFFER0.LBX", index)
             index += 1
+        end = time.time()
+        print(f"Orbit: Loaded {len(images)} in {end-start} seconds")
+
         return images
 
     #####################################################################################################
@@ -68,7 +73,7 @@ class OrbitWindow(BaseGraphics):
         text_list = (
             planet.name,
             f"{planet.size}, {planet.climate}",
-            f"Max Pop {planet.max_population()}",
+            f"Max Pop: {int(planet.max_population()/1e6)}",
             f"{planet.richness}",
         )
         if planet.category == PlanetCategory.GAS_GIANT:
@@ -105,6 +110,8 @@ class OrbitWindow(BaseGraphics):
     #####################################################################################################
     def pick_planet(self, coords: tuple[int, int]) -> Optional[Planet]:
         """Return which planet the mouse coords are close to"""
+        if not self.system.orbits:
+            return None
         for orbit, planet in self.system.orbits.items():
             if not planet:
                 continue
@@ -114,11 +121,6 @@ class OrbitWindow(BaseGraphics):
             if distance < 20:
                 return planet
         return None
-
-    #####################################################################################################
-    def draw_centered_image(self, image: pygame.Surface) -> pygame.Rect:
-        tl = self.top_left(image, self.mid_point)
-        return self.screen.blit(image, tl)
 
     #####################################################################################################
     def draw_asteroid(self, planet: Planet) -> None:

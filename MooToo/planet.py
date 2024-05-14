@@ -72,15 +72,26 @@ class Planet:
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.population = 0.0
         self.buildings = {}
-        self.under_construction = None
+        self.under_construction: Building | None = None
         self.construction_cost = 0
         self.arc = random.randint(0, 359)
+        self.gen_climate_image()
 
     #####################################################################################################
-    def max_population(self) -> float:
+    def gen_climate_image(self):
+        num = random.randint(0, 2)
+        self.climate_image = f"surface_{self.climate}_{num}"
+
+    #####################################################################################################
+    def morale(self) -> int:
+        """Morale of planet (out of 10)"""
+        return 5
+
+    #####################################################################################################
+    def max_population(self) -> int:
         """What's the maximum population this planet can support"""
 
-        return POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate] * 1e6
+        return POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
 
     #####################################################################################################
     def turn(self):
@@ -89,6 +100,7 @@ class Planet:
         if not self.owner:
             return
         self.owner.money += self.money_production()
+        self.owner.money -= self.money_cost()
         if self.under_construction:
             self.keep_making_building()
         self.grow_population()
@@ -109,30 +121,35 @@ class Planet:
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
         housing_bonus = 0  # TBA: building housing
+        max_pop = self.max_population() * 1e6
         food_lack_penalty = 50 * self.food_lack()
-        free_space = self.max_population() - self.population
-        basic_increment = int(math.sqrt(2000 * self.population * free_space / self.max_population()))
+        free_space = max_pop - self.population
+        basic_increment = int(math.sqrt(2000 * self.population * free_space / max_pop))
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )
         if "Cloning Center" in self.buildings:
-            population_inc += 100
+            population_inc += 100_000
         return population_inc
 
     #####################################################################################################
     def food_lack(self) -> int:
         """How much food do we lack"""
-        if self.food_production() > int(self.current_population() / 1e6):
+        if self.food_production() > self.current_population():
             return 0
-        return int(self.current_population() / 1e6) - self.food_production()
+        return self.current_population() - self.food_production()
 
     #####################################################################################################
     def money_production(self) -> int:
-        prod = (
+        """How much money the planet produces"""
+        return (
             self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
-        maintenance = sum(_.maintenance for _ in self.buildings.values())
-        return prod - maintenance
+
+    #####################################################################################################
+    def money_cost(self) -> int:
+        """How much money the planet costs"""
+        return sum(_.maintenance for _ in self.buildings.values())
 
     #####################################################################################################
     def start_make_building(self, building: Building):
@@ -154,7 +171,7 @@ class Planet:
 
     #####################################################################################################
     def current_population(self) -> int:
-        return int(self.population)
+        return int(self.population / 1e6)
 
     #####################################################################################################
     def food_production(self) -> int:
@@ -180,6 +197,10 @@ class Planet:
         production = max(self.jobs[PopulationJobs.WORKERS], production)
 
         return int(production)
+
+    #####################################################################################################
+    def pollution(self) -> int:
+        return 0
 
     #####################################################################################################
     def science_production(self) -> int:
