@@ -33,8 +33,14 @@ class PlanetWindow(BaseGraphics):
         images |= self.load_orbit_images()
         images |= self.load_resource_images()
         images |= self.load_race_images()
+        images |= self.load_under_construction()
         end = time.time()
         print(f"Planet: Loaded {len(images)} in {end-start} seconds")
+        return images
+
+    #####################################################################################################
+    def load_under_construction(self) -> dict[str, pygame.Surface]:
+        images = {}
         return images
 
     #####################################################################################################
@@ -91,10 +97,10 @@ class PlanetWindow(BaseGraphics):
             PlanetClimate.GAIA,
         ]:
             for size in [PlanetSize.TINY, PlanetSize.SMALL, PlanetSize.MEDIUM, PlanetSize.LARGE, PlanetSize.HUGE]:
-                images[f"orbit_{climate}_{size}"] = self.load_image("COLSYSDI.LBX", index, 0, "FONTS.LBX", 2)
+                images[f"orbit_{climate}_{size}"] = self.load_image("COLSYSDI.LBX", index, palette_index=2)
                 index += 1
-        images["orbit_gas_giant"] = self.load_image("COLSYSDI.LBX", 62, 0, "FONTS.LBX", 2)
-        images["orbit_asteroid"] = self.load_image("COLSYSDI.LBX", 63, 0, "FONTS.LBX", 2)
+        images["orbit_gas_giant"] = self.load_image("COLSYSDI.LBX", 62, palette_index=2)
+        images["orbit_asteroid"] = self.load_image("COLSYSDI.LBX", 63, palette_index=2)
         return images
 
     #####################################################################################################
@@ -114,7 +120,7 @@ class PlanetWindow(BaseGraphics):
             PlanetClimate.GAIA,
         ]:
             for number in range(3):
-                images[f"surface_{climate}_{number}"] = self.load_image("PLANETS.LBX", index)
+                images[f"surface_{climate}_{number}"] = self.load_image("PLANETS.LBX", index, palette_index=2)
                 index += 1
         return images
 
@@ -126,6 +132,7 @@ class PlanetWindow(BaseGraphics):
         self.draw_resources(self.planet)
         self.draw_pop_label(self.planet)
         self.draw_population(self.planet)
+        self.draw_currently_building(self.planet)
         label_surface = self.colony_font.render(f"{self.planet.name}", True, "white")
         self.screen.blit(
             label_surface,
@@ -136,6 +143,16 @@ class PlanetWindow(BaseGraphics):
                 label_surface.get_size()[1],
             ),
         )
+
+    #####################################################################################################
+    def draw_currently_building(self, planet: Planet) -> None:
+        if not planet.under_construction:
+            return
+        top_left = pygame.Vector2(527, 27)
+        for word in planet.under_construction.name.split():
+            text = self.text_font.render(word, True, "purple")
+            self.screen.blit(text, top_left)
+            top_left.y += text.get_size()[1]
 
     #####################################################################################################
     def draw_population(self, planet: Planet) -> None:

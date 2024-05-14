@@ -72,7 +72,7 @@ class Planet:
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.population = 0.0
         self.buildings = {}
-        self.under_construction = None
+        self.under_construction: Building | None = None
         self.construction_cost = 0
         self.arc = random.randint(0, 359)
         self.gen_climate_image()
