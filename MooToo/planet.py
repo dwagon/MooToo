@@ -2,10 +2,13 @@
 
 import math
 import random
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from MooToo.utils import prob_map
-from MooToo.building import Building
+from MooToo.planetbuilding import PlanetBuilding
 from MooToo.constants import PlanetCategory, PopulationJobs, PlanetRichness, PlanetClimate, PlanetGravity, PlanetSize
+
+if TYPE_CHECKING:
+    from MooToo.galaxy import Galaxy
 
 #####################################################################################################
 GRAVITY_MAP: dict[PlanetGravity, float] = {
@@ -71,16 +74,32 @@ class Planet:
         self.owner = None
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.population = 0.0
-        self.buildings = {}
-        self.under_construction: Building | None = None
-        self.construction_cost = 0
+        self.buildings: dict[str, PlanetBuilding] = {}
+        self.buildings_available: dict[str, PlanetBuilding] = {}
+        self.build_queue: list[PlanetBuilding] = []
+        self.construction_spent = 0
         self.arc = random.randint(0, 359)
-        self.gen_climate_image()
+        self.climate_image = self.gen_climate_image()
+
+    #####################################################################################################
+    def get_galaxy(self) -> "Galaxy":
+        """Access to galaxy structure"""
+        assert self.owner is not None
+        return self.owner.galaxy
+
+    #####################################################################################################
+    def available_to_build(self) -> dict[str, PlanetBuilding]:
+        """What buildings are available to be built on this planet"""
+        avail = {}
+        for name, building in self.get_galaxy().buildings.items():
+            if building.available_to_build(self):
+                avail[name] = building
+        return avail
 
     #####################################################################################################
     def gen_climate_image(self):
         num = random.randint(0, 2)
-        self.climate_image = f"surface_{self.climate}_{num}"
+        return f"surface_{self.climate}_{num}"
 
     #####################################################################################################
     def morale(self) -> int:
@@ -101,9 +120,39 @@ class Planet:
             return
         self.owner.money += self.money_production()
         self.owner.money -= self.money_cost()
-        if self.under_construction:
-            self.keep_making_building()
+        self.building_production()
         self.grow_population()
+        self.buildings_available = self.available_to_build()
+
+    #####################################################################################################
+    def building_production(self) -> None:
+        """Produce buildings"""
+        self.construction_spent += self.work_production()
+        if not self.build_queue:
+            return
+        if self.construction_spent >= self.build_queue[0].cost:
+            self.construction_spent -= self.build_queue[0].cost
+            self.build_building(self.build_queue.pop(0))
+
+    #####################################################################################################
+    def build_building(self, building: PlanetBuilding):
+        """Create a new building"""
+        self.buildings[building.name] = building
+
+    #####################################################################################################
+    def add_to_build_queue(self, building: PlanetBuilding):
+        if len(self.build_queue) < 6:
+            self.build_queue.append(building)
+
+    #####################################################################################################
+    def toggle_build_queue_by_name(self, building_name: str):
+        """Add a building by name to the build queue, or remove it if it already exists"""
+        building = self.get_galaxy().buildings[building_name]
+        for bld in self.build_queue:
+            if building_name == bld.name:
+                self.build_queue.remove(building)
+                return
+        self.add_to_build_queue(building)
 
     #####################################################################################################
     def grow_population(self) -> None:
@@ -150,24 +199,6 @@ class Planet:
     def money_cost(self) -> int:
         """How much money the planet costs"""
         return sum(_.maintenance for _ in self.buildings.values())
-
-    #####################################################################################################
-    def start_make_building(self, building: Building):
-        self.under_construction = building
-        self.construction_cost = 0
-
-    #####################################################################################################
-    def keep_making_building(self):
-        prod = self.work_production()
-        self.construction_cost += prod
-        if self.construction_cost >= self.under_construction.cost:
-            self.build_building()
-
-    #####################################################################################################
-    def build_building(self):
-        """the building under construction has finished"""
-        self.buildings[self.under_construction.name] = self.under_construction
-        self.under_construction = None
 
     #####################################################################################################
     def current_population(self) -> int:

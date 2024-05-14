@@ -1,12 +1,14 @@
 from enum import Enum, StrEnum, auto
 
 
+#####################################################################################################
 class PlanetCategory(Enum):
     ASTEROID = auto()
     PLANET = auto()
     GAS_GIANT = auto()
 
 
+#####################################################################################################
 class PlanetSize(StrEnum):
     TINY = "Tiny"
     SMALL = "Small"
@@ -15,12 +17,14 @@ class PlanetSize(StrEnum):
     HUGE = "Huge"
 
 
+#####################################################################################################
 class PlanetGravity(StrEnum):
     LOW = "Low"
     NORMAL = "Normal"
     HIGH = "High"
 
 
+#####################################################################################################
 class PlanetRichness(StrEnum):
     ULTRA_POOR = "Ultra Poor"
     POOR = "Poor"
@@ -29,6 +33,7 @@ class PlanetRichness(StrEnum):
     ULTRA_RICH = "Ultra Rich"
 
 
+#####################################################################################################
 class PlanetClimate(StrEnum):
     TOXIC = "Toxic"
     RADIATED = "Radiated"
@@ -42,6 +47,7 @@ class PlanetClimate(StrEnum):
     GAIA = "Gaia"
 
 
+#####################################################################################################
 class PopulationJobs(StrEnum):
     FARMER = "F"
     WORKERS = "W"

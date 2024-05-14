@@ -1,10 +1,14 @@
 """ Galaxy class"""
 
+import glob
+import importlib
 import math
+import os
 import random
 
 from MooToo.system import System, StarColour
 from MooToo.empire import Empire
+from MooToo.planetbuilding import PlanetBuilding
 from MooToo.names import empire_names
 
 
@@ -15,6 +19,7 @@ class Galaxy:
         self.config = config
         self.systems: dict[tuple[int, int], System] = {}
         self.empires: dict[str, Empire] = {}
+        self.buildings: dict[str, type[PlanetBuilding]]
         self.turn_number = 0
 
     #####################################################################################################
@@ -29,6 +34,7 @@ class Galaxy:
             self.make_empire(home_system)
         for system in self.systems.values():
             system.make_orbits()
+        self.buildings = load_buildings()
 
     #####################################################################################################
     def find_home_systems(self) -> list[System]:
@@ -67,7 +73,7 @@ class Galaxy:
         name = random.choice(empire_names)
         empire_names.remove(name)
         home_system.colour = StarColour.YELLOW
-        self.empires[name] = Empire(name, home_system, self.config)
+        self.empires[name] = Empire(name, home_system, self, self.config)
         home_system.orbits[3] = self.empires[name].make_home_planet(3)
         self.empires[name].know(home_system)
 
@@ -91,9 +97,25 @@ class Galaxy:
 
 
 #####################################################################################################
+def load_buildings() -> dict[str, PlanetBuilding]:
+    path = "MooToo/buildings"
+    mapping: dict[str, PlanetBuilding] = {}
+    files = glob.glob(f"{path}/*.py")
+    for file_name in [os.path.basename(_) for _ in files]:
+        file_name = file_name.replace(".py", "")
+        mod = importlib.import_module(f"{path.replace('/', '.')}.{file_name}")
+        classes = dir(mod)
+        for kls in classes:
+            if kls.startswith("Building"):
+                klass = getattr(mod, kls)
+                mapping[klass().name] = klass()
+                break
+    return mapping
+
+
+#####################################################################################################
 def get_distance(x1: float, y1: float, x2: float, y2: float) -> float:
-    dist = math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
-    return dist
+    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
 # EOF

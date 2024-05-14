@@ -1,21 +1,27 @@
 """ Relating to player's empires"""
 
+from typing import TYPE_CHECKING
+
 from MooToo.system import System, StarColour
 from MooToo.planet import Planet, PopulationJobs
 from MooToo.config import Config
-from MooToo import building
+
+if TYPE_CHECKING:
+    from MooToo.galaxy import Galaxy
 
 
 #####################################################################################################
 #####################################################################################################
 class Empire:
-    def __init__(self, name: str, home_planet: System, config: Config):
+    def __init__(self, name: str, home_planet: System, galaxy: "Galaxy", config: Config):
         self.name = name
+        self.galaxy = galaxy
         self.config = config
         self.government = "Feudal"  # Fix me
         self.home_planet = home_planet
         self.money = 100
         self.known: dict[System, bool] = {}
+        self.techs: dict[str, bool] = {}
 
     #####################################################################################################
     def know(self, system: System) -> None:
@@ -37,7 +43,6 @@ class Empire:
         p.jobs[PopulationJobs.FARMER] = 4
         p.jobs[PopulationJobs.WORKERS] = 2
         p.jobs[PopulationJobs.SCIENTISTS] = 2
-        p.buildings["Hydroponic Farm"] = building.HydroponicFarm()
-        p.under_construction = building.AutomatedFactory()
+        p.build_queue = []
         p.gen_climate_image()
         return p
