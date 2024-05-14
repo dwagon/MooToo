@@ -144,6 +144,7 @@ class PlanetWindow(BaseGraphics):
         self.draw_population(self.planet)
         self.draw_currently_building(self.planet)
         self.draw_government(self.planet)
+        self.draw_morale(self.planet)
         label_surface = self.colony_font.render(f"{self.planet.name}", True, "white")
         self.screen.blit(
             label_surface,
@@ -154,6 +155,13 @@ class PlanetWindow(BaseGraphics):
                 label_surface.get_size()[1],
             ),
         )
+
+    #####################################################################################################
+    def draw_morale(self, planet: Planet) -> None:
+        top_left = pygame.Vector2(340, 31)
+        for _ in range(planet.morale()):
+            pos = self.screen.blit(self.images["happy"], top_left)
+            top_left.x += pos.width
 
     #####################################################################################################
     def draw_government(self, planet: Planet) -> None:
