@@ -33,13 +33,15 @@ class PlanetWindow(BaseGraphics):
         images |= self.load_orbit_images()
         images |= self.load_resource_images()
         images |= self.load_race_images()
-        images |= self.load_under_construction()
+        images |= self.load_construction_images()
+        images |= self.load_government_images()
+
         end = time.time()
         print(f"Planet: Loaded {len(images)} in {end-start} seconds")
         return images
 
     #####################################################################################################
-    def load_under_construction(self) -> dict[str, pygame.Surface]:
+    def load_construction_images(self) -> dict[str, pygame.Surface]:
         images = {}
         return images
 
@@ -66,6 +68,13 @@ class PlanetWindow(BaseGraphics):
         return images
 
     #####################################################################################################
+    def load_government_images(self) -> dict[str, pygame.Surface]:
+        images = {}
+        images["government_Feudal"] = self.load_image("COLONY2.LBX", 19, palette_index=2)
+
+        return images
+
+    #####################################################################################################
     def load_resource_images(self) -> dict[str, pygame.Surface]:
         images = {}
         images["food_1"] = self.load_image("COLONY2.LBX", 0, palette_index=2)
@@ -76,6 +85,7 @@ class PlanetWindow(BaseGraphics):
         images["work_5"] = self.load_image("COLONY2.LBX", 5, palette_index=2)
         images["science_5"] = self.load_image("COLONY2.LBX", 6, palette_index=2)
         images["coin_5"] = self.load_image("COLONY2.LBX", 7, palette_index=2)
+        images["happy"] = self.load_image("COLONY2.LBX", 16, palette_index=2)
 
         return images
 
@@ -133,6 +143,7 @@ class PlanetWindow(BaseGraphics):
         self.draw_pop_label(self.planet)
         self.draw_population(self.planet)
         self.draw_currently_building(self.planet)
+        self.draw_government(self.planet)
         label_surface = self.colony_font.render(f"{self.planet.name}", True, "white")
         self.screen.blit(
             label_surface,
@@ -143,6 +154,15 @@ class PlanetWindow(BaseGraphics):
                 label_surface.get_size()[1],
             ),
         )
+
+    #####################################################################################################
+    def draw_government(self, planet: Planet) -> None:
+        top_left = pygame.Vector2(309, 31)
+        if not planet.owner:
+            return
+        government = planet.owner.government
+        image = self.images[f"government_{government}"]
+        self.screen.blit(image, top_left)
 
     #####################################################################################################
     def draw_currently_building(self, planet: Planet) -> None:

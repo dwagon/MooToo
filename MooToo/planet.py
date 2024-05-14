@@ -83,6 +83,11 @@ class Planet:
         self.climate_image = f"surface_{self.climate}_{num}"
 
     #####################################################################################################
+    def morale(self) -> int:
+        """Morale of planet (out of 10)"""
+        return 5
+
+    #####################################################################################################
     def max_population(self) -> int:
         """What's the maximum population this planet can support"""
 
