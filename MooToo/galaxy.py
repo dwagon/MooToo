@@ -64,8 +64,8 @@ class Galaxy:
     def turn(self):
         """End of turn"""
         self.turn_number += 1
-        for system in self.systems.values():
-            system.turn()
+        for empire in self.empires.values():
+            empire.turn()
 
     #####################################################################################################
     def make_empire(self, home_system: System):
@@ -75,7 +75,7 @@ class Galaxy:
         home_system.colour = StarColour.YELLOW
         self.empires[name] = Empire(name, home_system, self, self.config)
         home_system.orbits[3] = self.empires[name].make_home_planet(3)
-        self.empires[name].know(home_system)
+        self.empires[name].know_system(home_system)
 
     #####################################################################################################
     def get_positions(self) -> list[tuple[int, int]]:

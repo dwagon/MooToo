@@ -9,6 +9,7 @@ from MooToo.constants import PlanetCategory, PopulationJobs, PlanetRichness, Pla
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
+    from MooToo.empire import Empire
 
 #####################################################################################################
 GRAVITY_MAP: dict[PlanetGravity, float] = {
@@ -71,7 +72,7 @@ class Planet:
         self.richness = pick_planet_richness(config["richness"])
         self.climate = pick_planet_climate(config["climate"])
         self.gravity = pick_planet_gravity(self.size, self.richness)
-        self.owner = None
+        self.owner: "Empire" | None = None
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.population = 0.0
         self.buildings: dict[str, PlanetBuilding] = {}
@@ -91,15 +92,26 @@ class Planet:
     def available_to_build(self) -> dict[str, PlanetBuilding]:
         """What buildings are available to be built on this planet"""
         avail = {}
-        for name, building in self.get_galaxy().buildings.items():
-            if building.available_to_build(self):
-                avail[name] = building
+        for name, tech in self.owner.techs.items():
+            if building := tech.enabled_building:
+                if building.available_to_build(self):
+                    avail[name] = building
         return avail
 
     #####################################################################################################
     def gen_climate_image(self):
         num = random.randint(0, 2)
         return f"surface_{self.climate}_{num}"
+
+    #####################################################################################################
+    def get_research_points(self) -> int:
+        """How many research points does this planet generate"""
+        rp = 0
+        for building in self.buildings.values():
+            rp += building.research_bonus(self)
+        rp = max(self.jobs[PopulationJobs.SCIENTISTS], rp)
+
+        return int(rp)
 
     #####################################################################################################
     def morale(self) -> int:

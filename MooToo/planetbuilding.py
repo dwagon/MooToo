@@ -24,6 +24,9 @@ class PlanetBuilding:
     def prod_bonus(self, planet: "Planet") -> int:
         return 0
 
+    def research_bonus(self, planet: "Planet") -> int:
+        return 0
+
     def available_to_build(self, planet: "Planet") -> bool:
         if self.name in planet.buildings:
             return False

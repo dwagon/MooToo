@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING
 from MooToo.system import System, StarColour
 from MooToo.planet import Planet, PopulationJobs
 from MooToo.config import Config
+from MooToo.research import Research
+from MooToo.researches.AdvancedConstruction import ResearchAutomatedFactory
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
@@ -20,17 +22,37 @@ class Empire:
         self.government = "Feudal"  # Fix me
         self.home_planet = home_planet
         self.money = 100
-        self.known: dict[System, bool] = {}
-        self.techs: dict[str, bool] = {}
+        self.known_systems: dict[System, bool] = {}  # Known systems
+        self.owned_planets: list[Planet] = []  # Owned planets
+        self.researching = ResearchAutomatedFactory()
+        self.research_spent = 0
+        self.techs: dict[str, Research] = {}
 
     #####################################################################################################
-    def know(self, system: System) -> None:
-        self.known[system] = True
+    def turn(self):
+        """Have a turn"""
+        for planet in self.owned_planets:
+            planet.turn()
+        self.research_spent += self.get_research_points()
+        if self.researching and self.research_spent > self.researching.cost:
+            self.techs[self.researching.name] = self.researching
+            self.researching = None
 
     #####################################################################################################
-    def is_known(self, system: System) -> bool:
+    def get_research_points(self) -> int:
+        rp = 0
+        for planet in self.owned_planets:
+            rp += planet.get_research_points()
+        return rp
+
+    #####################################################################################################
+    def know_system(self, system: System) -> None:
+        self.known_systems[system] = True
+
+    #####################################################################################################
+    def is_known_system(self, system: System) -> bool:
         """Is the system known to this empire"""
-        return system in self.known
+        return system in self.known_systems
 
     #####################################################################################################
 
@@ -39,6 +61,7 @@ class Empire:
         p = Planet(f"{self.name} Home", orbit, self.config["galaxy"]["star_colours"][StarColour.YELLOW])
         p.make_home_world()
         p.owner = self
+        self.owned_planets.append(p)
         p.population = 8e6
         p.jobs[PopulationJobs.FARMER] = 4
         p.jobs[PopulationJobs.WORKERS] = 2

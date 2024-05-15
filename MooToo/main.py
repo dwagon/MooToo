@@ -106,7 +106,7 @@ class Game(BaseGraphics):
         match self.display_mode:
             case DisplayMode.GALAXY:
                 if system := self.pick_system(mouse):
-                    if self.empire.is_known(system):
+                    if self.empire.is_known_system(system):
                         self.planet_window.planet = self.pick_planet(system)
                         self.display_mode = DisplayMode.SYSTEM
                     else:
@@ -161,6 +161,31 @@ class Game(BaseGraphics):
         for sys_coord, system in self.galaxy.systems.items():
             self.draw_galaxy_view_system(sys_coord, system)
         self.turn_button.draw(self.screen)
+        self.draw_research()
+
+    #####################################################################################################
+    def draw_research(self):
+        """Draw what is being researched"""
+        if self.empire.researching:
+            words = self.empire.researching.name
+        else:
+            words = "Nothing"
+
+        top_left = pygame.Vector2(550, 360)
+        for word in words.split():
+            rp_text_surface = self.label_font.render(word, True, "white")
+            self.screen.blit(rp_text_surface, top_left)
+            top_left.x = 570
+            top_left.y += rp_text_surface.get_size()[1]
+
+        if self.empire.researching:
+            words = (
+                f"{self.empire.research_spent}/{self.empire.researching.cost} (+{self.empire.get_research_points()}) RP"
+            )
+        else:
+            words = f"+{self.empire.get_research_points()} RP"
+        rp = self.label_font.render(words, True, "white")
+        self.screen.blit(rp, pygame.Vector2(550, top_left.y + 10))
 
     #####################################################################################################
     def draw_galaxy_view_system(self, sys_coord, system):
@@ -169,7 +194,7 @@ class Game(BaseGraphics):
         img_coord = (sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
         self.screen.blit(star_image, img_coord)
 
-        if self.empire.is_known(system):
+        if self.empire.is_known_system(system):
             text_surface = self.label_font.render(system.name, True, "red")
             text_size = text_surface.get_size()
             text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
