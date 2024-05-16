@@ -21,9 +21,9 @@ class PlanetDisplayMode(Enum):
 #####################################################################################################
 #####################################################################################################
 class PlanetWindow(BaseGraphics):
-    def __init__(self, screen: pygame.Surface, config: Config):
+    def __init__(self, screen: pygame.Surface, game: "Game"):
         """ """
-        super().__init__(config)
+        super().__init__(game)
         self.screen = screen
         self.planet = None
         self.images = self.load_images()
@@ -32,7 +32,11 @@ class PlanetWindow(BaseGraphics):
         self.system_rects: dict[tuple[float, float, float, float], Planet] = {}
         self.colony_font = pygame.font.SysFont("Ariel", 18, bold=True)
         self.display_mode = PlanetDisplayMode.NORMAL
-        self.building_choice_window = BuildingChoiceWindow(screen, config)
+        self.building_choice_window = BuildingChoiceWindow(screen, game)
+        self.buttons = {
+            PlanetButtons.RETURN: Button(self.load_image("COLPUPS.LBX", 4, palette_index=2), pygame.Vector2(555, 460)),
+            PlanetButtons.BUILD: Button(self.load_image("COLPUPS.LBX", 1, palette_index=2), pygame.Vector2(525, 123)),
+        }
 
     #####################################################################################################
     def load_images(self):

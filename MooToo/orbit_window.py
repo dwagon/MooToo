@@ -17,8 +17,8 @@ from MooToo.constants import PlanetCategory, PlanetClimate, PlanetSize
 #####################################################################################################
 class OrbitWindow(BaseGraphics):
     #####################################################################################################
-    def __init__(self, screen: pygame.Surface, config: Config):
-        super().__init__(config)
+    def __init__(self, screen: pygame.Surface, game: "Game"):
+        super().__init__(game)
         self.screen = screen
         self.planet = None  # Which planet we are looking at
         self.system = None  # Which system we are looking at

@@ -25,14 +25,16 @@ class DisplayMode(Enum):
 #####################################################################################################
 class Game(BaseGraphics):
     def __init__(self, galaxy: Galaxy, empire_name: str, config: Config):
-        super().__init__(config)
+        self.config = config
+        super().__init__(self)
         self.display_mode = DisplayMode.GALAXY
         self.galaxy = galaxy
         self.empire = galaxy.empires[empire_name]
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
-        self.orbit_window = OrbitWindow(self.screen, config)
-        self.planet_window = PlanetWindow(self.screen, config)
+        self.orbit_window = OrbitWindow(self.screen, self)
+        self.planet_window = PlanetWindow(self.screen, self)
+        self.science_window = ScienceWindow(self.screen, self)
         self.images = self.load_images()
         self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
 

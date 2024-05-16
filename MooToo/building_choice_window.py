@@ -2,7 +2,6 @@
 
 import pygame
 from MooToo.base_graphics import BaseGraphics
-from MooToo.config import Config
 from MooToo.planet import Planet
 from MooToo.gui_button import Button
 
@@ -10,8 +9,8 @@ from MooToo.gui_button import Button
 #####################################################################################################
 #####################################################################################################
 class BuildingChoiceWindow(BaseGraphics):
-    def __init__(self, screen: pygame.Surface, config: Config):
-        super().__init__(config)
+    def __init__(self, screen: pygame.Surface, game: "Game"):
+        super().__init__(game)
         self.screen = screen
         self.planet = None
         self.images = self.load_images()
