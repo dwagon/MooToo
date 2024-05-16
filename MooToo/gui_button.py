@@ -28,3 +28,15 @@ class Button:
         if mouse[1] > self.rect.bottom:
             return False
         return True
+
+
+#####################################################################################################
+class InvisButton(Button):
+    """A click sensitive area that doesn't have any graphics"""
+
+    def __init__(self, rect: pygame.Rect):
+        self.rect = rect
+
+    #####################################################################################################
+    def draw(self, surface: pygame.Surface) -> None:
+        pass

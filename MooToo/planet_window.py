@@ -1,7 +1,7 @@
 """ Display Planet Details"""
 
 import time
-from enum import Enum, auto
+from enum import Enum, StrEnum, auto
 import pygame
 from MooToo.base_graphics import BaseGraphics
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
@@ -10,6 +10,12 @@ from MooToo.planet import Planet
 from MooToo.config import Config
 from MooToo.gui_button import Button
 from MooToo.building_choice_window import BuildingChoiceWindow
+
+
+#####################################################################################################
+class PlanetButtons(StrEnum):
+    RETURN = auto()
+    BUILD = auto()
 
 
 #####################################################################################################
@@ -27,8 +33,6 @@ class PlanetWindow(BaseGraphics):
         self.screen = screen
         self.planet = None
         self.images = self.load_images()
-        self.return_button = Button(self.load_image("COLPUPS.LBX", 4), pygame.Vector2(555, 460))
-        self.build_button = Button(self.load_image("COLPUPS.LBX", 1), pygame.Vector2(519, 123))
         self.system_rects: dict[tuple[float, float, float, float], Planet] = {}
         self.colony_font = pygame.font.SysFont("Ariel", 18, bold=True)
         self.display_mode = PlanetDisplayMode.NORMAL
@@ -164,6 +168,8 @@ class PlanetWindow(BaseGraphics):
         self.draw_government(self.planet)
         self.draw_morale(self.planet)
         self.draw_buildings(self.planet)
+        for button in self.buttons.values():
+            button.draw(self.screen)
         label_surface = self.colony_font.render(f"{self.planet.name}", True, "white")
         self.screen.blit(
             label_surface,
@@ -384,10 +390,10 @@ class PlanetWindow(BaseGraphics):
             if self.building_choice_window.button_left_down():
                 self.display_mode = PlanetDisplayMode.NORMAL
                 return False
-        if self.return_button.clicked():
+        if self.buttons[PlanetButtons.RETURN].clicked():
             self.planet = None
             return True
-        if self.build_button.clicked():
+        if self.buttons[PlanetButtons.BUILD].clicked():
             self.display_mode = PlanetDisplayMode.BUILD
 
         for sys_rect, planet in self.system_rects.items():
@@ -395,3 +401,6 @@ class PlanetWindow(BaseGraphics):
             if r.collidepoint(pygame.mouse.get_pos()):
                 self.planet = planet
         return False
+
+
+# EOF

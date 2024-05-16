@@ -9,6 +9,7 @@ import random
 from MooToo.system import System, StarColour
 from MooToo.empire import Empire
 from MooToo.planetbuilding import PlanetBuilding
+from MooToo.research import Research
 from MooToo.names import empire_names
 
 
@@ -19,7 +20,8 @@ class Galaxy:
         self.config = config
         self.systems: dict[tuple[int, int], System] = {}
         self.empires: dict[str, Empire] = {}
-        self.buildings: dict[str, type[PlanetBuilding]]
+        self.buildings: dict[str, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
+        self.researches: dict[str, Research] = load_researches()
         self.turn_number = 0
 
     #####################################################################################################
@@ -34,7 +36,6 @@ class Galaxy:
             self.make_empire(home_system)
         for system in self.systems.values():
             system.make_orbits()
-        self.buildings = load_buildings()
 
     #####################################################################################################
     def find_home_systems(self) -> list[System]:
@@ -110,6 +111,23 @@ def load_buildings() -> dict[str, PlanetBuilding]:
                 klass = getattr(mod, kls)
                 mapping[klass().name] = klass()
                 break
+    return mapping
+
+
+#####################################################################################################
+def load_researches() -> dict[str, Research]:
+    path = "MooToo/researches"
+    mapping: dict[str, Research] = {}
+    files = glob.glob(f"{path}/*.py")
+    for file_name in [os.path.basename(_) for _ in files]:
+        file_name = file_name.replace(".py", "")
+        mod = importlib.import_module(f"{path.replace('/', '.')}.{file_name}")
+        classes = dir(mod)
+        for kls in classes:
+            if kls.startswith("Research") and kls != "Research":
+                klass = getattr(mod, kls)
+                if issubclass(klass, Research):
+                    mapping[klass().name] = klass()
     return mapping
 
 

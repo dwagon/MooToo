@@ -2,7 +2,7 @@
 
 import math
 import time
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import pygame
 from MooToo.planet import Planet
@@ -10,8 +10,10 @@ from MooToo.base_graphics import BaseGraphics
 from MooToo.system import System
 from MooToo.galaxy import get_distance
 from MooToo.gui_button import Button
-from MooToo.config import Config
 from MooToo.constants import PlanetCategory, PlanetClimate, PlanetSize
+
+if TYPE_CHECKING:
+    from MooToo.main import Game
 
 
 #####################################################################################################

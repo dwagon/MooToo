@@ -92,7 +92,7 @@ class Planet:
     def available_to_build(self) -> dict[str, PlanetBuilding]:
         """What buildings are available to be built on this planet"""
         avail = {}
-        for name, tech in self.owner.techs.items():
+        for name, tech in self.owner.known_techs.items():
             if building := tech.enabled_building:
                 if building.available_to_build(self):
                     avail[name] = building
@@ -116,13 +116,18 @@ class Planet:
     #####################################################################################################
     def morale(self) -> int:
         """Morale of planet (out of 10)"""
-        return 5
+        morale = 5
+        for building in self.buildings.values():
+            morale += building.morale_bonus(self)
+        return morale
 
     #####################################################################################################
     def max_population(self) -> int:
         """What's the maximum population this planet can support"""
-
-        return POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
+        max_pop = POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
+        for building in self.buildings.values():
+            max_pop += building.max_pop_bonus(self)
+        return max_pop
 
     #####################################################################################################
     def turn(self):
