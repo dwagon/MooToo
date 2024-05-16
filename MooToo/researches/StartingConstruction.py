@@ -1,24 +1,24 @@
 from MooToo.research import Research, ResearchCategory
-from MooToo.buildings.AutomatedFactory import BuildingAutomatedFactory
+from MooToo.buildings.MarineBarracks import BuildingMarineBarracks
 
-RESEARCH_POINTS = 150
+RESEARCH_POINTS = 0
 CATEGORY = ResearchCategory.CONSTRUCTION
 
 
 #####################################################################################################
-class ResearchAutomatedFactory(Research):
+class ResearchColonyBase(Research):
     def __init__(self):
-        super().__init__("Automated Factory", RESEARCH_POINTS, CATEGORY)
-        self.enabled_building = BuildingAutomatedFactory()
+        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class ResearchMissileBase(Research):
+class ResearchStarBase(Research):
     def __init__(self):
-        super().__init__("Missile Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Star Base", RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class ResearchHeavyArmour(Research):
+class ResearchMarineBarracks(Research):
     def __init__(self):
-        super().__init__("Heavy Armour", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Marine Barracks", RESEARCH_POINTS, CATEGORY)
+        self.enabled_building = BuildingMarineBarracks()
