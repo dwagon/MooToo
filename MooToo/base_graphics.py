@@ -2,7 +2,6 @@
 
 import pygame
 from MooToo.lbx_image import LBXImage
-from MooToo.config import Config
 
 
 #####################################################################################################
@@ -12,8 +11,9 @@ IMAGE_CACHE: dict[tuple[str, int], pygame.Surface] = {}
 #####################################################################################################
 #####################################################################################################
 class BaseGraphics:
-    def __init__(self, config: Config):
-        self.config = config
+    def __init__(self, game: "Game"):
+        self.config = game.config
+        self.game = game
         pygame.init()
         self.label_font = pygame.font.SysFont("Ariel", 14)
         self.text_font = pygame.font.SysFont("Ariel", 18)

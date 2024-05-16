@@ -27,6 +27,12 @@ class PlanetBuilding:
     def research_bonus(self, planet: "Planet") -> int:
         return 0
 
+    def morale_bonus(self, planet: "Planet") -> int:
+        return 0
+
+    def max_pop_bonus(self, planet: "Planet") -> int:
+        return 0
+
     def available_to_build(self, planet: "Planet") -> bool:
         if self.name in planet.buildings:
             return False

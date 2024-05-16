@@ -9,10 +9,11 @@ from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
 from MooToo.planet import Planet
-from MooToo.gui_button import Button
+from MooToo.gui_button import Button, InvisButton
 from MooToo.orbit_window import OrbitWindow
 from MooToo.base_graphics import BaseGraphics
 from MooToo.planet_window import PlanetWindow
+from MooToo.science_window import ScienceWindow
 
 
 #####################################################################################################
@@ -20,21 +21,25 @@ class DisplayMode(Enum):
     GALAXY = auto()
     SYSTEM = auto()
     ORBIT = auto()
+    SCIENCE = auto()
 
 
 #####################################################################################################
 class Game(BaseGraphics):
     def __init__(self, galaxy: Galaxy, empire_name: str, config: Config):
-        super().__init__(config)
+        self.config = config
+        super().__init__(self)
         self.display_mode = DisplayMode.GALAXY
         self.galaxy = galaxy
         self.empire = galaxy.empires[empire_name]
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
-        self.orbit_window = OrbitWindow(self.screen, config)
-        self.planet_window = PlanetWindow(self.screen, config)
+        self.orbit_window = OrbitWindow(self.screen, self)
+        self.planet_window = PlanetWindow(self.screen, self)
+        self.science_window = ScienceWindow(self.screen, self)
         self.images = self.load_images()
         self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
+        self.science_button = InvisButton(pygame.Rect(547, 346, 65, 69))
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
@@ -114,11 +119,16 @@ class Game(BaseGraphics):
                     self.system = system
                 if self.turn_button.clicked():
                     self.galaxy.turn()
+                if self.science_button.clicked():
+                    self.display_mode = DisplayMode.SCIENCE
             case DisplayMode.ORBIT:
                 if self.orbit_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
             case DisplayMode.SYSTEM:
                 if self.planet_window.button_left_down():
+                    self.display_mode = DisplayMode.GALAXY
+            case DisplayMode.SCIENCE:
+                if self.science_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
 
     #####################################################################################################
@@ -153,6 +163,9 @@ class Game(BaseGraphics):
                 self.orbit_window.draw(self.system)
             case DisplayMode.SYSTEM:
                 self.planet_window.draw(self.system)
+            case DisplayMode.SCIENCE:
+                self.draw_galaxy_view()
+                self.science_window.draw()
 
     #####################################################################################################
     def draw_galaxy_view(self):
