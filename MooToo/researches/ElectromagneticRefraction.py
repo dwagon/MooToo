@@ -1,22 +1,22 @@
 from MooToo.research import Research, ResearchCategory
 
-RESEARCH_POINTS = 80
-CATEGORY = ResearchCategory.CONSTRUCTION
+RESEARCH_POINTS = 1500
+CATEGORY = ResearchCategory.FORCE_FIELDS
 
 
 #####################################################################################################
-class AntiMissileRockets(Research):
+class ResearchStealthField(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Stealth Field", RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class FighterBays(Research):
+class ResearchPersonalShield(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Personal Shield", RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class ReinforcedHull(Research):
+class ResearchStealthSuit(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Stealth Suit", RESEARCH_POINTS, CATEGORY)

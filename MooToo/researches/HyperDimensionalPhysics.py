@@ -1,22 +1,22 @@
 from MooToo.research import Research, ResearchCategory
 
-RESEARCH_POINTS = 80
-CATEGORY = ResearchCategory.CONSTRUCTION
+RESEARCH_POINTS = 6000
+CATEGORY = ResearchCategory.PHYSICS
 
 
 #####################################################################################################
-class AntiMissileRockets(Research):
+class ResearchHyperspaceCommunications(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Hyperspace Communications", RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class FighterBays(Research):
+class ResearchMaulerDevice(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Mauler Device", RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class ReinforcedHull(Research):
+class ResearchSensors(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Sensors", RESEARCH_POINTS, CATEGORY)
