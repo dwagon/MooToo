@@ -1,22 +1,24 @@
 from MooToo.research import Research, ResearchCategory
+from MooToo.buildings.StarFortress import BuildingStarFortress
 
-RESEARCH_POINTS = 80
+RESEARCH_POINTS = 6000
 CATEGORY = ResearchCategory.CONSTRUCTION
 
 
 #####################################################################################################
-class AntiMissileRockets(Research):
+class ResearchStarFortress(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Star Fortress", RESEARCH_POINTS, CATEGORY)
+        self.enabled_building = BuildingStarFortress()
 
 
 #####################################################################################################
-class FighterBays(Research):
+class ResearchAdvancedCityPlanning(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("AdvancedCityPlanning", RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class ReinforcedHull(Research):
+class ResearchHeavyFighters(Research):
     def __init__(self):
-        super().__init__("Colony Base", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Heavy Fighters", RESEARCH_POINTS, CATEGORY)
