@@ -180,7 +180,7 @@ class Planet:
         self.population = 0.0
         self.buildings: dict[str, PlanetBuilding] = {}
         self.buildings_available: dict[str, PlanetBuilding] = {}
-        self.build_queue: list[PlanetBuilding] = []
+        self.build_queue: list[PlanetBuilding | Ship] = []
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
         self.climate_image = self.gen_climate_image()
@@ -252,27 +252,37 @@ class Planet:
             return
         if self.construction_spent >= self.build_queue[0].cost:
             self.construction_spent -= self.build_queue[0].cost
-            self.build_building(self.build_queue.pop(0))
+            self.finish_construction(self.build_queue.pop(0))
 
     #####################################################################################################
-    def build_building(self, building: PlanetBuilding):
+    def finish_construction(self, construct: PlanetBuilding | Ship):
         """Create a new building"""
-        self.buildings[building.name] = building
+        if isinstance(construct, PlanetBuilding):
+            self.buildings[construct.name] = construct
+        elif isinstance(construct, Ship):
+            self.owner.add_ship(construct, self.system)
+        else:
+            print(f"finish_construction: Unknown {construct=}")
 
     #####################################################################################################
-    def add_to_build_queue(self, building: PlanetBuilding):
+    def add_to_build_queue(self, building: PlanetBuilding | Ship):
         if len(self.build_queue) < 6:
             self.build_queue.append(building)
 
     #####################################################################################################
     def toggle_build_queue_by_name(self, building_name: str):
         """Add a building by name to the build queue, or remove it if it already exists"""
-        building = self.get_galaxy().buildings[building_name]
-        for bld in self.build_queue:
-            if building_name == bld.name:
-                self.build_queue.remove(building)
-                return
-        self.add_to_build_queue(building)
+        if building_name in self.get_galaxy().buildings:
+            building = self.get_galaxy().buildings[building_name]
+            for bld in self.build_queue:
+                if building_name == bld.name:
+                    self.build_queue.remove(building)
+                    return
+            self.add_to_build_queue(building)
+        elif building_name.lower() in ShipType:
+            self.add_to_build_queue(select_ship_type_by_name(building_name))
+        else:
+            print(f"toggle_build_queue_by_name({building_name=}): What you talking about?")
 
     #####################################################################################################
     def grow_population(self) -> None:

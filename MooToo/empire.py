@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING
 from MooToo.system import System
 from MooToo.planet import Planet, PopulationJobs
 from MooToo.research import Research, ResearchCategory
+from MooToo.ship import Ship
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
@@ -22,6 +23,7 @@ class Empire:
         self.money = 100
         self.known_systems: dict[System, bool] = {}
         self.owned_planets: list[Planet] = []
+        self.ships: list[Ship] = []
         self.researching: Research | None = None
         self.research_spent = 0
         self.researched: dict[ResearchCategory, int] = {
@@ -39,6 +41,12 @@ class Empire:
             "Marine Barracks": galaxy.researches["Marine Barracks"],
             "Colony Base": galaxy.researches["Colony Base"],
         }
+
+    #####################################################################################################
+    def add_ship(self, ship: Ship, system: System):
+        self.ships.append(ship)
+        ship.location = system
+        print(f"{self.ships=}")
 
     #####################################################################################################
     def turn(self):
