@@ -2,10 +2,10 @@
 
 import random
 from typing import TYPE_CHECKING
-from enum import StrEnum
 from MooToo.planet import Planet
 from MooToo.names import system_names
 from MooToo.constants import StarColour
+from MooToo.ship import Ship
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
@@ -54,6 +54,10 @@ class System:
         self.orbits: dict[int, Planet | None] = {}
 
     #####################################################################################################
+    def __repr__(self):
+        return f"<System {self.position}>"
+
+    #####################################################################################################
     def pick_star_colour(self) -> str:
         while True:
             pct = random.randint(0, 100)
@@ -70,6 +74,14 @@ class System:
         for planet in self.orbits.values():
             if planet:
                 planet.turn()
+
+    #####################################################################################################
+    def ships_in_orbit(self) -> list[Ship]:
+        """Return the list of ships (of all players) in orbit"""
+        ships: list[Ship] = []
+        for emp in self.galaxy.empires.values():
+            ships.extend([_ for _ in emp.ships if _.location == self])
+        return ships
 
     #####################################################################################################
     def make_orbits(self):

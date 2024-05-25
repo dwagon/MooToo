@@ -50,6 +50,7 @@ class Game(BaseGraphics):
         images["small_orange_star"] = self.load_image("BUFFER0.LBX", 167)
         images["small_red_star"] = self.load_image("BUFFER0.LBX", 173)
         images["small_brown_star"] = self.load_image("BUFFER0.LBX", 179)
+        images["ship"] = self.load_image("BUFFER0.LBX", 205)
         end = time.time()
         print(f"Main: Loaded {len(images)} in {end-start} seconds")
 
@@ -202,7 +203,7 @@ class Game(BaseGraphics):
     def draw_galaxy_view_system(self, sys_coord, system):
         star_image = self.images[f"small_{system.colour.name.lower()}_star"]
         img_size = star_image.get_size()
-        img_coord = (sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
+        img_coord = pygame.Vector2(sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
         self.screen.blit(star_image, img_coord)
 
         if self.empire.is_known_system(system):
@@ -210,6 +211,11 @@ class Game(BaseGraphics):
             text_size = text_surface.get_size()
             text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
             self.screen.blit(text_surface, text_coord)
+
+            if system.ships_in_orbit():
+                ship_image = self.images["ship"]
+                ship_coord = img_coord + pygame.Vector2(img_size[0] - 5, 0)
+                self.screen.blit(ship_image, ship_coord)
 
 
 #####################################################################################################
