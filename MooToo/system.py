@@ -1,33 +1,56 @@
 """ system class"""
 
 import random
+from typing import TYPE_CHECKING
 from enum import StrEnum
 from MooToo.planet import Planet
-from MooToo.config import Config
 from MooToo.names import system_names
+from MooToo.constants import StarColour
+
+if TYPE_CHECKING:
+    from MooToo.galaxy import Galaxy
+
+#####################################################################################################
 
 MAX_ORBITS = 5
 ORBIT_NAMES = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII")
 
 
-#####################################################################################################
-class StarColour(StrEnum):
-    BLUE = "blue"
-    WHITE = "white"
-    YELLOW = "yellow"
-    ORANGE = "orange"
-    RED = "red"
-    BROWN = "brown"
+STAR_COLOURS = {
+    StarColour.BLUE: {
+        "probability": 2,
+        "prob_orbit": 40,
+    },
+    StarColour.WHITE: {
+        "probability": 3,
+        "prob_orbit": 35,
+    },
+    StarColour.YELLOW: {
+        "probability": 10,
+        "prob_orbit": 45,
+    },
+    StarColour.ORANGE: {
+        "probability": 12,
+        "prob_orbit": 45,
+    },
+    StarColour.RED: {
+        "probability": 68,
+        "prob_orbit": 35,
+    },
+    StarColour.BROWN: {
+        "probability": 5,
+        "prob_orbit": 25,
+    },
+}
 
 
 #####################################################################################################
 class System:
-    def __init__(self, position: tuple[int, int], config: Config):
+    def __init__(self, position: tuple[int, int], galaxy: "Galaxy"):
         self.position = position
-        self.config = config
+        self.galaxy = galaxy
         self.name = pick_name()
         self.colour = self.pick_star_colour()
-        self.draw_colour = self.config["galaxy"]["star_colours"][self.colour]["draw_colour"]
         self.orbits: dict[int, Planet | None] = {}
 
     #####################################################################################################
@@ -35,7 +58,7 @@ class System:
         while True:
             pct = random.randint(0, 100)
             prev = 0
-            for colour, details in self.config["galaxy"]["star_colours"].items():
+            for colour, details in STAR_COLOURS.items():
                 if pct <= prev + details["probability"]:
                     return StarColour(colour)
                 else:
@@ -56,10 +79,10 @@ class System:
                 name_index += 1
                 continue
             pct = random.randint(0, 100)
-            if pct <= self.config["galaxy"]["star_colours"][self.colour]["prob_orbit"]:
+            if pct <= STAR_COLOURS[self.colour]["prob_orbit"]:
                 name = f"{self.name} {ORBIT_NAMES[name_index]}"
                 name_index += 1
-                self.orbits[orbit] = Planet(name, orbit, self.config["galaxy"]["star_colours"][self.colour])
+                self.orbits[orbit] = Planet(name, orbit, self, self.galaxy)
             else:
                 self.orbits[orbit] = None
 

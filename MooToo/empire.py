@@ -3,9 +3,8 @@
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
-from MooToo.system import System, StarColour
+from MooToo.system import System
 from MooToo.planet import Planet, PopulationJobs
-from MooToo.config import Config
 from MooToo.research import Research, ResearchCategory
 
 if TYPE_CHECKING:
@@ -15,10 +14,9 @@ if TYPE_CHECKING:
 #####################################################################################################
 #####################################################################################################
 class Empire:
-    def __init__(self, name: str, home_planet: System, galaxy: "Galaxy", config: Config):
+    def __init__(self, name: str, home_planet: System, galaxy: "Galaxy"):
         self.name = name
         self.galaxy = galaxy
-        self.config = config
         self.government = "Feudal"  # Fix me
         self.home_planet = home_planet
         self.money = 100
@@ -91,9 +89,9 @@ class Empire:
 
     #####################################################################################################
 
-    def make_home_planet(self, orbit: int) -> Planet:
+    def make_home_planet(self, orbit: int, system: "System") -> Planet:
         """Return a suitable home planet"""
-        p = Planet(f"{self.name} Home", orbit, self.config["galaxy"]["star_colours"][StarColour.YELLOW])
+        p = Planet(f"{self.name} Home", orbit, system, self.galaxy)
         p.make_home_world()
         p.owner = self
         self.owned_planets.append(p)

@@ -2,16 +2,117 @@
 
 import math
 import random
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
 from MooToo.utils import prob_map
 from MooToo.planetbuilding import PlanetBuilding
-from MooToo.constants import PlanetCategory, PopulationJobs, PlanetRichness, PlanetClimate, PlanetGravity, PlanetSize
+from MooToo.constants import (
+    PlanetCategory,
+    PopulationJobs,
+    PlanetRichness,
+    PlanetClimate,
+    PlanetGravity,
+    PlanetSize,
+    StarColour,
+)
+from MooToo.ship import ShipType, Ship, select_ship_type_by_name
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
     from MooToo.empire import Empire
 
 #####################################################################################################
+STAR_COLOURS = {
+    StarColour.BLUE: {
+        "climate": {
+            "Toxic": 16,
+            "Radiated": 50,
+            "Barren": 27,
+            "Desert": 7,
+            "Tundra": 0,
+            "Ocean": 0,
+            "Swamp": 0,
+            "Arid": 0,
+            "Terran": 0,
+            "Gaia": 0,
+        },
+        "richness": {"Ultra Poor": 0, "Poor": 0, "Abundant": 40, "Rich": 20, "Ultra Rich": 20},
+    },
+    StarColour.WHITE: {
+        "climate": {
+            "Toxic": 16,
+            "Radiated": 37,
+            "Barren": 27,
+            "Desert": 6,
+            "Tundra": 4,
+            "Ocean": 2,
+            "Swamp": 1,
+            "Arid": 3,
+            "Terran": 3,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 0, "Poor": 20, "Abundant": 40, "Rich": 30, "Ultra Rich": 10},
+    },
+    StarColour.YELLOW: {
+        "climate": {
+            "Toxic": 12,
+            "Radiated": 27,
+            "Barren": 30,
+            "Desert": 6,
+            "Tundra": 8,
+            "Ocean": 5,
+            "Swamp": 4,
+            "Arid": 3,
+            "Terran": 4,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 0, "Poor": 30, "Abundant": 40, "Rich": 20, "Ultra Rich": 10},
+    },
+    StarColour.ORANGE: {
+        "climate": {
+            "Toxic": 16,
+            "Radiated": 17,
+            "Barren": 23,
+            "Desert": 8,
+            "Tundra": 7,
+            "Ocean": 6,
+            "Swamp": 7,
+            "Arid": 6,
+            "Terran": 7,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 10, "Poor": 40, "Abundant": 40, "Rich": 10, "Ultra Rich": 0},
+    },
+    StarColour.RED: {
+        "climate": {
+            "Toxic": 16,
+            "Radiated": 13,
+            "Barren": 50,
+            "Desert": 3,
+            "Tundra": 7,
+            "Ocean": 2,
+            "Swamp": 2,
+            "Arid": 2,
+            "Terran": 4,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 20, "Poor": 40, "Abundant": 40, "Rich": 0, "Ultra Rich": 0},
+    },
+    StarColour.BROWN: {
+        "climate": {
+            "Toxic": 20,
+            "Radiated": 30,
+            "Barren": 10,
+            "Desert": 20,
+            "Tundra": 10,
+            "Ocean": 2,
+            "Swamp": 2,
+            "Arid": 2,
+            "Terran": 3,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 5, "Poor": 10, "Abundant": 60, "Rich": 20, "Ultra Rich": 5},
+    },
+}
 GRAVITY_MAP: dict[PlanetGravity, float] = {
     PlanetGravity.LOW: 0.75,
     PlanetGravity.NORMAL: 1.0,
@@ -64,13 +165,15 @@ PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, name: str, orbit: int, config: dict[str, Any]):
+    def __init__(self, name: str, orbit: int, system, galaxy: "Galaxy"):
         self.name = name
         self.orbit = orbit
+        self.system = system
+        self.galaxy = galaxy
         self.category = pick_planet_category()
         self.size = pick_planet_size()
-        self.richness = pick_planet_richness(config["richness"])
-        self.climate = pick_planet_climate(config["climate"])
+        self.richness = pick_planet_richness(STAR_COLOURS[self.system.colour]["richness"])
+        self.climate = pick_planet_climate(STAR_COLOURS[self.system.colour]["climate"])
         self.gravity = pick_planet_gravity(self.size, self.richness)
         self.owner: "Empire" | None = None
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}

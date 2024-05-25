@@ -7,7 +7,6 @@ from MooToo.base_graphics import BaseGraphics
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
 from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
-from MooToo.config import Config
 from MooToo.gui_button import Button
 from MooToo.building_choice_window import BuildingChoiceWindow
 

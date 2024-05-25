@@ -2,6 +2,7 @@
 
 import pygame
 from MooToo.lbx_image import LBXImage
+from MooToo.constants import MOO_PATH
 
 
 #####################################################################################################
@@ -12,7 +13,6 @@ IMAGE_CACHE: dict[tuple[str, int], pygame.Surface] = {}
 #####################################################################################################
 class BaseGraphics:
     def __init__(self, game: "Game"):
-        self.config = game.config
         self.game = game
         pygame.init()
         self.label_font = pygame.font.SysFont("Ariel", 14)
@@ -37,9 +37,7 @@ class BaseGraphics:
     ) -> pygame.Surface:
         img_key = (lbx_file, lbx_index)
         if img_key not in IMAGE_CACHE:
-            pil_image = LBXImage(
-                lbx_file, lbx_index, self.config["moo_path"], frame, palette_file, palette_index
-            ).png_image()
+            pil_image = LBXImage(lbx_file, lbx_index, MOO_PATH, frame, palette_file, palette_index).png_image()
             IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "_.png")
         return IMAGE_CACHE[img_key]
 

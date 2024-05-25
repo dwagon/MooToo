@@ -5,7 +5,6 @@ from typing import Optional
 
 import pygame
 from enum import Enum, auto
-from MooToo.config import Config
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
 from MooToo.planet import Planet
@@ -26,8 +25,7 @@ class DisplayMode(Enum):
 
 #####################################################################################################
 class Game(BaseGraphics):
-    def __init__(self, galaxy: Galaxy, empire_name: str, config: Config):
-        self.config = config
+    def __init__(self, galaxy: Galaxy, empire_name: str):
         super().__init__(self)
         self.display_mode = DisplayMode.GALAXY
         self.galaxy = galaxy
@@ -202,7 +200,7 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_galaxy_view_system(self, sys_coord, system):
-        star_image = self.images[f"small_{system.draw_colour}_star"]
+        star_image = self.images[f"small_{system.colour.name.lower()}_star"]
         img_size = star_image.get_size()
         img_coord = (sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
         self.screen.blit(star_image, img_coord)
@@ -216,13 +214,12 @@ class Game(BaseGraphics):
 
 #####################################################################################################
 def main():
-    config = Config("config.json")
-    galaxy = Galaxy(config)
+    galaxy = Galaxy()
     galaxy.populate()
 
     empire_name = random.choice(list(galaxy.empires.keys()))
 
-    g = Game(galaxy, empire_name, config)
+    g = Game(galaxy, empire_name)
     g.loop()
     pygame.quit()
 

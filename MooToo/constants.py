@@ -1,5 +1,7 @@
 from enum import Enum, StrEnum, auto
 
+MOO_PATH = "/Applications/Master of Orion 2.app/Contents/Resources/game"
+
 
 #####################################################################################################
 class PlanetCategory(Enum):
@@ -52,3 +54,13 @@ class PopulationJobs(StrEnum):
     FARMER = "F"
     WORKERS = "W"
     SCIENTISTS = "S"
+
+
+#####################################################################################################
+class StarColour(StrEnum):
+    BLUE = "blue"
+    WHITE = "white"
+    YELLOW = "yellow"
+    ORANGE = "orange"
+    RED = "red"
+    BROWN = "brown"
