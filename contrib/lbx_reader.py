@@ -16,7 +16,7 @@ def main():
         print(f"Processing {sfname}")
         try:
             if data[2] != 0xAD or data[3] != 0xFE or data[4] != 0x00 or data[5] != 0x00:
-                print("No an LBX file")
+                print("Not an LBX file - missing signature")
                 continue
         except (struct.error, IndexError):
             print("Definitely not an LBX file")

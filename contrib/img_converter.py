@@ -46,6 +46,7 @@ def load_palette(fname: str) -> dict[int, tuple[int, int, int]]:
         for counter in range(256):
             alpha = struct.unpack("B", infd.read(1))[0]
             if alpha not in (0, 1):
+                print(f"Alpha is {alpha}")
                 sys.exit(1)
             red = struct.unpack("B", infd.read(1))[0]
             green = struct.unpack("B", infd.read(1))[0]
@@ -80,14 +81,15 @@ class Graphic:
         self.num_frames = dread(fd)
         self.delay = dread(fd)
         self.flags = self.image_flags(dread(fd))
-        print(f"{fd.name}: {self.width} x {self.height} frames={self.num_frames} {self.flags}")
+        print(f"{fd.name}: {self.width} x {self.height} frames={self.num_frames}@{self.delay} {self.flags}")
         frame_offsets = []
         try:
             for _ in range(self.num_frames + 1):
                 offset = dread(fd, "<L", 4)
                 frame_offsets.append(offset)
         except struct.error:
-            raise UserWarning("Not an image file")
+            raise UserWarning("Not an image file - can't read frame offsets")
+        print(f"{frame_offsets=}")
         if self.flags["internal"]:
             colour_shift = dread(fd)
             num_colours = dread(fd)
@@ -122,6 +124,7 @@ class Graphic:
         try:
             frame_indicator = dread(fd)
         except struct.error:
+            print("No frame indicator")
             return None
 
         if frame_indicator != 1:
@@ -194,6 +197,7 @@ def main() -> None:
         for filename in sys.argv[1:]:
             try:
                 g = Graphic()
+                print(f"loading {filename}")
                 with open(filename, "rb") as fd:
                     try:
                         g.load(fd, palette.copy())
@@ -208,7 +212,10 @@ def main() -> None:
                         pass
                     for frame in range(g.num_frames):
                         save_file = f"{dirname}/{dirname}_{suffix}_{g.width}x{g.height}_f{frame}_p{num}.png"
+                        print(f"Saving {save_file}")
                         g.save_frame(save_file, frame=frame)
+                else:
+                    print("No frames")
             except Exception as exc:
                 print(f"Failure on {filename}: {exc}")
                 raise
