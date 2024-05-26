@@ -3,10 +3,10 @@
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
-from MooToo.system import System, StarColour
+from MooToo.system import System
 from MooToo.planet import Planet, PopulationJobs
-from MooToo.config import Config
 from MooToo.research import Research, ResearchCategory
+from MooToo.ship import Ship
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
@@ -15,15 +15,15 @@ if TYPE_CHECKING:
 #####################################################################################################
 #####################################################################################################
 class Empire:
-    def __init__(self, name: str, home_planet: System, galaxy: "Galaxy", config: Config):
+    def __init__(self, name: str, home_planet: System, galaxy: "Galaxy"):
         self.name = name
         self.galaxy = galaxy
-        self.config = config
         self.government = "Feudal"  # Fix me
         self.home_planet = home_planet
         self.money = 100
         self.known_systems: dict[System, bool] = {}
         self.owned_planets: list[Planet] = []
+        self.ships: list[Ship] = []
         self.researching: Research | None = None
         self.research_spent = 0
         self.researched: dict[ResearchCategory, int] = {
@@ -41,6 +41,12 @@ class Empire:
             "Marine Barracks": galaxy.researches["Marine Barracks"],
             "Colony Base": galaxy.researches["Colony Base"],
         }
+
+    #####################################################################################################
+    def add_ship(self, ship: Ship, system: System):
+        self.ships.append(ship)
+        ship.location = system
+        print(f"{self.ships=}")
 
     #####################################################################################################
     def turn(self):
@@ -91,9 +97,9 @@ class Empire:
 
     #####################################################################################################
 
-    def make_home_planet(self, orbit: int) -> Planet:
+    def make_home_planet(self, orbit: int, system: "System") -> Planet:
         """Return a suitable home planet"""
-        p = Planet(f"{self.name} Home", orbit, self.config["galaxy"]["star_colours"][StarColour.YELLOW])
+        p = Planet(f"{self.name} Home", orbit, system, self.galaxy)
         p.make_home_world()
         p.owner = self
         self.owned_planets.append(p)

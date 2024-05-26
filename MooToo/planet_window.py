@@ -7,7 +7,6 @@ from MooToo.base_graphics import BaseGraphics
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
 from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
-from MooToo.config import Config
 from MooToo.gui_button import Button
 from MooToo.building_choice_window import BuildingChoiceWindow
 
@@ -212,10 +211,8 @@ class PlanetWindow(BaseGraphics):
             return
         top_left = pygame.Vector2(527, 27)
         building = self.planet.build_queue[0]
-        for word in building.name.split():
-            text = self.text_font.render(word, True, "purple")
-            self.screen.blit(text, top_left)
-            top_left.y += text.get_size()[1]
+        text = self.text_font.render(building.name, True, "purple")
+        self.screen.blit(text, top_left)
 
     #####################################################################################################
     def draw_population(self, planet: Planet) -> None:

@@ -1,9 +1,14 @@
 """ Select what to build next"""
 
+from typing import TYPE_CHECKING
 import pygame
 from MooToo.base_graphics import BaseGraphics
 from MooToo.planet import Planet
 from MooToo.gui_button import Button
+from MooToo.ship import ShipType
+
+if TYPE_CHECKING:
+    from MooToo.main import Game
 
 
 #####################################################################################################
@@ -30,7 +35,24 @@ class BuildingChoiceWindow(BaseGraphics):
         self.draw_centered_image(self.images["window"])
         self.draw_currently_building()
         self.draw_available_buildings()
+        self.draw_available_ships()
         self.draw_building_queue()
+
+    #####################################################################################################
+    def draw_available_ships(self) -> None:
+        """ """
+        # Colony Base
+        # Freighter Fleet
+        # Colony Ship
+        # Outpost Ship
+        # Transport Ship
+        # Ships
+        top_left = pygame.Vector2(486, 14)
+        for shipType in ShipType:
+            text_surface = self.text_font.render(shipType.name, True, "white")
+            rect = self.screen.blit(text_surface, top_left)
+            top_left.y += text_surface.get_size()[1]
+            self.to_build_rects[shipType.name] = rect
 
     #####################################################################################################
     def draw_currently_building(self) -> None:
@@ -38,10 +60,8 @@ class BuildingChoiceWindow(BaseGraphics):
             return
         top_left = pygame.Vector2(205, 10)
         building = self.planet.build_queue[0]
-        for word in building.name.split():
-            text = self.text_font.render(word, True, "purple")
-            self.screen.blit(text, top_left)
-            top_left.y += text.get_size()[1]
+        text = self.text_font.render(building.name, True, "purple")
+        self.screen.blit(text, top_left)
 
     #####################################################################################################
     def draw_available_buildings(self) -> None:

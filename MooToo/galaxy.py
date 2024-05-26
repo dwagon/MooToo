@@ -12,12 +12,16 @@ from MooToo.planetbuilding import PlanetBuilding
 from MooToo.research import Research
 from MooToo.names import empire_names
 
+NUM_SYSTEMS = 40
+NUM_EMPIRES = 4
+MAX_X = 530
+MAX_Y = 420
+
 
 #####################################################################################################
 #####################################################################################################
 class Galaxy:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self):
         self.systems: dict[tuple[int, int], System] = {}
         self.empires: dict[str, Empire] = {}
         self.buildings: dict[str, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
@@ -28,10 +32,10 @@ class Galaxy:
     def populate(self):
         """Fill the galaxy with things"""
         positions = self.get_positions()
-        for _ in range(self.config["galaxy"]["num_systems"]):
+        for _ in range(NUM_SYSTEMS):
             position = random.choice(positions)
             positions.remove(position)
-            self.systems[position] = System(position, self.config)
+            self.systems[position] = System(position, self)
         for home_system in self.find_home_systems():
             self.make_empire(home_system)
         for system in self.systems.values():
@@ -42,13 +46,13 @@ class Galaxy:
         """Find suitable planets for home planets"""
         # Create an arc around the galaxy and put home planets evenly spaced around that arc
         home_planets = []
-        arc_distance = int(360 / self.config["empires"]["number"])
-        radius = min(self.config["galaxy"]["max_x"], self.config["galaxy"]["max_y"]) * 0.75 / 2
+        arc_distance = int(360 / NUM_EMPIRES)
+        radius = min(MAX_X, MAX_Y) * 0.75 / 2
         for degree in range(0, 359, arc_distance):
             angle = math.radians(degree)
             position = (
-                radius * math.cos(angle) + self.config["galaxy"]["max_x"] / 2,
-                radius * math.sin(angle) + self.config["galaxy"]["max_y"] / 2,
+                radius * math.cos(angle) + MAX_X / 2,
+                radius * math.sin(angle) + MAX_Y / 2,
             )
             # Find the system closest to this point
             min_dist = 999999
@@ -74,8 +78,8 @@ class Galaxy:
         name = random.choice(empire_names)
         empire_names.remove(name)
         home_system.colour = StarColour.YELLOW
-        self.empires[name] = Empire(name, home_system, self, self.config)
-        home_system.orbits[3] = self.empires[name].make_home_planet(3)
+        self.empires[name] = Empire(name, home_system, self)
+        home_system.orbits[3] = self.empires[name].make_home_planet(3, home_system)
         self.empires[name].know_system(home_system)
 
     #####################################################################################################
@@ -83,11 +87,11 @@ class Galaxy:
         """Return suitable positions"""
         positions = []
         min_dist = 30
-        num_objects = self.config["galaxy"]["num_systems"]
+        num_objects = NUM_SYSTEMS
         for _ in range(num_objects):
             while True:
-                x = random.randrange(min_dist, self.config["galaxy"]["max_x"] - min_dist)
-                y = random.randrange(min_dist, self.config["galaxy"]["max_y"] - min_dist)
+                x = random.randrange(min_dist, MAX_X - min_dist)
+                y = random.randrange(min_dist, MAX_Y - min_dist)
                 for a, b in positions:  # Find a spot not too close to existing positions
                     if get_distance(x, y, a, b) < min_dist:
                         break
