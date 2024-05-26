@@ -7,6 +7,7 @@ import pygame
 from enum import Enum, auto
 from MooToo.galaxy import Galaxy, get_distance
 from MooToo.system import System
+from MooToo.ship import Ship
 from MooToo.planet import Planet
 from MooToo.gui_button import Button, InvisButton
 from MooToo.orbit_window import OrbitWindow
@@ -38,6 +39,8 @@ class Game(BaseGraphics):
         self.images = self.load_images()
         self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
         self.science_button = InvisButton(pygame.Rect(547, 346, 65, 69))
+        self.ship_rects: list[tuple[pygame.Rect, list[Ship]]] = []
+        self.system_rects: list[tuple[pygame.Rect, System]] = []
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
@@ -109,17 +112,21 @@ class Game(BaseGraphics):
         mouse = pygame.mouse.get_pos()
         match self.display_mode:
             case DisplayMode.GALAXY:
-                if system := self.pick_system(mouse):
-                    if self.empire.is_known_system(system):
-                        self.planet_window.planet = self.pick_planet(system)
-                        self.display_mode = DisplayMode.SYSTEM
-                    else:
-                        self.display_mode = DisplayMode.ORBIT
-                    self.system = system
                 if self.turn_button.clicked():
                     self.galaxy.turn()
                 if self.science_button.clicked():
                     self.display_mode = DisplayMode.SCIENCE
+                for rect, ships in self.ship_rects:
+                    if rect.collidepoint(mouse[0], mouse[1]):
+                        print(ships)
+                for rect, system in self.system_rects:
+                    if rect.collidepoint(mouse[0], mouse[1]):
+                        if self.empire.is_known_system(system):
+                            self.planet_window.planet = self.pick_planet(system)
+                            self.display_mode = DisplayMode.SYSTEM
+                        else:
+                            self.display_mode = DisplayMode.ORBIT
+                        self.system = system
             case DisplayMode.ORBIT:
                 if self.orbit_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
@@ -144,15 +151,6 @@ class Game(BaseGraphics):
         return pick_planet
 
     #####################################################################################################
-    def pick_system(self, coords: tuple[int, int]) -> Optional[System]:
-        """Return which system the mouse coords are close to"""
-        for sys_coord, system in self.galaxy.systems.items():
-            distance = get_distance(sys_coord[0], sys_coord[1], coords[0], coords[1])
-            if distance < 20:
-                return system
-        return None
-
-    #####################################################################################################
     def draw_screen(self):
         match self.display_mode:
             case DisplayMode.GALAXY:
@@ -170,6 +168,8 @@ class Game(BaseGraphics):
     def draw_galaxy_view(self):
         image = self.load_image("BUFFER0.LBX", 0)
         self.screen.blit(image, (0, 0))
+        self.ship_rects = []
+        self.system_rects = []
         for sys_coord, system in self.galaxy.systems.items():
             self.draw_galaxy_view_system(sys_coord, system)
         self.turn_button.draw(self.screen)
@@ -204,7 +204,9 @@ class Game(BaseGraphics):
         star_image = self.images[f"small_{system.colour.name.lower()}_star"]
         img_size = star_image.get_size()
         img_coord = pygame.Vector2(sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
-        self.screen.blit(star_image, img_coord)
+        planet_rect = self.screen.blit(star_image, img_coord)
+        pygame.draw.rect(self.screen, "purple", planet_rect, width=1)  # DBG
+        self.system_rects.append((planet_rect, system))
 
         if self.empire.is_known_system(system):
             text_surface = self.label_font.render(system.name, True, "red")
@@ -212,10 +214,12 @@ class Game(BaseGraphics):
             text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
             self.screen.blit(text_surface, text_coord)
 
-            if system.ships_in_orbit():
+            if ships := system.ships_in_orbit():
                 ship_image = self.images["ship"]
                 ship_coord = img_coord + pygame.Vector2(img_size[0] - 5, 0)
-                self.screen.blit(ship_image, ship_coord)
+                r = self.screen.blit(ship_image, ship_coord)
+                self.ship_rects.append((r, ships))
+                dbg_rect = pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
 
 
 #####################################################################################################
