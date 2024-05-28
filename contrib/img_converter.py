@@ -89,7 +89,6 @@ class Graphic:
                 frame_offsets.append(offset)
         except struct.error:
             raise UserWarning("Not an image file - can't read frame offsets")
-        print(f"{frame_offsets=}")
         if self.flags["internal"]:
             colour_shift = dread(fd)
             num_colours = dread(fd)
@@ -190,8 +189,8 @@ def dread(fd, format: str = "<H", bytes: int = 2) -> Any:
 ##############################################################################
 def main() -> None:
     """Do the stuff"""
-    palettes = [f"FONTS.LBX_{_}" for _ in range(1, 14)] + [f"IFONTS.LBX_{_}" for _ in range(1, 4)]
     palettes = ["FONTS.LBX_1"]
+    palettes = [f"FONTS.LBX_{_}" for _ in range(1, 19)]
     for num, palfile in enumerate(palettes):
         palette = load_palette(palfile)
         for filename in sys.argv[1:]:

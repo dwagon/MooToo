@@ -1,5 +1,7 @@
 """ ship class """
 
+import random
+
 from typing import TYPE_CHECKING
 from enum import StrEnum, auto
 
@@ -41,11 +43,27 @@ class Ship:
     def __init__(self):
         self.cost = 0
         self.space = 0
+        self.command_points = 0
+        self.maintainance = 0
         self.name = ""
+        self.icon = ""
         self.location: System | tuple[int, int] = (0, 0)
 
     def __repr__(self):
         return f"<Ship {self.name} {self.location}>"
+
+
+#####################################################################################################
+class Transport(Ship):
+    def __init__(self, name: str):
+        super().__init__()
+        self.cost = 25  # ?
+        self.space = 0
+        self.command_points = 1
+        self.maintainance = 10
+        self.type = ShipType.Transport
+        self.name = name
+        self.icon = "transport"
 
 
 #####################################################################################################
@@ -56,6 +74,7 @@ class Frigate(Ship):
         self.space = 25
         self.type = ShipType.Frigate
         self.name = name
+        self.icon = f"frigate_{random.randint(0,7)}"
 
 
 #####################################################################################################
@@ -66,6 +85,7 @@ class Destroyer(Ship):
         self.space = 60
         self.name = name
         self.type = ShipType.Destroyer
+        self.icon = f"destroyer_{random.randint(0,7)}"
 
 
 #####################################################################################################
@@ -76,6 +96,7 @@ class Cruiser(Ship):
         self.space = 120
         self.name = name
         self.type = ShipType.Cruiser
+        self.icon = f"cruiser_{random.randint(0,7)}"
 
 
 #####################################################################################################
@@ -86,6 +107,7 @@ class Battleship(Ship):
         self.space = 250
         self.name = name
         self.type = ShipType.Battleship
+        self.icon = f"battleship_{random.randint(0,7)}"
 
 
 #####################################################################################################
@@ -96,6 +118,7 @@ class Titan(Ship):
         self.space = 500
         self.name = name
         self.type = ShipType.Titan
+        self.icon = f"titan_{random.randint(0,7)}"
 
 
 #####################################################################################################
@@ -106,28 +129,32 @@ class DoomStar(Ship):
         self.space = 1200
         self.name = name
         self.type = ShipType.DoomStar
+        self.icon = f"doomstar_{random.randint(0,3)}"
 
 
 #####################################################################################################
 def select_ship_type_by_name(name: str) -> Ship:
     match name:
+        case "Transport":
+            counts[ShipType.Transport] += 1
+            return Transport(f"Transport {counts[ShipType.Transport]:03d}")
         case "Frigate":
             counts[ShipType.Frigate] += 1
-            return Frigate(f"Frigate {counts[ShipType.Frigate]}")
+            return Frigate(f"Frigate {counts[ShipType.Frigate]:03d}")
         case "Destroyer":
             counts[ShipType.Destroyer] += 1
-            return Destroyer(f"Destroyer {counts[ShipType.Destroyer]}")
+            return Destroyer(f"Destroyer {counts[ShipType.Destroyer]:03d}")
         case "Cruiser":
             counts[ShipType.Cruiser] += 1
-            return Cruiser(f"Cruiser {counts[ShipType.Cruiser]}")
+            return Cruiser(f"Cruiser {counts[ShipType.Cruiser]:03d}")
         case "Battleship":
             counts[ShipType.Battleship] += 1
-            return Battleship(f"Battleship {counts[ShipType.Battleship]}")
+            return Battleship(f"Battleship {counts[ShipType.Battleship]:03d}")
         case "Titan":
             counts[ShipType.Titan] += 1
-            return Titan(f"Titan {counts[ShipType.Titan]}")
+            return Titan(f"Titan {counts[ShipType.Titan]:03d}")
         case "DoomStar":
             counts[ShipType.DoomStar] += 1
-            return DoomStar(f"DoomStar {counts[ShipType.DoomStar]}")
+            return DoomStar(f"DoomStar {counts[ShipType.DoomStar]:03d}")
         case _:
             raise NotImplementedError(f"Unhandled ship type {name=}")
