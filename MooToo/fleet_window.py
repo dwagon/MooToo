@@ -23,11 +23,21 @@ class FleetWindow(BaseGraphics):
         self.selected_ships: set[Ship] = set()
         self.all_button = Button(self.images["all_button"], self.top_left + pygame.Vector2(18, 206))
         self.close_button = Button(self.images["close_button"], self.top_left + pygame.Vector2(0, 238))
+        self.ship_rects: list[tuple[pygame.Rect, Ship]] = []
 
     #####################################################################################################
     def button_left_down(self) -> bool:
         if self.close_button.clicked():
             return True
+        # Selecting a ship in the fleet window
+        mouse = pygame.mouse.get_pos()
+        for rect, ship in self.ship_rects:
+            if rect.collidepoint(mouse[0], mouse[1]):
+                if ship in self.selected_ships:
+                    self.selected_ships.remove(ship)
+                else:
+                    self.selected_ships.add(ship)
+        # Clicking the All button
         if self.all_button.clicked():
             if len(self.selected_ships) < len(self.ships):
                 self.selected_ships = set(self.ships)
@@ -70,6 +80,7 @@ class FleetWindow(BaseGraphics):
 
     #####################################################################################################
     def draw(self):
+        self.ship_rects = []
         v = pygame.Vector2(self.top_left.x, self.top_left.y)
         self.screen.blit(self.images["top_window"], v)
         text_surface = self.text_font.render(f"{self.game.empire.name}'s Fleet", True, "white")
@@ -93,4 +104,5 @@ class FleetWindow(BaseGraphics):
         ship_top_left = top_left + pygame.Vector2(16 + h_idx * 58, 3 + v_idx * 56)
         if ship in self.selected_ships:
             self.screen.blit(self.images["blue_bg"], ship_top_left)
-        self.screen.blit(self.images[ship.icon], ship_top_left)
+        rect = self.screen.blit(self.images[ship.icon], ship_top_left)
+        self.ship_rects.append((rect, ship))
