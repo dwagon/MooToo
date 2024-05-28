@@ -46,7 +46,6 @@ class Empire:
     def add_ship(self, ship: Ship, system: System):
         self.ships.append(ship)
         ship.location = system
-        print(f"{self.ships=}")
 
     #####################################################################################################
     def turn(self):

@@ -79,7 +79,9 @@ class Game(BaseGraphics):
                     elif buttons[2]:
                         self.button_right_down()
                 if event.type == pygame.MOUSEMOTION:
-                    self.mouse_pos()
+                    self.mouse_pos(event)
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.button_up()
 
             # fill the screen with a color to wipe away anything from last frame
             self.draw_screen()
@@ -88,7 +90,20 @@ class Game(BaseGraphics):
             self.clock.tick(60)  # limits FPS to 60
 
     #####################################################################################################
-    def mouse_pos(self):
+    def button_up(self):
+        """Mouse button released"""
+        match self.display_mode:
+            case DisplayMode.GALAXY:
+                pass
+            case DisplayMode.ORBIT:
+                pass
+            case DisplayMode.SYSTEM:
+                pass
+            case DisplayMode.FLEET:
+                self.fleet_window.button_up()
+
+    #####################################################################################################
+    def mouse_pos(self, event: pygame.event):
         """Display changes based on where the mouse is"""
         match self.display_mode:
             case DisplayMode.GALAXY:
@@ -97,6 +112,8 @@ class Game(BaseGraphics):
                 self.orbit_window.mouse_pos()
             case DisplayMode.SYSTEM:
                 pass
+            case DisplayMode.FLEET:
+                self.fleet_window.mouse_pos(event)
 
     #####################################################################################################
     def button_right_down(self):
@@ -121,7 +138,7 @@ class Game(BaseGraphics):
                 for rect, ships in self.ship_rects:
                     if rect.collidepoint(mouse[0], mouse[1]):
                         self.display_mode = DisplayMode.FLEET
-                        self.fleet_window.ships = ships
+                        self.fleet_window.reset(ships)
                 for rect, system in self.system_rects:
                     if rect.collidepoint(mouse[0], mouse[1]):
                         if self.empire.is_known_system(system):

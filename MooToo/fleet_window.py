@@ -5,10 +5,14 @@ from typing import TYPE_CHECKING
 import pygame
 from MooToo.ship import Ship
 from MooToo.base_graphics import BaseGraphics
-from MooToo.gui_button import Button
+from MooToo.gui_button import Button, InvisButton
 
 if TYPE_CHECKING:
     from MooToo.main import Game
+
+ALL_OFFSET = pygame.Vector2(18, 206)
+CLOSE_OFFSET = pygame.Vector2(0, 238)
+TITLE_OFFSET = pygame.Vector2(195, 35)
 
 
 #####################################################################################################
@@ -19,16 +23,29 @@ class FleetWindow(BaseGraphics):
         self.screen = screen
         self.ships: list[Ship] = []
         self.images = self.load_images()
+        self.reset([])
+
+    #####################################################################################################
+    def reset(self, ships: list[Ship]):
         self.top_left = pygame.Vector2(640 / 2 - self.images["top_window"].get_size()[0] / 2, 100)
-        self.selected_ships: set[Ship] = set()
-        self.all_button = Button(self.images["all_button"], self.top_left + pygame.Vector2(18, 206))
-        self.close_button = Button(self.images["close_button"], self.top_left + pygame.Vector2(0, 238))
-        self.ship_rects: list[tuple[pygame.Rect, Ship]] = []
+        self.all_button = Button(self.images["all_button"], self.top_left + ALL_OFFSET)
+        self.close_button = Button(self.images["close_button"], self.top_left + CLOSE_OFFSET)
+        self.title_bar = InvisButton(pygame.Rect(self.top_left.x, self.top_left.y, TITLE_OFFSET.x, TITLE_OFFSET.y))
+        self.ships = ships
+        self.selected_ships = set(self.ships)
+        self.ship_rects = []
+        self.selected = False
+
+    #####################################################################################################
+    def button_up(self):
+        self.selected = False
 
     #####################################################################################################
     def button_left_down(self) -> bool:
         if self.close_button.clicked():
             return True
+        if self.title_bar.clicked():
+            self.selected = True
         # Selecting a ship in the fleet window
         mouse = pygame.mouse.get_pos()
         for rect, ship in self.ship_rects:
@@ -37,13 +54,21 @@ class FleetWindow(BaseGraphics):
                     self.selected_ships.remove(ship)
                 else:
                     self.selected_ships.add(ship)
-        # Clicking the All button
+        # Clicking the "All" button
         if self.all_button.clicked():
             if len(self.selected_ships) < len(self.ships):
                 self.selected_ships = set(self.ships)
             else:
                 self.selected_ships = set()
         return False
+
+    #####################################################################################################
+    def mouse_pos(self, event: pygame.event):
+        if self.selected:
+            self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
+            self.all_button.move(self.top_left + ALL_OFFSET)
+            self.close_button.move(self.top_left + CLOSE_OFFSET)
+            self.title_bar.move(self.top_left + TITLE_OFFSET)
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
@@ -98,6 +123,8 @@ class FleetWindow(BaseGraphics):
             self.draw_ship(ship, h_idx, v_idx, ship_display_top_left)
 
         self.screen.blit(self.images["close_button"], v)
+        self.all_button.draw(self.screen)
+        self.close_button.draw(self.screen)
 
     #####################################################################################################
     def draw_ship(self, ship: Ship, h_idx: int, v_idx: int, top_left: pygame.Vector2):
