@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 import random
 import time
-from typing import Optional
 
 import pygame
 from enum import Enum, auto
@@ -14,6 +13,7 @@ from MooToo.orbit_window import OrbitWindow
 from MooToo.base_graphics import BaseGraphics
 from MooToo.planet_window import PlanetWindow
 from MooToo.science_window import ScienceWindow
+from MooToo.fleet_window import FleetWindow
 
 
 #####################################################################################################
@@ -22,6 +22,7 @@ class DisplayMode(Enum):
     SYSTEM = auto()
     ORBIT = auto()
     SCIENCE = auto()
+    FLEET = auto()
 
 
 #####################################################################################################
@@ -36,6 +37,7 @@ class Game(BaseGraphics):
         self.orbit_window = OrbitWindow(self.screen, self)
         self.planet_window = PlanetWindow(self.screen, self)
         self.science_window = ScienceWindow(self.screen, self)
+        self.fleet_window = FleetWindow(self.screen, self)
         self.images = self.load_images()
         self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
         self.science_button = InvisButton(pygame.Rect(547, 346, 65, 69))
@@ -118,7 +120,8 @@ class Game(BaseGraphics):
                     self.display_mode = DisplayMode.SCIENCE
                 for rect, ships in self.ship_rects:
                     if rect.collidepoint(mouse[0], mouse[1]):
-                        print(ships)
+                        self.display_mode = DisplayMode.FLEET
+                        self.fleet_window.ships = ships
                 for rect, system in self.system_rects:
                     if rect.collidepoint(mouse[0], mouse[1]):
                         if self.empire.is_known_system(system):
@@ -135,6 +138,9 @@ class Game(BaseGraphics):
                     self.display_mode = DisplayMode.GALAXY
             case DisplayMode.SCIENCE:
                 if self.science_window.button_left_down():
+                    self.display_mode = DisplayMode.GALAXY
+            case DisplayMode.FLEET:
+                if self.fleet_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
 
     #####################################################################################################
@@ -163,6 +169,9 @@ class Game(BaseGraphics):
             case DisplayMode.SCIENCE:
                 self.draw_galaxy_view()
                 self.science_window.draw()
+            case DisplayMode.FLEET:
+                self.draw_galaxy_view()
+                self.fleet_window.draw()
 
     #####################################################################################################
     def draw_galaxy_view(self):
