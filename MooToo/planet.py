@@ -206,6 +206,8 @@ class Planet:
     def available_to_build(self) -> dict[str, PlanetBuilding]:
         """What buildings are available to be built on this planet"""
         avail = {}
+        avail["Trade Goods"] = self.galaxy.buildings["Trade Goods"]
+        avail["Housing"] = self.galaxy.buildings["Housing"]
         for name, tech in self.owner.known_techs.items():
             if building := tech.enabled_building:
                 if building.available_to_build(self):
@@ -249,8 +251,6 @@ class Planet:
         self.arc = random.randint(0, 359)
         if not self.owner:
             return
-        self.owner.money += self.money_production()
-        self.owner.money -= self.money_cost()
         self.building_production()
         self.grow_population()
         self.buildings_available = self.available_to_build()
@@ -310,7 +310,10 @@ class Planet:
         """
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
-        housing_bonus = 0  # TBA: building housing
+        if self.build_queue and self.build_queue[0].name == "Housing":
+            housing_bonus = int((self.work_production() * 40) / self.population)
+        else:
+            housing_bonus = 0
         max_pop = self.max_population() * 1e6
         food_lack_penalty = 50 * self.food_lack()
         free_space = max_pop - self.population
@@ -332,9 +335,12 @@ class Planet:
     #####################################################################################################
     def money_production(self) -> int:
         """How much money the planet produces"""
-        return (
+        money = (
             self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
+        if self.build_queue and self.build_queue[0].name == "Trade Goods":
+            money += self.work_production()
+        return money
 
     #####################################################################################################
     def money_cost(self) -> int:

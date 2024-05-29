@@ -1,8 +1,6 @@
 #!/usr/bin/env python
-import random
 import sys
 import time
-import jsonpickle
 import pygame
 from enum import Enum, auto
 from MooToo.galaxy import Galaxy, load, save
@@ -203,6 +201,21 @@ class Game(BaseGraphics):
             self.draw_galaxy_view_system(system)
         self.turn_button.draw(self.screen)
         self.draw_research()
+        self.draw_income()
+
+    #####################################################################################################
+    def draw_income(self):
+        """Draw money / income"""
+        top_left = pygame.Vector2(555, 72)
+        rp_text_surface = self.text_font.render(f"{self.empire.money} BC", True, "white", "black")
+        self.screen.blit(rp_text_surface, top_left)
+        top_left.y += rp_text_surface.get_size()[1]
+        if self.empire.income < 0:
+            income_str = f"-{self.empire.income} BC"
+        else:
+            income_str = f"+{self.empire.income} BC"
+        rp_text_surface = self.text_font.render(income_str, True, "white", "black")
+        self.screen.blit(rp_text_surface, top_left)
 
     #####################################################################################################
     def draw_research(self):
@@ -214,7 +227,7 @@ class Game(BaseGraphics):
 
         top_left = pygame.Vector2(550, 360)
         for word in words.split():
-            rp_text_surface = self.label_font.render(word, True, "white")
+            rp_text_surface = self.text_font.render(word, True, "white", "black")
             self.screen.blit(rp_text_surface, top_left)
             top_left.x = 570
             top_left.y += rp_text_surface.get_size()[1]
@@ -225,7 +238,7 @@ class Game(BaseGraphics):
             )
         else:
             words = f"+{self.empire.get_research_points()} RP"
-        rp = self.label_font.render(words, True, "white")
+        rp = self.text_font.render(words, True, "white", "black")
         self.screen.blit(rp, pygame.Vector2(550, top_left.y + 10))
 
     #####################################################################################################
