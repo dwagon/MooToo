@@ -2,7 +2,7 @@
 
 import math
 import random
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from MooToo.utils import prob_map
 from MooToo.planetbuilding import PlanetBuilding
 from MooToo.constants import (
@@ -18,7 +18,6 @@ from MooToo.ship import ShipType, Ship, select_ship_type_by_name
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
-    from MooToo.empire import Empire
 
 #####################################################################################################
 STAR_COLOURS = {
@@ -165,17 +164,16 @@ PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, name: str, orbit: int, system, galaxy: "Galaxy"):
+    def __init__(self, name: str, system, galaxy: "Galaxy"):
         self.name = name
-        self.orbit = orbit
         self.system = system
-        self.galaxy = galaxy
+        self._galaxy = galaxy
         self.category = pick_planet_category()
         self.size = pick_planet_size()
         self.richness = pick_planet_richness(STAR_COLOURS[self.system.colour]["richness"])
         self.climate = pick_planet_climate(STAR_COLOURS[self.system.colour]["climate"])
         self.gravity = pick_planet_gravity(self.size, self.richness)
-        self.owner: "Empire" | None = None
+        self._owner: str = ""
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.population = 0.0
         self.buildings: dict[str, PlanetBuilding] = {}
@@ -186,10 +184,23 @@ class Planet:
         self.climate_image = self.gen_climate_image()
 
     #####################################################################################################
-    def get_galaxy(self) -> "Galaxy":
-        """Access to galaxy structure"""
-        assert self.owner is not None
-        return self.owner.galaxy
+    @property
+    def galaxy(self) -> "Galaxy":
+        assert self._galaxy
+        return self._galaxy
+
+    @galaxy.setter
+    def galaxy(self, value):
+        self._galaxy = value
+
+    #####################################################################################################
+    @property
+    def owner(self) -> Optional[str]:
+        return self.galaxy.empires.get(self._owner)
+
+    @owner.setter
+    def owner(self, value):
+        self._owner = value
 
     #####################################################################################################
     def available_to_build(self) -> dict[str, PlanetBuilding]:
@@ -272,8 +283,8 @@ class Planet:
     #####################################################################################################
     def toggle_build_queue_by_name(self, building_name: str):
         """Add a building by name to the build queue, or remove it if it already exists"""
-        if building_name in self.get_galaxy().buildings:
-            building = self.get_galaxy().buildings[building_name]
+        if building_name in self.galaxy.buildings:
+            building = self.galaxy.buildings[building_name]
             for bld in self.build_queue:
                 if building_name == bld.name:
                     self.build_queue.remove(building)

@@ -21,7 +21,7 @@ class Empire:
         self.government = "Feudal"  # Fix me
         self.home_planet = home_planet
         self.money = 100
-        self.known_systems: dict[System, bool] = {}
+        self.known_systems: set[int] = set()
         self.owned_planets: list[Planet] = []
         self.ships: list[Ship] = []
         self.researching: Research | None = None
@@ -87,20 +87,20 @@ class Empire:
 
     #####################################################################################################
     def know_system(self, system: System) -> None:
-        self.known_systems[system] = True
+        self.known_systems.add(system.id)
 
     #####################################################################################################
     def is_known_system(self, system: System) -> bool:
         """Is the system known to this empire"""
-        return system in self.known_systems
+        return system.id in self.known_systems
 
     #####################################################################################################
 
-    def make_home_planet(self, orbit: int, system: "System") -> Planet:
+    def make_home_planet(self, system: "System") -> Planet:
         """Return a suitable home planet"""
-        p = Planet(f"{self.name} Home", orbit, system, self.galaxy)
+        p = Planet(f"{self.name} Home", system, self.galaxy)
         p.make_home_world()
-        p.owner = self
+        p.owner = self.name
         self.owned_planets.append(p)
         p.population = 8e6
         p.jobs[PopulationJobs.FARMER] = 4

@@ -313,7 +313,6 @@ class PlanetWindow(BaseGraphics):
         for orbit in range(MAX_ORBITS):
             row_middle = top_left.y + orbit * height_of_a_row + height_of_a_row / 2
             self.draw_orbit_arrow(arrow_col, row_middle)
-
             if planet := system.orbits[orbit]:
                 self.draw_orbit_planet(planet, planet_col, row_middle)
                 self.draw_orbit_text(planet, label_col, row_middle)
