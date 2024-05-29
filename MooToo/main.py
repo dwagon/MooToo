@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import random
+import sys
 import time
-
+import jsonpickle
 import pygame
 from enum import Enum, auto
-from MooToo.galaxy import Galaxy, get_distance
+from MooToo.galaxy import Galaxy, load, save
 from MooToo.system import System
 from MooToo.ship import Ship
 from MooToo.planet import Planet
@@ -49,6 +50,8 @@ class Game(BaseGraphics):
         """Load all the images from disk"""
         start = time.time()
         images = {}
+        images["base_window"] = self.load_image("BUFFER0.LBX", 0)
+
         images["small_blue_star"] = self.load_image("BUFFER0.LBX", 149)
         images["small_white_star"] = self.load_image("BUFFER0.LBX", 155)
         images["small_yellow_star"] = self.load_image("BUFFER0.LBX", 161)
@@ -133,6 +136,7 @@ class Game(BaseGraphics):
             case DisplayMode.GALAXY:
                 if self.turn_button.clicked():
                     self.galaxy.turn()
+                    save(self.galaxy, "test")
                 if self.science_button.clicked():
                     self.display_mode = DisplayMode.SCIENCE
                 for rect, ships in self.ship_rects:
@@ -165,7 +169,7 @@ class Game(BaseGraphics):
         """When we look at a system which planet should we start with"""
         max_pop = -1
         pick_planet = None
-        for planet in system.orbits.values():
+        for planet in system.orbits:
             if not planet:
                 continue
             if planet.population > max_pop:
@@ -192,12 +196,11 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_galaxy_view(self):
-        image = self.load_image("BUFFER0.LBX", 0)
-        self.screen.blit(image, (0, 0))
+        self.screen.blit(self.images["base_window"], (0, 0))
         self.ship_rects = []
         self.system_rects = []
-        for sys_coord, system in self.galaxy.systems.items():
-            self.draw_galaxy_view_system(sys_coord, system)
+        for system in self.galaxy.systems.values():
+            self.draw_galaxy_view_system(system)
         self.turn_button.draw(self.screen)
         self.draw_research()
 
@@ -226,7 +229,8 @@ class Game(BaseGraphics):
         self.screen.blit(rp, pygame.Vector2(550, top_left.y + 10))
 
     #####################################################################################################
-    def draw_galaxy_view_system(self, sys_coord, system):
+    def draw_galaxy_view_system(self, system):
+        sys_coord = system.position
         star_image = self.images[f"small_{system.colour.name.lower()}_star"]
         img_size = star_image.get_size()
         img_coord = pygame.Vector2(sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
@@ -249,11 +253,14 @@ class Game(BaseGraphics):
 
 
 #####################################################################################################
-def main():
-    galaxy = Galaxy()
-    galaxy.populate()
+def main(load_file=""):
+    if load_file:
+        galaxy = load(load_file)
+    else:
+        galaxy = Galaxy()
+        galaxy.populate()
 
-    empire_name = random.choice(list(galaxy.empires.keys()))
+    empire_name = list(galaxy.empires.keys())[0]
 
     g = Game(galaxy, empire_name)
     g.loop()
@@ -262,6 +269,9 @@ def main():
 
 #####################################################################################################
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) > 1:
+        main(sys.argv[1])
+    else:
+        main()
 
 # EOF

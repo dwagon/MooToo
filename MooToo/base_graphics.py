@@ -35,7 +35,7 @@ class BaseGraphics:
     def load_image(
         self, lbx_file: str, lbx_index: int, frame: int = 0, palette_file="FONTS.LBX", palette_index=1
     ) -> pygame.Surface:
-        img_key = (lbx_file, lbx_index)
+        img_key = (lbx_file, lbx_index, frame)
         if img_key not in IMAGE_CACHE:
             pil_image = LBXImage(lbx_file, lbx_index, MOO_PATH, frame, palette_file, palette_index).png_image()
             IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "_.png")

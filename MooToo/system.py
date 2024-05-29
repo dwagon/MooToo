@@ -46,12 +46,13 @@ STAR_COLOURS = {
 
 #####################################################################################################
 class System:
-    def __init__(self, position: tuple[int, int], galaxy: "Galaxy"):
+    def __init__(self, id, position: tuple[int, int], galaxy: "Galaxy"):
+        self.id = id
         self.position = position
         self.galaxy = galaxy
         self.name = pick_name()
         self.colour = self.pick_star_colour()
-        self.orbits: dict[int, Planet | None] = {}
+        self.orbits: list[Planet | None] = []
 
     #####################################################################################################
     def __repr__(self):
@@ -69,13 +70,6 @@ class System:
                     prev += details["probability"]
 
     #####################################################################################################
-    def turn(self):
-        """Turn"""
-        for planet in self.orbits.values():
-            if planet:
-                planet.turn()
-
-    #####################################################################################################
     def ships_in_orbit(self) -> list[Ship]:
         """Return the list of ships (of all players) in orbit"""
         ships: list[Ship] = []
@@ -85,18 +79,21 @@ class System:
 
     #####################################################################################################
     def make_orbits(self):
-        name_index = 0
         for orbit in range(MAX_ORBITS):
-            if orbit in self.orbits:  # Handle existing planets such as home planets
-                name_index += 1
-                continue
             pct = random.randint(0, 100)
             if pct <= STAR_COLOURS[self.colour]["prob_orbit"]:
-                name = f"{self.name} {ORBIT_NAMES[name_index]}"
-                name_index += 1
-                self.orbits[orbit] = Planet(name, orbit, self, self.galaxy)
+                self.orbits.append(Planet("", self, self.galaxy))
             else:
-                self.orbits[orbit] = None
+                self.orbits.append(None)
+
+        # Name the planets
+        random.shuffle(self.orbits)
+        name_index = 0
+        for orbit in self.orbits:
+            if orbit:
+                if not orbit.name:
+                    orbit.name = f"{self.name} {ORBIT_NAMES[name_index]}"
+                name_index += 1
 
 
 #####################################################################################################

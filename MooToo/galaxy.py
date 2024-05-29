@@ -5,6 +5,7 @@ import importlib
 import math
 import os
 import random
+import jsonpickle
 
 from MooToo.system import System, StarColour
 from MooToo.empire import Empire
@@ -22,7 +23,7 @@ MAX_Y = 420
 #####################################################################################################
 class Galaxy:
     def __init__(self):
-        self.systems: dict[tuple[int, int], System] = {}
+        self.systems: dict[int, System] = {}
         self.empires: dict[str, Empire] = {}
         self.buildings: dict[str, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
         self.researches: dict[str, Research] = load_researches()
@@ -31,11 +32,13 @@ class Galaxy:
     #####################################################################################################
     def populate(self):
         """Fill the galaxy with things"""
+        id = 0
         positions = self.get_positions()
         for _ in range(NUM_SYSTEMS):
             position = random.choice(positions)
             positions.remove(position)
-            self.systems[position] = System(position, self)
+            self.systems[id] = System(id, position, self)
+            id += 1
         for home_system in self.find_home_systems():
             self.make_empire(home_system)
         for system in self.systems.values():
@@ -57,8 +60,8 @@ class Galaxy:
             # Find the system closest to this point
             min_dist = 999999
             min_system = None
-            for sys_position, system in self.systems.items():
-                distance = get_distance(position[0], position[1], sys_position[0], sys_position[1])
+            for system in self.systems.values():
+                distance = get_distance(position[0], position[1], system.position[0], system.position[1])
                 if distance < min_dist:
                     min_dist = distance
                     min_system = system
@@ -79,7 +82,8 @@ class Galaxy:
         empire_names.remove(name)
         home_system.colour = StarColour.YELLOW
         self.empires[name] = Empire(name, home_system, self)
-        home_system.orbits[3] = self.empires[name].make_home_planet(3, home_system)
+        home_system.orbits.append(self.empires[name].make_home_planet(home_system))
+        random.shuffle(home_system.orbits)
         self.empires[name].know_system(home_system)
 
     #####################################################################################################
@@ -138,6 +142,21 @@ def load_researches() -> dict[str, Research]:
 #####################################################################################################
 def get_distance(x1: float, y1: float, x2: float, y2: float) -> float:
     return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
+
+
+#####################################################################################################
+def save(galaxy: Galaxy, filename: str) -> None:
+    fname = f"{filename}_{galaxy.turn_number}.json"
+    print(f"Saving as {fname}")
+    with open(fname, "w") as outfh:
+        outfh.write(jsonpickle.encode(galaxy, indent=2))
+
+
+#####################################################################################################
+def load(filename: str) -> Galaxy:
+    with open(filename) as infh:
+        galaxy = jsonpickle.loads(infh.read())
+    return galaxy
 
 
 # EOF
