@@ -35,12 +35,12 @@ class OrbitWindow(BaseGraphics):
         images["orbit_window"] = self.load_image("BUFFER0.LBX", 73)
         images["gas_giant"] = self.load_image("BUFFER0.LBX", 142)
 
-        images["big_blue_star"] = self.load_image("BUFFER0.LBX", 83)
-        images["big_white_star"] = self.load_image("BUFFER0.LBX", 154)
-        images["big_yellow_star"] = self.load_image("BUFFER0.LBX", 160)
-        images["big_orange_star"] = self.load_image("BUFFER0.LBX", 166)
-        images["big_red_star"] = self.load_image("BUFFER0.LBX", 172)
-        images["big_brown_star"] = self.load_image("BUFFER0.LBX", 178)
+        images["big_BLUE_star"] = self.load_image("BUFFER0.LBX", 83)
+        images["big_WHITE_star"] = self.load_image("BUFFER0.LBX", 154)
+        images["big_YELLOW_star"] = self.load_image("BUFFER0.LBX", 160)
+        images["big_ORANGE_star"] = self.load_image("BUFFER0.LBX", 166)
+        images["big_RED_star"] = self.load_image("BUFFER0.LBX", 172)
+        images["big_BROWN_star"] = self.load_image("BUFFER0.LBX", 178)
 
         index = 92
         for climate in [
@@ -59,18 +59,19 @@ class OrbitWindow(BaseGraphics):
                 images[f"planet_{climate.name}_{size.name}"] = self.load_image("BUFFER0.LBX", index, frame=0)
                 index += 1
 
-        index = 77
         for orbit in range(5):
+            images[f"orbit_{orbit}"] = self.load_image("BUFFER0.LBX", 90, frame=orbit)
             images[f"asteroid_{orbit}"] = self.load_image("BUFFER0.LBX", 91, frame=orbit)
-            images[f"orbit_{orbit}"] = self.load_image("BUFFER0.LBX", index)
-            index += 1
+            pygame.image.save(images[f"orbit_{orbit}"], f"orbit_{orbit}.jpg")
+            pygame.image.save(images[f"asteroid_{orbit}"], f"asteroid_{orbit}.jpg")
+
         end = time.time()
         print(f"Orbit: Loaded {len(images)} in {end-start} seconds")
 
         return images
 
     #####################################################################################################
-    def draw_planet_details(self, window: pygame.Surface, planet: Planet):
+    def draw_planet_details(self, planet: Planet):
         """Describe details of planet in text format"""
         text_list = (
             planet.name,
@@ -104,20 +105,14 @@ class OrbitWindow(BaseGraphics):
         return False
 
     #####################################################################################################
-    def get_planet_position(self, arc: float, orbit: int) -> pygame.Vector2:
-        x = (91 / 2 + orbit * 47 / 2) * math.cos(math.radians(arc))
-        y = (46 / 2 + orbit * 27 / 2) * math.sin(math.radians(arc))
-        return pygame.Vector2(x, y)
-
-    #####################################################################################################
     def pick_planet(self, coords: tuple[int, int]) -> Optional[Planet]:
         """Return which planet the mouse coords are close to"""
         if not self.system.orbits:
             return None
-        for orbit, planet in self.system.orbits.items():
+        for orbit, planet in enumerate(self.system.orbits):
             if not planet:
                 continue
-            sys_coords = self.get_planet_position(planet.arc, planet.orbit)
+            sys_coords = get_planet_position(planet.arc, orbit)
             adjusted_coords = sys_coords + self.mid_point
             distance = get_distance(adjusted_coords[0], adjusted_coords[1], coords[0], coords[1])
             if distance < 20:
@@ -125,9 +120,9 @@ class OrbitWindow(BaseGraphics):
         return None
 
     #####################################################################################################
-    def draw_asteroid(self, planet: Planet) -> None:
+    def draw_asteroid(self, orbit: int) -> None:
         """Draw an asteroid belt"""
-        image = self.images[f"asteroid_{planet.orbit}"]
+        image = self.images[f"asteroid_{orbit}"]
         self.draw_centered_image(image)
 
     #####################################################################################################
@@ -138,37 +133,34 @@ class OrbitWindow(BaseGraphics):
         self.system = system
 
         # Draw Sun
-        star_image = self.images[f"big_{system.draw_colour}_star"]
+        star_image = self.images[f"big_{system.colour.name}_star"]
         self.draw_centered_image(star_image)
 
-        # Draw orbits first so they are behind everything else
-        for orbit, planet in system.orbits.items():
+        for orbit, planet in enumerate(system.orbits):
             if planet is None:
                 continue
-            orbit_image = self.images[f"orbit_{planet.orbit}"]
-            self.draw_centered_image(orbit_image)
-
-        for orbit, planet in system.orbits.items():
-            if planet is None:
-                continue
-            self.draw_planet_in_orbit(planet)
+            self.draw_planet_in_orbit(orbit, planet)
         if self.planet:
-            self.draw_planet_details(self.window, self.planet)
+            self.draw_planet_details(self.planet)
         self.close_button.draw(self.screen)
 
     #####################################################################################################
-    def draw_planet_in_orbit(self, planet: Planet) -> None:
-        position = self.get_planet_position(planet.arc, planet.orbit)
+    def draw_planet_in_orbit(self, orbit: int, planet: Planet) -> None:
+        position = get_planet_position(planet.arc, orbit)
+        orbit_image = self.images[f"orbit_{orbit}"]
+
         match planet.category:
             case PlanetCategory.GAS_GIANT:
-                self.draw_gas_giant(planet, position)
+                self.draw_centered_image(orbit_image)
+                self.draw_gas_giant(position)
             case PlanetCategory.PLANET:
+                self.draw_centered_image(orbit_image)
                 self.draw_planet(planet, position)
             case PlanetCategory.ASTEROID:
-                self.draw_asteroid(planet)
+                self.draw_asteroid(orbit)
 
     #####################################################################################################
-    def draw_gas_giant(self, planet: Planet, position: pygame.Vector2) -> None:
+    def draw_gas_giant(self, position: pygame.Vector2) -> None:
         """Draw a gas giant"""
         image = self.images["gas_giant"]
         image_position = self.top_left(image, position) + self.mid_point
@@ -180,3 +172,10 @@ class OrbitWindow(BaseGraphics):
         image = self.images[f"planet_{planet.climate.name}_{planet.size.name}"]
         image_position = self.top_left(image, position) + self.mid_point
         self.screen.blit(image, image_position)
+
+
+#####################################################################################################
+def get_planet_position(arc: float, orbit: int) -> pygame.Vector2:
+    x = (91 / 2 + orbit * 47 / 2) * math.cos(math.radians(arc))
+    y = (46 / 2 + orbit * 27 / 2) * math.sin(math.radians(arc))
+    return pygame.Vector2(x, y)
