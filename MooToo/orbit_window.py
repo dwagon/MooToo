@@ -62,8 +62,6 @@ class OrbitWindow(BaseGraphics):
         for orbit in range(5):
             images[f"orbit_{orbit}"] = self.load_image("BUFFER0.LBX", 90, frame=orbit)
             images[f"asteroid_{orbit}"] = self.load_image("BUFFER0.LBX", 91, frame=orbit)
-            pygame.image.save(images[f"orbit_{orbit}"], f"orbit_{orbit}.jpg")
-            pygame.image.save(images[f"asteroid_{orbit}"], f"asteroid_{orbit}.jpg")
 
         end = time.time()
         print(f"Orbit: Loaded {len(images)} in {end-start} seconds")
