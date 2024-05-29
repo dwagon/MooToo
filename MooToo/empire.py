@@ -21,6 +21,7 @@ class Empire:
         self.government = "Feudal"  # Fix me
         self.home_planet = home_planet
         self.money = 100
+        self.income = 0
         self.known_systems: set[int] = set()
         self.owned_planets: list[Planet] = []
         self.ships: list[Ship] = []
@@ -50,8 +51,12 @@ class Empire:
     #####################################################################################################
     def turn(self):
         """Have a turn"""
+        income = 0
         for planet in self.owned_planets:
             planet.turn()
+            income += planet.money_production() - planet.money_cost()
+        self.income = income
+        self.money += self.income
         self.research_spent += self.get_research_points()
         if self.researching and self.research_spent > self.researching.cost:
             self.known_techs[self.researching.name] = self.researching
