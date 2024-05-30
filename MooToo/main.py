@@ -202,6 +202,16 @@ class Game(BaseGraphics):
         self.turn_button.draw(self.screen)
         self.draw_research()
         self.draw_income()
+        self.draw_date()
+
+    #####################################################################################################
+    def draw_date(self):
+        date_year = 3500 + self.galaxy.turn_number // 10
+        date_month = self.galaxy.turn_number % 10
+        date_str = f"{date_year}.{date_month}"
+        top_left = pygame.Vector2(557, 29)
+        rp_text_surface = self.text_font.render(date_str, True, "white", "black")
+        self.screen.blit(rp_text_surface, top_left)
 
     #####################################################################################################
     def draw_income(self):
