@@ -3,6 +3,7 @@
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
+from MooToo.constants import PlanetClimate, PlanetSize, Building, Technology
 from MooToo.system import System
 from MooToo.planet import Planet, PopulationJobs
 from MooToo.research import Research, ResearchCategory
@@ -25,7 +26,7 @@ class Empire:
         self.known_systems: set[int] = set()
         self.owned_planets: list[Planet] = []
         self.ships: list[Ship] = []
-        self.researching: Research | None = None
+        self.researching: Technology | None = None
         self.research_spent = 0
         self.researched: dict[ResearchCategory, int] = {
             ResearchCategory.FORCE_FIELDS: 0,
@@ -37,10 +38,10 @@ class Empire:
             ResearchCategory.CONSTRUCTION: 0,
             ResearchCategory.CHEMISTRY: 0,
         }  # What category / price has been researched
-        self.known_techs: dict[str, Research] = {
-            "Star Base": galaxy.researches["Star Base"],
-            "Marine Barracks": galaxy.researches["Marine Barracks"],
-            "Colony Base": galaxy.researches["Colony Base"],
+        self.known_techs: set[Technology] = {
+            Technology.STAR_BASE,
+            Technology.MARINE_BARRACKS,
+            Technology.COLONY_BASE,
         }
 
     #####################################################################################################
@@ -51,17 +52,19 @@ class Empire:
     #####################################################################################################
     def turn(self):
         """Have a turn"""
+        self.research_spent += self.get_research_points()
+        if self.researching and self.research_spent > self.galaxy.researches[self.researching].cost:
+            self.known_techs.add(self.researching)
+            self.researched[self.galaxy.researches[self.researching].category] = self.galaxy.researches[
+                self.researching
+            ].cost
+            self.researching = None
         income = 0
         for planet in self.owned_planets:
             planet.turn()
             income += planet.money_production() - planet.money_cost()
         self.income = income
         self.money += self.income
-        self.research_spent += self.get_research_points()
-        if self.researching and self.research_spent > self.researching.cost:
-            self.known_techs[self.researching.name] = self.researching
-            self.researched[self.researching.category] = self.researching.cost
-            self.researching = None
 
     #####################################################################################################
     def next_research(self, category: ResearchCategory) -> list[Research]:
@@ -108,12 +111,14 @@ class Empire:
         p.owner = self.name
         self.owned_planets.append(p)
         p.population = 8e6
+        p.climate = PlanetClimate.TERRAN
+        p.size = PlanetSize.LARGE
         p.jobs[PopulationJobs.FARMER] = 4
         p.jobs[PopulationJobs.WORKERS] = 2
         p.jobs[PopulationJobs.SCIENTISTS] = 2
         p.build_queue = []
-        p.buildings["Marine Barracks"] = self.galaxy.buildings["Marine Barracks"]
-        p.buildings["Star Base"] = self.galaxy.buildings["Star Base"]
+        p.buildings[Building.MARINE_BARRACKS] = self.galaxy.buildings[Building.MARINE_BARRACKS]
+        p.buildings[Building.STAR_BASE] = self.galaxy.buildings[Building.STAR_BASE]
 
         p.gen_climate_image()
         return p

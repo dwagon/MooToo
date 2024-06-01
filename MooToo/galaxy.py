@@ -12,6 +12,7 @@ from MooToo.empire import Empire
 from MooToo.planetbuilding import PlanetBuilding
 from MooToo.research import Research
 from MooToo.names import empire_names
+from MooToo.constants import Building, Technology
 
 NUM_SYSTEMS = 40
 NUM_EMPIRES = 4
@@ -25,8 +26,8 @@ class Galaxy:
     def __init__(self):
         self.systems: dict[int, System] = {}
         self.empires: dict[str, Empire] = {}
-        self.buildings: dict[str, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
-        self.researches: dict[str, Research] = load_researches()
+        self.buildings: dict[Building, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
+        self.researches: dict[Technology, Research] = load_researches()
         self.turn_number = 0
 
     #####################################################################################################
@@ -106,16 +107,16 @@ class Galaxy:
 
 
 #####################################################################################################
-def load_buildings() -> dict[str, PlanetBuilding]:
+def load_buildings() -> dict[Building, PlanetBuilding]:
     path = "MooToo/buildings"
-    mapping: dict[str, PlanetBuilding] = {}
+    mapping: dict[Building, PlanetBuilding] = {}
     files = glob.glob(f"{path}/*.py")
     for file_name in [os.path.basename(_) for _ in files]:
         file_name = file_name.replace(".py", "")
         mod = importlib.import_module(f"{path.replace('/', '.')}.{file_name}")
         classes = dir(mod)
         for kls in classes:
-            if kls.startswith("Building"):
+            if kls.startswith("Building") and kls != "Building":
                 klass = getattr(mod, kls)
                 mapping[klass().name] = klass()
                 break
@@ -123,9 +124,9 @@ def load_buildings() -> dict[str, PlanetBuilding]:
 
 
 #####################################################################################################
-def load_researches() -> dict[str, Research]:
+def load_researches() -> dict[Technology, Research]:
     path = "MooToo/researches"
-    mapping: dict[str, Research] = {}
+    mapping: dict[Technology, Research] = {}
     files = glob.glob(f"{path}/*.py")
     for file_name in [os.path.basename(_) for _ in files]:
         file_name = file_name.replace(".py", "")
@@ -135,7 +136,7 @@ def load_researches() -> dict[str, Research]:
             if kls.startswith("Research") and kls != "Research":
                 klass = getattr(mod, kls)
                 if issubclass(klass, Research):
-                    mapping[klass().name] = klass()
+                    mapping[klass().tag] = klass()
     return mapping
 
 

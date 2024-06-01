@@ -1,5 +1,5 @@
 from MooToo.research import Research, ResearchCategory
-
+from MooToo.constants import Technology
 
 RESEARCH_POINTS = 900
 CATEGORY = ResearchCategory.CONSTRUCTION
@@ -8,16 +8,16 @@ CATEGORY = ResearchCategory.CONSTRUCTION
 #####################################################################################################
 class ResearchFastMissileRacks(Research):
     def __init__(self):
-        super().__init__("Fast Missile Racks", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Fast Missile Racks", Technology.FAST_MISSILE_RACKS, RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
 class ResearchAdvancedDamageControl(Research):
     def __init__(self):
-        super().__init__("Advanced Damage Control", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Advanced Damage Control", Technology.ADVANCED_DAMAGE_CONTROL, RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
 class ResearchAssaultShuttles(Research):
     def __init__(self):
-        super().__init__("Assault Shuttles", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Assault Shuttles", Technology.ASSAULT_SHUTTLES, RESEARCH_POINTS, CATEGORY)

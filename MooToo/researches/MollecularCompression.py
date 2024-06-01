@@ -1,4 +1,5 @@
 from MooToo.research import Research, ResearchCategory
+from MooToo.constants import Technology
 
 RESEARCH_POINTS = 1150
 CATEGORY = ResearchCategory.CHEMISTRY
@@ -7,16 +8,16 @@ CATEGORY = ResearchCategory.CHEMISTRY
 #####################################################################################################
 class ResearchPulsonMissile(Research):
     def __init__(self):
-        super().__init__("Pulson Missile", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Pulson Missile", Technology.PULSON_MISSILE, RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
 class ResearchAtmosphericRenewer(Research):
     def __init__(self):
-        super().__init__("Atmospheric Renewer", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Atmospheric Renewer", Technology.ATMOSPHERIC_RENEWER, RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
 class ResearchIridiumFuelCells(Research):
     def __init__(self):
-        super().__init__("Iridium Fuel cells", RESEARCH_POINTS, CATEGORY)
+        super().__init__("Iridium Fuel cells", Technology.IRIDIUM_FUEL_CELLS, RESEARCH_POINTS, CATEGORY)

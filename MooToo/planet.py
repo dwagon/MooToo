@@ -13,6 +13,7 @@ from MooToo.constants import (
     PlanetGravity,
     PlanetSize,
     StarColour,
+    Building,
 )
 from MooToo.ship import ShipType, Ship, select_ship_type_by_name
 
@@ -176,8 +177,8 @@ class Planet:
         self._owner: str = ""
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.population = 0.0
-        self.buildings: dict[str, PlanetBuilding] = {}
-        self.buildings_available: dict[str, PlanetBuilding] = {}
+        self.buildings: dict[Building, PlanetBuilding] = {}
+        self.buildings_available: dict[str, PlanetBuilding] = {}  # Cache of whats available to build
         self.build_queue: list[PlanetBuilding | Ship] = []
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
@@ -205,9 +206,10 @@ class Planet:
     #####################################################################################################
     def available_to_build(self) -> dict[str, PlanetBuilding]:
         """What buildings are available to be built on this planet"""
-        avail = {}
-        avail["Trade Goods"] = self.galaxy.buildings["Trade Goods"]
-        avail["Housing"] = self.galaxy.buildings["Housing"]
+        avail = {
+            Building.TRADE_GOODS: self.galaxy.buildings[Building.TRADE_GOODS],
+            Building.HOUSING: self.galaxy.buildings[Building.HOUSING],
+        }
         for name, tech in self.owner.known_techs.items():
             if building := tech.enabled_building:
                 if building.available_to_build(self):
@@ -310,8 +312,8 @@ class Planet:
         """
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
-        if self.build_queue and self.build_queue[0].name == "Housing":
-            housing_bonus = int((self.work_production() * 40) / self.population)
+        if self.build_queue and self.build_queue[0].name == Building.HOUSING:
+            housing_bonus = int((self.work_production() * 40) / (self.population / 1e6))
         else:
             housing_bonus = 0
         max_pop = self.max_population() * 1e6
@@ -321,7 +323,7 @@ class Planet:
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )
-        if "Cloning Center" in self.buildings:
+        if Building.CLONING_CENTER in self.buildings:
             population_inc += 100_000
         return population_inc
 
@@ -338,7 +340,7 @@ class Planet:
         money = (
             self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
-        if self.build_queue and self.build_queue[0].name == "Trade Goods":
+        if self.build_queue and self.build_queue[0].name == Building.TRADE_GOODS:
             money += self.work_production()
         return money
 
