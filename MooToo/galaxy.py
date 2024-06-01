@@ -147,7 +147,7 @@ def get_distance(x1: float, y1: float, x2: float, y2: float) -> float:
 
 #####################################################################################################
 def save(galaxy: Galaxy, filename: str) -> None:
-    fname = f"{filename}_{galaxy.turn_number}.json"
+    fname = f"{filename}_{galaxy.turn_number % 10}.json"
     print(f"Saving as {fname}")
     with open(fname, "w") as outfh:
         outfh.write(jsonpickle.encode(galaxy, indent=2))

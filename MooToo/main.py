@@ -134,7 +134,7 @@ class Game(BaseGraphics):
             case DisplayMode.GALAXY:
                 if self.turn_button.clicked():
                     self.galaxy.turn()
-                    save(self.galaxy, "test")
+                    save(self.galaxy, "save")
                 if self.science_button.clicked():
                     self.display_mode = DisplayMode.SCIENCE
                 for rect, ships in self.ship_rects:
