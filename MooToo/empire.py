@@ -117,8 +117,8 @@ class Empire:
         p.jobs[PopulationJobs.WORKERS] = 2
         p.jobs[PopulationJobs.SCIENTISTS] = 2
         p.build_queue = []
-        p.buildings[Building.MARINE_BARRACKS] = self.galaxy.buildings[Building.MARINE_BARRACKS]
-        p.buildings[Building.STAR_BASE] = self.galaxy.buildings[Building.STAR_BASE]
+        p.buildings.add(Building.MARINE_BARRACKS)
+        p.buildings.add(Building.STAR_BASE)
 
         p.gen_climate_image()
         return p

@@ -118,7 +118,7 @@ def load_buildings() -> dict[Building, PlanetBuilding]:
         for kls in classes:
             if kls.startswith("Building") and kls != "Building":
                 klass = getattr(mod, kls)
-                mapping[klass().name] = klass()
+                mapping[klass().tag] = klass()
                 break
     return mapping
 
