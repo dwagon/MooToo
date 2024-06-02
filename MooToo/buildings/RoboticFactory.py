@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from MooToo.planetbuilding import PlanetBuilding
-from MooToo.constants import PlanetRichness
+from MooToo.constants import PlanetRichness, Building
 from MooToo.planet import Planet
 
 
@@ -14,7 +14,7 @@ class BuildingRoboticFactory(PlanetBuilding):
     """
 
     def __init__(self):
-        super().__init__("Robotic Factory")
+        super().__init__("Robotic Factory", Building.ROBOTIC_FACTORY)
         self.maintenance = 3
         self.cost = 200
 

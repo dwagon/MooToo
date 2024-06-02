@@ -1,11 +1,11 @@
 from MooToo.planetbuilding import PlanetBuilding
-from MooToo.planet import Planet
+from MooToo.constants import Building
 
 
 #####################################################################################################
 class BuildingSpacePort(PlanetBuilding):
 
     def __init__(self):
-        super().__init__("Space Port")
+        super().__init__("Space Port", Building.SPACE_PORT)
         self.maintenance = 1
         self.cost = 80

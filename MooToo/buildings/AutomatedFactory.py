@@ -1,5 +1,6 @@
 from MooToo.planetbuilding import PlanetBuilding
 from MooToo.planet import Planet
+from MooToo.constants import Building
 
 
 #####################################################################################################
@@ -8,7 +9,7 @@ class BuildingAutomatedFactory(PlanetBuilding):
     +1 production each turn and giving the colony +5 production."""
 
     def __init__(self):
-        super().__init__("Automated Factory")
+        super().__init__("Automated Factory", Building.AUTOMATED_FACTORY)
         self.maintenance = 2
         self.cost = 60
 
