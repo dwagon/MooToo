@@ -4,7 +4,6 @@ import math
 import random
 from typing import TYPE_CHECKING, Optional
 from MooToo.utils import prob_map
-from MooToo.planetbuilding import PlanetBuilding
 from MooToo.constants import (
     PlanetCategory,
     PopulationJobs,
@@ -13,11 +12,15 @@ from MooToo.constants import (
     PlanetGravity,
     PlanetSize,
     StarColour,
+    Building,
 )
 from MooToo.ship import ShipType, Ship, select_ship_type_by_name
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
+    from MooToo.system import System
+    from MooToo.empire import Empire
+
 
 #####################################################################################################
 STAR_COLOURS = {
@@ -164,7 +167,7 @@ PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, name: str, system, galaxy: "Galaxy"):
+    def __init__(self, name: str, system: "System", galaxy: "Galaxy"):
         self.name = name
         self.system = system
         self._galaxy = galaxy
@@ -176,9 +179,9 @@ class Planet:
         self._owner: str = ""
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.population = 0.0
-        self.buildings: dict[str, PlanetBuilding] = {}
-        self.buildings_available: dict[str, PlanetBuilding] = {}
-        self.build_queue: list[PlanetBuilding | Ship] = []
+        self.buildings: set[Building] = set()
+        self._buildings_available: set[Building] = set()
+        self.build_queue: list[Building | Ship] = []
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
         self.climate_image = self.gen_climate_image()
@@ -195,23 +198,31 @@ class Planet:
 
     #####################################################################################################
     @property
-    def owner(self) -> Optional[str]:
+    def owner(self) -> Optional["Empire"]:
         return self.galaxy.empires.get(self._owner)
 
     @owner.setter
-    def owner(self, value):
+    def owner(self, value: str):
         self._owner = value
 
     #####################################################################################################
-    def available_to_build(self) -> dict[str, PlanetBuilding]:
+    @property
+    def buildings_available(self) -> set[Building]:
+        if not self._buildings_available:
+            self._buildings_available = self.available_to_build()
+        return self._buildings_available
+
+    #####################################################################################################
+    def available_to_build(self) -> set[Building]:
         """What buildings are available to be built on this planet"""
-        avail = {}
-        avail["Trade Goods"] = self.galaxy.buildings["Trade Goods"]
-        avail["Housing"] = self.galaxy.buildings["Housing"]
-        for name, tech in self.owner.known_techs.items():
-            if building := tech.enabled_building:
+        avail: set[Building] = {Building.TRADE_GOODS, Building.HOUSING}
+        if not self.owner:
+            print("No owner")
+            return set()
+        for tech in self.owner.known_techs:
+            if building := self.galaxy.get_research(tech).enabled_building:
                 if building.available_to_build(self):
-                    avail[name] = building
+                    avail.add(building.tag)
         return avail
 
     #####################################################################################################
@@ -223,8 +234,8 @@ class Planet:
     def get_research_points(self) -> int:
         """How many research points does this planet generate"""
         rp = 0
-        for building in self.buildings.values():
-            rp += building.research_bonus(self)
+        for building in self.buildings:
+            rp += self.galaxy.get_building(building).research_bonus(self)
         rp = max(self.jobs[PopulationJobs.SCIENTISTS], rp)
 
         return int(rp)
@@ -233,16 +244,16 @@ class Planet:
     def morale(self) -> int:
         """Morale of planet (out of 10)"""
         morale = 5
-        for building in self.buildings.values():
-            morale += building.morale_bonus(self)
+        for building in self.buildings:
+            morale += self.galaxy.get_building(building).morale_bonus(self)
         return morale
 
     #####################################################################################################
     def max_population(self) -> int:
         """What's the maximum population this planet can support"""
         max_pop = POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
-        for building in self.buildings.values():
-            max_pop += building.max_pop_bonus(self)
+        for building in self.buildings:
+            max_pop += self.galaxy.get_building(building).max_pop_bonus(self)
         return max_pop
 
     #####################################################################################################
@@ -253,7 +264,7 @@ class Planet:
             return
         self.building_production()
         self.grow_population()
-        self.buildings_available = self.available_to_build()
+        self._buildings_available = self.available_to_build()
 
     #####################################################################################################
     def building_production(self) -> None:
@@ -261,39 +272,41 @@ class Planet:
         self.construction_spent += self.work_production()
         if not self.build_queue:
             return
-        if self.construction_spent >= self.build_queue[0].cost:
-            self.construction_spent -= self.build_queue[0].cost
+        if isinstance(self.build_queue[0], Building):
+            cost = self.galaxy.get_building(self.build_queue[0]).cost
+        else:
+            cost = self.build_queue[0].cost
+        if self.construction_spent >= cost:
+            self.construction_spent -= cost
             self.finish_construction(self.build_queue.pop(0))
 
     #####################################################################################################
-    def finish_construction(self, construct: PlanetBuilding | Ship):
+    def finish_construction(self, construct: Building | Ship):
         """Create a new building"""
-        if isinstance(construct, PlanetBuilding):
-            self.buildings[construct.name] = construct
+        if isinstance(construct, Building):
+            self.buildings.add(construct)
         elif isinstance(construct, Ship):
             self.owner.add_ship(construct, self.system)
         else:
             print(f"finish_construction: Unknown {construct=}")
 
     #####################################################################################################
-    def add_to_build_queue(self, building: PlanetBuilding | Ship):
+    def add_to_build_queue(self, building: Building | Ship):
         if len(self.build_queue) < 6:
             self.build_queue.append(building)
 
     #####################################################################################################
-    def toggle_build_queue_by_name(self, building_name: str):
-        """Add a building by name to the build queue, or remove it if it already exists"""
-        if building_name in self.galaxy.buildings:
-            building = self.galaxy.buildings[building_name]
-            for bld in self.build_queue:
-                if building_name == bld.name:
-                    self.build_queue.remove(building)
-                    return
-            self.add_to_build_queue(building)
-        elif building_name.lower() in ShipType:
-            self.add_to_build_queue(select_ship_type_by_name(building_name))
+    def toggle_build_queue_item(self, building: Building | ShipType):
+        """Add a building to the build queue, or remove it if it already exists"""
+        if isinstance(building, Building):
+            if building in self.build_queue:
+                self.build_queue.remove(building)
+            else:
+                self.add_to_build_queue(building)
+        elif building.lower() in ShipType:
+            self.add_to_build_queue(select_ship_type_by_name(building))
         else:
-            print(f"toggle_build_queue_by_name({building_name=}): What you talking about?")
+            print(f"toggle_build_queue_item({building=}): What you talking about?")
 
     #####################################################################################################
     def grow_population(self) -> None:
@@ -310,8 +323,8 @@ class Planet:
         """
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
-        if self.build_queue and self.build_queue[0].name == "Housing":
-            housing_bonus = int((self.work_production() * 40) / self.population)
+        if self.build_queue and self.build_queue[0].name == Building.HOUSING:
+            housing_bonus = int((self.work_production() * 40) / (self.population / 1e6))
         else:
             housing_bonus = 0
         max_pop = self.max_population() * 1e6
@@ -321,7 +334,7 @@ class Planet:
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )
-        if "Cloning Center" in self.buildings:
+        if Building.CLONING_CENTER in self.buildings:
             population_inc += 100_000
         return population_inc
 
@@ -338,14 +351,14 @@ class Planet:
         money = (
             self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
-        if self.build_queue and self.build_queue[0].name == "Trade Goods":
+        if self.build_queue and self.build_queue[0].name == Building.TRADE_GOODS:
             money += self.work_production()
         return money
 
     #####################################################################################################
     def money_cost(self) -> int:
         """How much money the planet costs"""
-        return sum(_.maintenance for _ in self.buildings.values())
+        return sum(self.galaxy.get_building(_).maintenance for _ in self.buildings)
 
     #####################################################################################################
     def current_population(self) -> int:
@@ -355,8 +368,8 @@ class Planet:
     def food_production(self) -> int:
         production = FOOD_CLIMATE_MAP[self.climate] * self.jobs[PopulationJobs.FARMER]
         production *= GRAVITY_MAP[self.gravity]
-        for building in self.buildings.values():
-            production += building.food_bonus(self)
+        for building in self.buildings:
+            production += self.galaxy.get_building(building).food_bonus(self)
         production = max(self.jobs[PopulationJobs.FARMER], production)
         return int(production)
 
@@ -370,8 +383,8 @@ class Planet:
     def work_production(self) -> int:
         production = PROD_RICHNESS_MAP[self.richness] * self.jobs[PopulationJobs.WORKERS]
         production *= GRAVITY_MAP[self.gravity]
-        for building in self.buildings.values():
-            production += building.prod_bonus(self)
+        for building in self.buildings:
+            production += self.galaxy.get_building(building).prod_bonus(self)
         production = max(self.jobs[PopulationJobs.WORKERS], production)
 
         return int(production)

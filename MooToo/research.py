@@ -1,5 +1,6 @@
 from enum import StrEnum, auto
 from MooToo.planetbuilding import PlanetBuilding
+from MooToo.constants import Technology
 
 
 class ResearchCategory(StrEnum):
@@ -16,8 +17,9 @@ class ResearchCategory(StrEnum):
 #####################################################################################################
 #####################################################################################################
 class Research:
-    def __init__(self, name: str, cost: int, category: ResearchCategory):
+    def __init__(self, name: str, tag: Technology, cost: int, category: ResearchCategory):
         self.name: str = name
+        self.tag = tag
         self.cost: int = cost
         self.enabled_building: PlanetBuilding | None = None
         self.category: ResearchCategory = category

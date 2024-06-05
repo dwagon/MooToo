@@ -1,5 +1,6 @@
 from MooToo.planetbuilding import PlanetBuilding
 from MooToo.planet import Planet
+from MooToo.constants import Building
 
 
 #####################################################################################################
@@ -8,7 +9,7 @@ class BuildingHydroponicFarm(PlanetBuilding):
     even on otherwise lifeless worlds. The Farm increases the food output of a colony by 2."""
 
     def __init__(self):
-        super().__init__("Hydroponic Farm")
+        super().__init__("Hydroponic Farm", Building.HYDROPONIC_FARM)
         self.maintenance = 2
         self.cost = 60
 

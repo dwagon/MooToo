@@ -12,6 +12,7 @@ from MooToo.empire import Empire
 from MooToo.planetbuilding import PlanetBuilding
 from MooToo.research import Research
 from MooToo.names import empire_names
+from MooToo.constants import Building, Technology
 
 NUM_SYSTEMS = 40
 NUM_EMPIRES = 4
@@ -25,24 +26,30 @@ class Galaxy:
     def __init__(self):
         self.systems: dict[int, System] = {}
         self.empires: dict[str, Empire] = {}
-        self.buildings: dict[str, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
-        self.researches: dict[str, Research] = load_researches()
+        self._buildings: dict[Building, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
+        self._researches: dict[Technology, Research] = load_researches()
         self.turn_number = 0
 
     #####################################################################################################
     def populate(self):
         """Fill the galaxy with things"""
-        id = 0
         positions = self.get_positions()
-        for _ in range(NUM_SYSTEMS):
+        for id, _ in enumerate(range(NUM_SYSTEMS)):
             position = random.choice(positions)
             positions.remove(position)
             self.systems[id] = System(id, position, self)
-            id += 1
         for home_system in self.find_home_systems():
             self.make_empire(home_system)
         for system in self.systems.values():
             system.make_orbits()
+
+    #####################################################################################################
+    def get_research(self, tech: Technology) -> Research:
+        return self._researches[tech]
+
+    #####################################################################################################
+    def get_building(self, bld: Building) -> PlanetBuilding:
+        return self._buildings[bld]
 
     #####################################################################################################
     def find_home_systems(self) -> list[System]:
@@ -81,7 +88,7 @@ class Galaxy:
         name = random.choice(empire_names)
         empire_names.remove(name)
         home_system.colour = StarColour.YELLOW
-        self.empires[name] = Empire(name, home_system, self)
+        self.empires[name] = Empire(name, self)
         home_system.orbits.append(self.empires[name].make_home_planet(home_system))
         random.shuffle(home_system.orbits)
         self.empires[name].know_system(home_system)
@@ -106,26 +113,26 @@ class Galaxy:
 
 
 #####################################################################################################
-def load_buildings() -> dict[str, PlanetBuilding]:
+def load_buildings() -> dict[Building, PlanetBuilding]:
     path = "MooToo/buildings"
-    mapping: dict[str, PlanetBuilding] = {}
+    mapping: dict[Building, PlanetBuilding] = {}
     files = glob.glob(f"{path}/*.py")
     for file_name in [os.path.basename(_) for _ in files]:
         file_name = file_name.replace(".py", "")
         mod = importlib.import_module(f"{path.replace('/', '.')}.{file_name}")
         classes = dir(mod)
         for kls in classes:
-            if kls.startswith("Building"):
+            if kls.startswith("Building") and kls != "Building":
                 klass = getattr(mod, kls)
-                mapping[klass().name] = klass()
+                mapping[klass().tag] = klass()
                 break
     return mapping
 
 
 #####################################################################################################
-def load_researches() -> dict[str, Research]:
+def load_researches() -> dict[Technology, Research]:
     path = "MooToo/researches"
-    mapping: dict[str, Research] = {}
+    mapping: dict[Technology, Research] = {}
     files = glob.glob(f"{path}/*.py")
     for file_name in [os.path.basename(_) for _ in files]:
         file_name = file_name.replace(".py", "")
@@ -135,7 +142,7 @@ def load_researches() -> dict[str, Research]:
             if kls.startswith("Research") and kls != "Research":
                 klass = getattr(mod, kls)
                 if issubclass(klass, Research):
-                    mapping[klass().name] = klass()
+                    mapping[klass().tag] = klass()
     return mapping
 
 
@@ -146,7 +153,7 @@ def get_distance(x1: float, y1: float, x2: float, y2: float) -> float:
 
 #####################################################################################################
 def save(galaxy: Galaxy, filename: str) -> None:
-    fname = f"{filename}_{galaxy.turn_number}.json"
+    fname = f"{filename}_{galaxy.turn_number % 10}.json"
     print(f"Saving as {fname}")
     with open(fname, "w") as outfh:
         outfh.write(jsonpickle.encode(galaxy, indent=2))

@@ -134,7 +134,7 @@ class Game(BaseGraphics):
             case DisplayMode.GALAXY:
                 if self.turn_button.clicked():
                     self.galaxy.turn()
-                    save(self.galaxy, "test")
+                    save(self.galaxy, "save")
                 if self.science_button.clicked():
                     self.display_mode = DisplayMode.SCIENCE
                 for rect, ships in self.ship_rects:
@@ -231,7 +231,8 @@ class Game(BaseGraphics):
     def draw_research(self):
         """Draw what is being researched"""
         if self.empire.researching:
-            words = self.empire.researching.name
+            research = self.galaxy.get_research(self.empire.researching)
+            words = research.name
         else:
             words = "Nothing"
 
@@ -243,9 +244,8 @@ class Game(BaseGraphics):
             top_left.y += rp_text_surface.get_size()[1]
 
         if self.empire.researching:
-            words = (
-                f"{self.empire.research_spent}/{self.empire.researching.cost} (+{self.empire.get_research_points()}) RP"
-            )
+            cost = research.cost
+            words = f"{self.empire.research_spent}/{cost} (+{self.empire.get_research_points()}) RP"
         else:
             words = f"+{self.empire.get_research_points()} RP"
         rp = self.text_font.render(words, True, "white", "black")

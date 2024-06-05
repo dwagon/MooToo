@@ -1,10 +1,11 @@
 from MooToo.planetbuilding import PlanetBuilding
+from MooToo.constants import Building
 
 
 #####################################################################################################
 class BuildingWarpInterdictor(PlanetBuilding):
 
     def __init__(self):
-        super().__init__("Warp Interdictor")
+        super().__init__("Warp Interdictor", Building.WARP_INTERDICTOR)
         self.maintenance = 3
         self.cost = 300

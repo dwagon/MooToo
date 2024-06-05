@@ -5,7 +5,8 @@ import pygame
 from MooToo.base_graphics import BaseGraphics
 from MooToo.planet import Planet
 from MooToo.gui_button import Button
-from MooToo.ship import ShipType
+from MooToo.ship import ShipType, Ship
+from MooToo.constants import Building
 
 if TYPE_CHECKING:
     from MooToo.main import Game
@@ -21,7 +22,7 @@ class BuildingChoiceWindow(BaseGraphics):
         self.images = self.load_images()
         self.ok_button = Button(self.load_image("COLBLDG.LBX", 3), pygame.Vector2(564, 450))
         self.cancel_button = Button(self.load_image("COLBLDG.LBX", 1), pygame.Vector2(495, 450))
-        self.to_build_rects: dict[str, pygame.Rect] = {}
+        self.to_build_rects: dict[Building, pygame.Rect] = {}
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
@@ -48,49 +49,62 @@ class BuildingChoiceWindow(BaseGraphics):
         # Transport Ship
         # Ships
         top_left = pygame.Vector2(486, 14)
-        for shipType in ShipType:
-            text_surface = self.text_font.render(shipType.name, True, "white")
+        for ship_type in list(ShipType):
+            text_surface = self.text_font.render(ship_type.name, True, "white")
             rect = self.screen.blit(text_surface, top_left)
             top_left.y += text_surface.get_size()[1]
-            self.to_build_rects[shipType.name] = rect
+            self.to_build_rects[ship_type.name] = rect
 
     #####################################################################################################
     def draw_currently_building(self) -> None:
         if not self.planet.build_queue:
             return
         top_left = pygame.Vector2(205, 10)
-        building = self.planet.build_queue[0]
-        text = self.text_font.render(building.name, True, "purple")
+        construct = self.planet.build_queue[0]
+        if isinstance(construct, Building):
+            name = self.planet.galaxy.get_building(construct).name
+        elif isinstance(construct, Ship):
+            name = construct.name
+        else:
+            print(f"DBG draw_currently_building {construct=} {type(construct)=}")
+
+        text = self.text_font.render(name, True, "purple")
         self.screen.blit(text, top_left)
 
     #####################################################################################################
     def draw_available_buildings(self) -> None:
-        buildings = list(self.planet.buildings_available.keys())
-        if not buildings:
-            buildings = self.planet.available_to_build()
+        buildings: dict[str, Building] = {
+            self.planet.galaxy.get_building(_).name: _ for _ in self.planet.buildings_available
+        }
 
         top_left = pygame.Vector2(12, 12)
-        for building in sorted(buildings):
+        for building in sorted(buildings.keys()):
             text = self.text_font.render(building, True, "white")
             rect = self.screen.blit(text, top_left)
             top_left.y += text.get_size()[1]
-            self.to_build_rects[building] = rect
+            self.to_build_rects[buildings[building]] = rect
 
     #####################################################################################################
     def draw_building_queue(self) -> None:
         top_left = pygame.Vector2(209, 330)
 
-        for bld in self.planet.build_queue:
-            text = self.text_font.render(bld.name, True, "white")
+        for construct in self.planet.build_queue:
+            if isinstance(construct, Building):
+                name = self.planet.galaxy.get_building(construct).name
+            elif isinstance(construct, Ship):
+                name = construct.name
+            else:
+                print(f"DBG draw_building_queue {construct=} {type(construct)=}")
+            text = self.text_font.render(name, True, "white")
             self.screen.blit(text, top_left)
             top_left.y += 20
 
     #####################################################################################################
     def button_left_down(self) -> bool:
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        for name, rect in self.to_build_rects.items():
+        for bld, rect in self.to_build_rects.items():
             if rect.collidepoint(mouse_x, mouse_y):
-                self.planet.toggle_build_queue_by_name(name)
+                self.planet.toggle_build_queue_item(bld)
         if self.ok_button.clicked():
             return True
         if self.cancel_button.clicked():
