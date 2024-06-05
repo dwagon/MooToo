@@ -26,24 +26,30 @@ class Galaxy:
     def __init__(self):
         self.systems: dict[int, System] = {}
         self.empires: dict[str, Empire] = {}
-        self.buildings: dict[Building, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
-        self.researches: dict[Technology, Research] = load_researches()
+        self._buildings: dict[Building, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
+        self._researches: dict[Technology, Research] = load_researches()
         self.turn_number = 0
 
     #####################################################################################################
     def populate(self):
         """Fill the galaxy with things"""
-        id = 0
         positions = self.get_positions()
-        for _ in range(NUM_SYSTEMS):
+        for id, _ in enumerate(range(NUM_SYSTEMS)):
             position = random.choice(positions)
             positions.remove(position)
             self.systems[id] = System(id, position, self)
-            id += 1
         for home_system in self.find_home_systems():
             self.make_empire(home_system)
         for system in self.systems.values():
             system.make_orbits()
+
+    #####################################################################################################
+    def get_research(self, tech: Technology) -> Research:
+        return self._researches[tech]
+
+    #####################################################################################################
+    def get_building(self, bld: Building) -> PlanetBuilding:
+        return self._buildings[bld]
 
     #####################################################################################################
     def find_home_systems(self) -> list[System]:
@@ -82,7 +88,7 @@ class Galaxy:
         name = random.choice(empire_names)
         empire_names.remove(name)
         home_system.colour = StarColour.YELLOW
-        self.empires[name] = Empire(name, home_system, self)
+        self.empires[name] = Empire(name, self)
         home_system.orbits.append(self.empires[name].make_home_planet(home_system))
         random.shuffle(home_system.orbits)
         self.empires[name].know_system(home_system)

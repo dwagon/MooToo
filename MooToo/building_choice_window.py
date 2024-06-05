@@ -5,7 +5,7 @@ import pygame
 from MooToo.base_graphics import BaseGraphics
 from MooToo.planet import Planet
 from MooToo.gui_button import Button
-from MooToo.ship import ShipType
+from MooToo.ship import ShipType, Ship
 from MooToo.constants import Building
 
 if TYPE_CHECKING:
@@ -60,8 +60,13 @@ class BuildingChoiceWindow(BaseGraphics):
         if not self.planet.build_queue:
             return
         top_left = pygame.Vector2(205, 10)
-        building = self.planet.build_queue[0]
-        name = self.planet.galaxy.buildings[building].name
+        construct = self.planet.build_queue[0]
+        if isinstance(construct, Building):
+            name = self.planet.galaxy.get_building(construct).name
+        elif isinstance(construct, Ship):
+            name = construct.name
+        else:
+            print(f"DBG draw_currently_building {construct=} {type(construct)=}")
 
         text = self.text_font.render(name, True, "purple")
         self.screen.blit(text, top_left)
@@ -69,7 +74,7 @@ class BuildingChoiceWindow(BaseGraphics):
     #####################################################################################################
     def draw_available_buildings(self) -> None:
         buildings: dict[str, Building] = {
-            self.planet.galaxy.buildings[_].name: _ for _ in self.planet.buildings_available
+            self.planet.galaxy.get_building(_).name: _ for _ in self.planet.buildings_available
         }
 
         top_left = pygame.Vector2(12, 12)
@@ -83,8 +88,13 @@ class BuildingChoiceWindow(BaseGraphics):
     def draw_building_queue(self) -> None:
         top_left = pygame.Vector2(209, 330)
 
-        for bld in self.planet.build_queue:
-            name = self.planet.galaxy.buildings[bld].name
+        for construct in self.planet.build_queue:
+            if isinstance(construct, Building):
+                name = self.planet.galaxy.get_building(construct).name
+            elif isinstance(construct, Ship):
+                name = construct.name
+            else:
+                print(f"DBG draw_building_queue {construct=} {type(construct)=}")
             text = self.text_font.render(name, True, "white")
             self.screen.blit(text, top_left)
             top_left.y += 20

@@ -36,6 +36,6 @@ class PlanetBuilding:
         return 0
 
     def available_to_build(self, planet: "Planet") -> bool:
-        if self.name in planet.buildings:
+        if self.tag in planet.buildings:
             return False
         return True

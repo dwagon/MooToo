@@ -79,7 +79,7 @@ class System:
 
     #####################################################################################################
     def make_orbits(self):
-        for orbit in range(MAX_ORBITS):
+        for _ in range(MAX_ORBITS):
             pct = random.randint(0, 100)
             if pct <= STAR_COLOURS[self.colour]["prob_orbit"]:
                 self.orbits.append(Planet("", self, self.galaxy))

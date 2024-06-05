@@ -185,7 +185,7 @@ class PlanetWindow(BaseGraphics):
         """Draw the current buildings on the planet"""
         top_left = pygame.Vector2(8, 170)
         for building in planet.buildings:
-            text = self.text_font.render(planet.galaxy.buildings[building].name, True, "purple")
+            text = self.text_font.render(planet.galaxy.get_building(building).name, True, "purple")
             self.screen.blit(text, top_left)
             top_left.y += text.get_size()[1]
 
