@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
 import time
+from typing import Optional
+
 import pygame
 from enum import Enum, auto
 from MooToo.galaxy import Galaxy, load, save
@@ -84,11 +86,10 @@ class Game(BaseGraphics):
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.button_up()
 
-            # fill the screen with a color to wipe away anything from last frame
             self.draw_screen()
             pygame.display.flip()
 
-            self.clock.tick(60)  # limits FPS to 60
+            self.clock.tick(60)
 
     #####################################################################################################
     def button_up(self):
@@ -128,27 +129,40 @@ class Game(BaseGraphics):
                 self.display_mode = DisplayMode.SYSTEM
 
     #####################################################################################################
-    def button_left_down(self):
+    def button_left_down_galaxy_view(self):
+        """In the galaxy view someone has clicked the left button"""
         mouse = pygame.mouse.get_pos()
+        if self.turn_button.clicked():
+            self.galaxy.turn()
+            save(self.galaxy, "save")
+        if self.science_button.clicked():
+            self.display_mode = DisplayMode.SCIENCE
+        for rect, ships in self.ship_rects:
+            if rect.collidepoint(mouse[0], mouse[1]):
+                self.display_mode = DisplayMode.FLEET
+                self.fleet_window.reset(ships)
+
+        if system := self.click_system():
+            if self.empire.is_known_system(system):
+                self.planet_window.planet = self.pick_planet(system)
+                self.display_mode = DisplayMode.SYSTEM
+            else:
+                self.display_mode = DisplayMode.ORBIT
+            self.system = system
+
+    #####################################################################################################
+    def click_system(self) -> Optional[System]:
+        mouse = pygame.mouse.get_pos()
+        for rect, system in self.system_rects:
+            if rect.collidepoint(mouse[0], mouse[1]):
+                return system
+        return None
+
+    #####################################################################################################
+    def button_left_down(self):
         match self.display_mode:
             case DisplayMode.GALAXY:
-                if self.turn_button.clicked():
-                    self.galaxy.turn()
-                    save(self.galaxy, "save")
-                if self.science_button.clicked():
-                    self.display_mode = DisplayMode.SCIENCE
-                for rect, ships in self.ship_rects:
-                    if rect.collidepoint(mouse[0], mouse[1]):
-                        self.display_mode = DisplayMode.FLEET
-                        self.fleet_window.reset(ships)
-                for rect, system in self.system_rects:
-                    if rect.collidepoint(mouse[0], mouse[1]):
-                        if self.empire.is_known_system(system):
-                            self.planet_window.planet = self.pick_planet(system)
-                            self.display_mode = DisplayMode.SYSTEM
-                        else:
-                            self.display_mode = DisplayMode.ORBIT
-                        self.system = system
+                self.button_left_down_galaxy_view()
             case DisplayMode.ORBIT:
                 if self.orbit_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
@@ -161,6 +175,8 @@ class Game(BaseGraphics):
             case DisplayMode.FLEET:
                 if self.fleet_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
+                if system := self.click_system():
+                    self.fleet_window.select_destination(system)
 
     #####################################################################################################
     def pick_planet(self, system: System) -> Planet:
@@ -195,7 +211,6 @@ class Game(BaseGraphics):
     #####################################################################################################
     def draw_galaxy_view(self):
         self.screen.blit(self.images["base_window"], (0, 0))
-        self.ship_rects = []
         self.system_rects = []
         for system in self.galaxy.systems.values():
             self.draw_galaxy_view_system(system)
@@ -203,6 +218,37 @@ class Game(BaseGraphics):
         self.draw_research()
         self.draw_income()
         self.draw_date()
+        self.draw_fleets()
+
+    #####################################################################################################
+    def draw_fleets(self):
+        rects: dict[tuple[int, int, int, int], list[Ship]] = {}
+        self.ship_rects = []
+        for empire in self.galaxy.empires:
+            for ship in self.galaxy.empires[empire].ships:
+                ship_image = self.images["ship"]
+                if system := ship.orbit:
+                    sys_coord = system.position
+                    star_image = self.images[f"small_{system.colour.name.lower()}_star"]
+                    img_size = star_image.get_size()
+                    img_coord = pygame.Vector2(sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
+                    ship_coord = img_coord + pygame.Vector2(img_size[0] - 5, 0)
+                else:
+                    ship_coord = pygame.Vector2(ship.location[0], ship.location[1])
+                    pygame.draw.line(
+                        self.screen,
+                        "purple",
+                        ship.location + pygame.Vector2(ship_image.get_size()[0] / 2, ship_image.get_size()[1] / 2),
+                        ship.destination.position,
+                    )
+                r = self.screen.blit(ship_image, ship_coord)
+                rect_tuple = (r.x, r.y, r.h, r.w)
+                if rect_tuple not in rects:
+                    rects[rect_tuple] = [ship]
+                else:
+                    rects[rect_tuple].append(ship)
+                pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
+        self.ship_rects.extend((pygame.Rect(k[0], k[1], k[2], k[3]), v) for k, v in rects.items())
 
     #####################################################################################################
     def draw_date(self):
@@ -266,13 +312,6 @@ class Game(BaseGraphics):
             text_size = text_surface.get_size()
             text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
             self.screen.blit(text_surface, text_coord)
-
-            if ships := system.ships_in_orbit():
-                ship_image = self.images["ship"]
-                ship_coord = img_coord + pygame.Vector2(img_size[0] - 5, 0)
-                r = self.screen.blit(ship_image, ship_coord)
-                self.ship_rects.append((r, ships))
-                dbg_rect = pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
 
 
 #####################################################################################################

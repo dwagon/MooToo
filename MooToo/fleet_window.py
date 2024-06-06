@@ -9,6 +9,7 @@ from MooToo.gui_button import Button, InvisButton
 
 if TYPE_CHECKING:
     from MooToo.main import Game
+    from MooToo.system import System
 
 ALL_OFFSET = pygame.Vector2(18, 206)
 CLOSE_OFFSET = pygame.Vector2(0, 238)
@@ -61,6 +62,12 @@ class FleetWindow(BaseGraphics):
             else:
                 self.selected_ships = set()
         return False
+
+    #####################################################################################################
+    def select_destination(self, system: "System"):
+        """Tell ships to move to selected system"""
+        for ship in self.selected_ships:
+            ship.set_destination(system)
 
     #####################################################################################################
     def mouse_pos(self, event: pygame.event):

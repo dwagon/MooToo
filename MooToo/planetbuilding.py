@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 #####################################################################################################
 class PlanetBuilding:
-    """Building"""
+    """A Building on a Planet"""
 
     def __init__(self, name: str, tag: Building):
         self.name = name
