@@ -13,6 +13,7 @@ from MooToo.planetbuilding import PlanetBuilding
 from MooToo.research import Research
 from MooToo.names import empire_names
 from MooToo.constants import Building, Technology
+from MooToo.utils import get_distance, get_distance_tuple
 
 NUM_SYSTEMS = 40
 NUM_EMPIRES = 4
@@ -68,7 +69,7 @@ class Galaxy:
             min_dist = 999999
             min_system = None
             for system in self.systems.values():
-                distance = get_distance(position[0], position[1], system.position[0], system.position[1])
+                distance = get_distance_tuple(position, system.position)
                 if distance < min_dist:
                     min_dist = distance
                     min_system = system
@@ -144,11 +145,6 @@ def load_researches() -> dict[Technology, Research]:
                 if issubclass(klass, Research):
                     mapping[klass().tag] = klass()
     return mapping
-
-
-#####################################################################################################
-def get_distance(x1: float, y1: float, x2: float, y2: float) -> float:
-    return math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2)
 
 
 #####################################################################################################

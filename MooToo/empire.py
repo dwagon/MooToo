@@ -47,7 +47,8 @@ class Empire:
     #####################################################################################################
     def add_ship(self, ship: Ship, system: System):
         self.ships.append(ship)
-        ship.location = system
+        ship.orbit = system
+        ship.location = system.position
 
     #####################################################################################################
     def turn(self):
@@ -60,6 +61,10 @@ class Empire:
         for planet in self.owned_planets:
             planet.turn()
             income += planet.money_production() - planet.money_cost()
+        for ship in self.ships:
+            ship.turn()
+            if ship.orbit:
+                self.know_system(ship.orbit)
         self.income = income
         self.money += self.income
 

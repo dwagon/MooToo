@@ -1,9 +1,11 @@
 """ ship class """
 
+import math
 import random
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from enum import StrEnum, auto
+from MooToo.utils import get_distance_tuple
 
 if TYPE_CHECKING:
     from MooToo.system import System
@@ -44,13 +46,57 @@ class Ship:
         self.cost = 0
         self.space = 0
         self.command_points = 0
-        self.maintainance = 0
+        self.maintenance = 0
         self.name = ""
         self.icon = ""
-        self.location: System | tuple[int, int] = (0, 0)
+        self.destination: Optional[System] = None
+        self.location: tuple[int, int] = (-1, -1)
+        self.orbit: Optional[System] = None
 
+    #################################################################################################
     def __repr__(self):
-        return f"<Ship {self.name} {self.location}>"
+        if self.orbit:
+            return f"<Ship {self.name} {self.orbit}>"
+        else:
+            return f"<Ship {self.name} {self.location}>"
+
+    #################################################################################################
+    def speed(self):
+        """How fast the ship moves"""
+        return 2
+
+    #################################################################################################
+    def set_destination(self, system: "System") -> None:
+        if self.orbit:
+            self.location = self.orbit.position
+        self.destination = system
+
+    #################################################################################################
+    def arrived_at_destination(self):
+        self.orbit = self.destination
+        self.location = self.destination.position
+        self.destination = None
+
+    #################################################################################################
+    def move_towards_destination(self):
+        if get_distance_tuple(self.location, self.destination.position) < self.speed() + 0.01:
+            self.arrived_at_destination()
+
+            return
+        angle = math.atan2(
+            self.destination.position[1] - self.location[1], self.destination.position[0] - self.location[0]
+        )
+        self.location = (
+            int(self.location[0] + math.cos(angle) * self.speed()),
+            int(self.location[1] + math.sin(angle) * self.speed()),
+        )
+        self.orbit = None
+
+    #################################################################################################
+    def turn(self):
+        """Have a turn"""
+        if self.destination:
+            self.move_towards_destination()
 
 
 #####################################################################################################
@@ -60,7 +106,7 @@ class Transport(Ship):
         self.cost = 25  # ?
         self.space = 0
         self.command_points = 1
-        self.maintainance = 10
+        self.maintenance = 10
         self.type = ShipType.Transport
         self.name = name
         self.icon = "transport"
@@ -74,7 +120,7 @@ class Frigate(Ship):
         self.space = 25
         self.type = ShipType.Frigate
         self.name = name
-        self.icon = f"frigate_{random.randint(0,7)}"
+        self.icon = f"frigate_{random.randint(0, 7)}"
 
 
 #####################################################################################################
@@ -85,7 +131,7 @@ class Destroyer(Ship):
         self.space = 60
         self.name = name
         self.type = ShipType.Destroyer
-        self.icon = f"destroyer_{random.randint(0,7)}"
+        self.icon = f"destroyer_{random.randint(0, 7)}"
 
 
 #####################################################################################################
@@ -96,7 +142,7 @@ class Cruiser(Ship):
         self.space = 120
         self.name = name
         self.type = ShipType.Cruiser
-        self.icon = f"cruiser_{random.randint(0,7)}"
+        self.icon = f"cruiser_{random.randint(0, 7)}"
 
 
 #####################################################################################################
@@ -107,7 +153,7 @@ class Battleship(Ship):
         self.space = 250
         self.name = name
         self.type = ShipType.Battleship
-        self.icon = f"battleship_{random.randint(0,7)}"
+        self.icon = f"battleship_{random.randint(0, 7)}"
 
 
 #####################################################################################################
@@ -118,7 +164,7 @@ class Titan(Ship):
         self.space = 500
         self.name = name
         self.type = ShipType.Titan
-        self.icon = f"titan_{random.randint(0,7)}"
+        self.icon = f"titan_{random.randint(0, 7)}"
 
 
 #####################################################################################################
@@ -129,7 +175,7 @@ class DoomStar(Ship):
         self.space = 1200
         self.name = name
         self.type = ShipType.DoomStar
-        self.icon = f"doomstar_{random.randint(0,3)}"
+        self.icon = f"doomstar_{random.randint(0, 3)}"
 
 
 #####################################################################################################

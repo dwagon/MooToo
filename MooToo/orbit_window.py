@@ -8,7 +8,7 @@ import pygame
 from MooToo.planet import Planet
 from MooToo.base_graphics import BaseGraphics
 from MooToo.system import System
-from MooToo.galaxy import get_distance
+from MooToo.galaxy import get_distance_tuple
 from MooToo.gui_button import Button
 from MooToo.constants import PlanetCategory, PlanetClimate, PlanetSize
 
@@ -112,7 +112,7 @@ class OrbitWindow(BaseGraphics):
                 continue
             sys_coords = get_planet_position(planet.arc, orbit)
             adjusted_coords = sys_coords + self.mid_point
-            distance = get_distance(adjusted_coords[0], adjusted_coords[1], coords[0], coords[1])
+            distance = get_distance_tuple(adjusted_coords, coords)
             if distance < 20:
                 return planet
         return None
