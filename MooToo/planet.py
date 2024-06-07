@@ -178,7 +178,7 @@ class Planet:
         self.gravity = pick_planet_gravity(self.size, self.richness)
         self._owner: str = ""
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
-        self.population = 0.0
+        self._population = 0.0
         self.buildings: set[Building] = set()
         self._buildings_available: set[Building] = set()
         self.build_queue: list[Building | Ship] = []
@@ -310,10 +310,10 @@ class Planet:
 
     #####################################################################################################
     def grow_population(self) -> None:
-        old_pop = int(self.population / 1e6)
-        self.population += self.population_increment()
-        if int(self.population / 1e6) > old_pop:
-            for _ in range(int(self.population / 1e6) - old_pop):  # Assign to new jobs
+        old_pop = int(self._population / 1e6)
+        self._population += self.population_increment()
+        if int(self._population / 1e6) > old_pop:
+            for _ in range(int(self._population / 1e6) - old_pop):  # Assign to new jobs
                 self.jobs[PopulationJobs.FARMER] += 1  # TODO: Make this cleverer
 
     #####################################################################################################
@@ -324,13 +324,13 @@ class Planet:
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
         if self.build_queue and self.build_queue[0].name == Building.HOUSING:
-            housing_bonus = int((self.work_production() * 40) / (self.population / 1e6))
+            housing_bonus = int((self.work_production() * 40) / (self._population / 1e6))
         else:
             housing_bonus = 0
         max_pop = self.max_population() * 1e6
         food_lack_penalty = 50 * self.food_lack()
-        free_space = max_pop - self.population
-        basic_increment = int(math.sqrt(2000 * self.population * free_space / max_pop))
+        free_space = max_pop - self._population
+        basic_increment = int(math.sqrt(2000 * self._population * free_space / max_pop))
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )

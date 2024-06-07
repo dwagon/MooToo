@@ -186,8 +186,8 @@ class Game(BaseGraphics):
         for planet in system.orbits:
             if not planet:
                 continue
-            if planet.population > max_pop:
-                max_pop = planet.population
+            if planet.current_population() > max_pop:
+                max_pop = planet.current_population()
                 pick_planet = planet
         return pick_planet
 

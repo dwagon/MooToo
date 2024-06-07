@@ -40,11 +40,13 @@ class TextBoxWindow(BaseGraphics):
         return False
 
     #####################################################################################################
-    def draw(self, text: list[str]) -> None:
+    def draw(self, text: list[str], font=None) -> None:
         top_left = self.draw_frame()
-        line_size = self.text_font.render("M", True, "purple").get_size()
+        if not font:
+            font = self.text_font
+        line_size = font.render("M", True, "purple").get_size()
         for line in text:
-            text_surface = self.text_font.render(line, True, "white")
+            text_surface = font.render(line, True, "white")
             self.screen.blit(text_surface, top_left)
             top_left.y += line_size[1]
         self.close_button.draw(self.screen)
