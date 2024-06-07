@@ -74,9 +74,12 @@ class Empire:
 
     #####################################################################################################
     def learnt(self, tech: Technology) -> None:
-        """We have researched {research}"""
+        """We have researched {tech}"""
         self.known_techs.add(tech)
         research = self.galaxy.get_research(tech)
+        if research.general:
+            for tech in research.general:
+                self.known_techs.add(tech)
         self.researched[research.category] = research.cost
 
     #####################################################################################################

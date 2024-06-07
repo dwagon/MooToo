@@ -30,6 +30,13 @@ class TestEmpire(unittest.TestCase):
         avail = self.empire.next_research(ResearchCategory.SOCIOLOGY)
         self.assertEqual(avail, [Technology.SPACE_ACADEMY])
 
+    def test_learn_tech(self):
+        """Learn a new technology"""
+        self.assertFalse(Technology.FREIGHTERS in self.empire.known_techs)
+        self.empire.learnt(Technology.FREIGHTERS)
+        self.assertTrue(Technology.FREIGHTERS in self.empire.known_techs)
+        self.assertTrue(Technology.NUCLEAR_DRIVE in self.empire.known_techs)
+
 
 if __name__ == "__main__":
     unittest.main()
