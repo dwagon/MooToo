@@ -21,12 +21,25 @@ class PlanetBuilding:
         return self.name
 
     def food_bonus(self, planet: "Planet") -> int:
+        """Changes to absolute food production"""
+        return 0
+
+    def food_per_bonus(self, planet: "Planet") -> int:
+        """Changes to per farmer productivity"""
         return 0
 
     def prod_bonus(self, planet: "Planet") -> int:
         return 0
 
+    def prod_per_bonus(self, planet: "Planet") -> int:
+        """Changes to per worker productivity"""
+        return 0
+
     def research_bonus(self, planet: "Planet") -> int:
+        return 0
+
+    def research_per_bonus(self, planet: "Planet") -> int:
+        """Changes to per scientist productivity"""
         return 0
 
     def morale_bonus(self, planet: "Planet") -> int:
