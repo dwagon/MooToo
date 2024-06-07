@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from MooToo.planetbuilding import PlanetBuilding
+from MooToo.planet_building import PlanetBuilding
 from MooToo.constants import PlanetRichness, Building
 from MooToo.planet import Planet
 

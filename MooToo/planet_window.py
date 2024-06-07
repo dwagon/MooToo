@@ -2,8 +2,11 @@
 
 import time
 from enum import Enum, StrEnum, auto
+from typing import Optional
+
 import pygame
 from MooToo.base_graphics import BaseGraphics
+from MooToo.textbox_window import TextBoxWindow
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
 from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
@@ -21,6 +24,7 @@ class PlanetButtons(StrEnum):
 class PlanetDisplayMode(Enum):
     NORMAL = auto()
     BUILD = auto()
+    DETAILS = auto()
 
 
 #####################################################################################################
@@ -32,21 +36,25 @@ class PlanetWindow(BaseGraphics):
         self.screen = screen
         self.planet = None
         self.images = self.load_images()
-        self.system_rects: dict[tuple[float, float, float, float], Planet] = {}
+        self.planet_rects: dict[tuple[float, float, float, float], Planet] = {}
+        self.detail_rect: Optional[pygame.Rect] = None
         self.colony_font = pygame.font.SysFont("Ariel", 18, bold=True)
         self.display_mode = PlanetDisplayMode.NORMAL
         self.building_choice_window = BuildingChoiceWindow(screen, game)
         self.buttons = {
-            PlanetButtons.RETURN: Button(self.load_image("COLPUPS.LBX", 4, palette_index=2), pygame.Vector2(555, 460)),
-            PlanetButtons.BUILD: Button(self.load_image("COLPUPS.LBX", 1, palette_index=2), pygame.Vector2(525, 123)),
+            PlanetButtons.RETURN: Button(self.images["return_button"], pygame.Vector2(555, 460)),
+            PlanetButtons.BUILD: Button(self.images["build_button"], pygame.Vector2(525, 123)),
         }
+        self.details_textbox = TextBoxWindow(screen, game)
 
     #####################################################################################################
-    def load_images(self):
+    def load_images(self) -> dict[str, pygame.Surface]:
         start = time.time()
         images = {}
         images["window"] = self.load_image("COLPUPS.LBX", 5, palette_index=2)
         images["orbit_arrow"] = self.load_image("COLSYSDI.LBX", 64, palette_index=2)
+        images["return_button"] = self.load_image("COLPUPS.LBX", 4, palette_index=2)
+        images["build_button"] = self.load_image("COLPUPS.LBX", 1, palette_index=2)
         images |= self.load_climate_images()
         images |= self.load_orbit_images()
         images |= self.load_resource_images()
@@ -153,11 +161,33 @@ class PlanetWindow(BaseGraphics):
         return images
 
     #####################################################################################################
+    def details_text(self) -> list[str]:
+        pop_str = f"{self.planet.current_population()}/{self.planet.max_population()}"
+        return [
+            f"{self.planet.name} - {self.planet.owner.name} Colony",
+            f"{self.planet.size} {self.planet.climate}",
+            f"Mineral {self.planet.richness}",
+            f"{self.planet.gravity} G",
+            "",
+            f"{'Base food per':<20}{self.planet.food_per():>30}",
+            f"{'Base industry per':<20}{self.planet.production_per():>30}",
+            f"{'Base research per':<20}{self.planet.research_per():>30}",
+            "",
+            f"{'Morale':<20}{self.planet.morale()*10:>29}%",
+            "",
+            f"{'Population':<20}{pop_str:>30}",
+        ]
+
+    #####################################################################################################
     def draw(self, system: System):
         self.draw_centered_image(self.images[self.planet.climate_image])
         if self.display_mode == PlanetDisplayMode.BUILD:
             self.building_choice_window.draw(self.planet)
             return
+        if self.display_mode == PlanetDisplayMode.DETAILS:
+            self.details_textbox.draw(self.details_text(), self.title_font)
+            return
+
         self.window = self.draw_centered_image(self.images["window"])
         self.draw_orbits(system)
         self.draw_resources(self.planet)
@@ -192,6 +222,8 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def draw_morale(self, planet: Planet) -> None:
         top_left = pygame.Vector2(340, 31)
+        if not planet.owner:
+            return
         for _ in range(planet.morale()):
             pos = self.screen.blit(self.images["happy"], top_left)
             top_left.x += pos.width
@@ -297,7 +329,7 @@ class PlanetWindow(BaseGraphics):
 
     #####################################################################################################
     def draw_pop_label(self, planet: Planet) -> None:
-        text = f"Pop {int(planet.population/1000):,}k (+{int(planet.population_increment()/1000):,}k)"
+        text = f"Pop {int(planet._population / 1000):,}k (+{int(planet.population_increment() / 1000):,}k)"
         text_surface = self.label_font.render(text, True, "white")
         text_size = text_surface.get_size()
         self.screen.blit(text_surface, pygame.Rect(640 - text_size[0], 0, text_size[0], text_size[1]))
@@ -348,7 +380,7 @@ class PlanetWindow(BaseGraphics):
         )
         self.screen.blit(image, planet_dest)
         if planet.category == PlanetCategory.PLANET:
-            self.system_rects[(planet_dest.left, planet_dest.top, planet_dest.width, planet_dest.height)] = planet
+            self.planet_rects[(planet_dest.left, planet_dest.top, planet_dest.width, planet_dest.height)] = planet
 
     #####################################################################################################
     def draw_orbit_text(self, planet: Planet, label_col: float, row_middle: float) -> None:
@@ -363,8 +395,8 @@ class PlanetWindow(BaseGraphics):
             label_surface.get_size()[1],
         )
         self.screen.blit(label_surface, label_dest)
-        # Have to convert to tuple as Rect is not hashable
-        # TODO: Only add rect if we are the owner of the planet
+        if planet == self.planet:
+            self.detail_rect = label_dest
 
     #####################################################################################################
     def orbit_label(self, planet: Planet) -> str:
@@ -386,16 +418,22 @@ class PlanetWindow(BaseGraphics):
             if self.building_choice_window.button_left_down():
                 self.display_mode = PlanetDisplayMode.NORMAL
                 return False
+        if self.display_mode == PlanetDisplayMode.DETAILS:
+            if self.details_textbox.button_left_down():
+                self.display_mode = PlanetDisplayMode.NORMAL
+                return False
         if self.buttons[PlanetButtons.RETURN].clicked():
             self.planet = None
             return True
         if self.buttons[PlanetButtons.BUILD].clicked():
             self.display_mode = PlanetDisplayMode.BUILD
 
-        for sys_rect, planet in self.system_rects.items():
+        for sys_rect, planet in self.planet_rects.items():
             r = pygame.Rect(sys_rect[0], sys_rect[1], sys_rect[2], sys_rect[3])
             if r.collidepoint(pygame.mouse.get_pos()):
                 self.planet = planet
+        if self.detail_rect.collidepoint(pygame.mouse.get_pos()):
+            self.display_mode = PlanetDisplayMode.DETAILS
         return False
 
 

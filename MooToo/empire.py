@@ -123,7 +123,7 @@ class Empire:
         p.make_home_world()
         p.owner = self.name
         self.owned_planets.append(p)
-        p.population = 8e6
+        p._population = 8e6
         p.climate = PlanetClimate.TERRAN
         p.size = PlanetSize.LARGE
         p.jobs[PopulationJobs.FARMER] = 4

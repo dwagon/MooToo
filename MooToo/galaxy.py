@@ -9,7 +9,7 @@ import jsonpickle
 
 from MooToo.system import System, StarColour
 from MooToo.empire import Empire
-from MooToo.planetbuilding import PlanetBuilding
+from MooToo.planet_building import PlanetBuilding
 from MooToo.research import Research
 from MooToo.names import empire_names
 from MooToo.constants import Building, Technology

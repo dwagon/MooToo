@@ -1,4 +1,4 @@
-from MooToo.planetbuilding import PlanetBuilding
+from MooToo.planet_building import PlanetBuilding
 from MooToo.constants import Building
 
 
