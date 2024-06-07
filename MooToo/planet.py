@@ -231,11 +231,19 @@ class Planet:
         return f"surface_{self.climate}_{num}"
 
     #####################################################################################################
+    def research_per(self) -> int:
+        per = 1
+        for building in self.buildings:
+            per += self.galaxy.get_building(building).research_per_bonus(self)
+        return per
+
+    #####################################################################################################
     def get_research_points(self) -> int:
         """How many research points does this planet generate"""
         rp = 0
         for building in self.buildings:
             rp += self.galaxy.get_building(building).research_bonus(self)
+        rp += self.jobs[PopulationJobs.SCIENTISTS] * self.research_per()
         rp = max(self.jobs[PopulationJobs.SCIENTISTS], rp)
 
         return int(rp)
@@ -362,11 +370,19 @@ class Planet:
 
     #####################################################################################################
     def current_population(self) -> int:
-        return int(self.population / 1e6)
+        return int(self._population / 1e6)
+
+    #####################################################################################################
+    def food_per(self) -> int:
+        """How much food each farmer produces"""
+        per = FOOD_CLIMATE_MAP[self.climate]
+        for building in self.buildings:
+            per += self.galaxy.get_building(building).food_per_bonus(self)
+        return per
 
     #####################################################################################################
     def food_production(self) -> int:
-        production = FOOD_CLIMATE_MAP[self.climate] * self.jobs[PopulationJobs.FARMER]
+        production = self.food_per() * self.jobs[PopulationJobs.FARMER]
         production *= GRAVITY_MAP[self.gravity]
         for building in self.buildings:
             production += self.galaxy.get_building(building).food_bonus(self)
@@ -380,8 +396,15 @@ class Planet:
         )
 
     #####################################################################################################
+    def production_per(self) -> int:
+        per = PROD_RICHNESS_MAP[self.richness]
+        for building in self.buildings:
+            per += self.galaxy.get_building(building).prod_per_bonus(self)
+        return per
+
+    #####################################################################################################
     def work_production(self) -> int:
-        production = PROD_RICHNESS_MAP[self.richness] * self.jobs[PopulationJobs.WORKERS]
+        production = self.production_per() * self.jobs[PopulationJobs.WORKERS]
         production *= GRAVITY_MAP[self.gravity]
         for building in self.buildings:
             production += self.galaxy.get_building(building).prod_bonus(self)
