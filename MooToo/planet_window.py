@@ -395,7 +395,7 @@ class PlanetWindow(BaseGraphics):
             label_surface.get_size()[1],
         )
         self.screen.blit(label_surface, label_dest)
-        if planet == self.planet:
+        if planet == self.planet and self.planet.owner:
             self.detail_rect = label_dest
 
     #####################################################################################################

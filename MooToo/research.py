@@ -23,3 +23,4 @@ class Research:
         self.cost: int = cost
         self.enabled_building: PlanetBuilding | None = None
         self.category: ResearchCategory = category
+        self.general = []  # Techs that get learnt along with this one
