@@ -460,9 +460,9 @@ class Planet:
             case ShipType.Transport:
                 if Technology.TRANSPORT in known_techs and Building.MARINE_BARRACKS in self.buildings:
                     return True
-            case ShipType.Frigate | ShipType.Destroyer | ShipType.Cruiser:
+            case ShipType.Frigate | ShipType.Destroyer:
                 return True
-            case ShipType.Battleship:
+            case ShipType.Cruiser | ShipType.Battleship:
                 if self.can_build_big_ships():
                     return True
             case ShipType.Titan:
