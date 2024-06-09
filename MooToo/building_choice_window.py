@@ -22,7 +22,7 @@ class BuildingChoiceWindow(BaseGraphics):
         self.images = self.load_images()
         self.ok_button = Button(self.load_image("COLBLDG.LBX", 3), pygame.Vector2(564, 450))
         self.cancel_button = Button(self.load_image("COLBLDG.LBX", 1), pygame.Vector2(495, 450))
-        self.to_build_rects: dict[Building, pygame.Rect] = {}
+        self.to_build_rects: dict[Building | ShipType, pygame.Rect] = {}
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
@@ -50,10 +50,12 @@ class BuildingChoiceWindow(BaseGraphics):
         # Ships
         top_left = pygame.Vector2(486, 14)
         for ship_type in list(ShipType):
-            text_surface = self.text_font.render(ship_type.name, True, "white")
-            rect = self.screen.blit(text_surface, top_left)
-            top_left.y += text_surface.get_size()[1]
-            self.to_build_rects[ship_type.name] = rect
+            if self.planet.can_build_ship(ship_type):
+                text_surface = self.text_font.render(ship_type.name, True, "white")
+                rect = self.screen.blit(text_surface, top_left)
+                top_left.y += text_surface.get_size()[1]
+                self.to_build_rects[ship_type.name] = rect
+                pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
 
     #####################################################################################################
     def draw_currently_building(self) -> None:
@@ -63,10 +65,8 @@ class BuildingChoiceWindow(BaseGraphics):
         construct = self.planet.build_queue[0]
         if isinstance(construct, Building):
             name = self.planet.galaxy.get_building(construct).name
-        elif isinstance(construct, Ship):
-            name = construct.name
         else:
-            print(f"DBG draw_currently_building {construct=} {type(construct)=}")
+            name = construct.name
 
         text = self.text_font.render(name, True, "purple")
         self.screen.blit(text, top_left)
@@ -83,6 +83,7 @@ class BuildingChoiceWindow(BaseGraphics):
             rect = self.screen.blit(text, top_left)
             top_left.y += text.get_size()[1]
             self.to_build_rects[buildings[building]] = rect
+            pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
 
     #####################################################################################################
     def draw_building_queue(self) -> None:
@@ -91,10 +92,8 @@ class BuildingChoiceWindow(BaseGraphics):
         for construct in self.planet.build_queue:
             if isinstance(construct, Building):
                 name = self.planet.galaxy.get_building(construct).name
-            elif isinstance(construct, Ship):
-                name = construct.name
             else:
-                print(f"DBG draw_building_queue {construct=} {type(construct)=}")
+                name = construct.name
             text = self.text_font.render(name, True, "white")
             self.screen.blit(text, top_left)
             top_left.y += 20

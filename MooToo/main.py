@@ -321,6 +321,7 @@ def main(load_file=""):
     else:
         galaxy = Galaxy()
         galaxy.populate()
+        save(galaxy, "initial")
 
     empire_name = list(galaxy.empires.keys())[0]
 
