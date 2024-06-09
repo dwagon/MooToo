@@ -6,18 +6,18 @@ CATEGORY = ResearchCategory.CONSTRUCTION
 
 
 #####################################################################################################
-class AntiMissileRockets(Research):
+class ResearchAntiMissileRockets(Research):
     def __init__(self):
         super().__init__("Anti-Missile Rockets", Technology.ANTI_MISSILE_ROCKETS, RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class FighterBays(Research):
+class ResearchFighterBays(Research):
     def __init__(self):
         super().__init__("Fighter Bays", Technology.FIGHTER_BAYS, RESEARCH_POINTS, CATEGORY)
 
 
 #####################################################################################################
-class ReinforcedHull(Research):
+class ResearchReinforcedHull(Research):
     def __init__(self):
         super().__init__("Reinforced Hull", Technology.REINFORCED_HULL, RESEARCH_POINTS, CATEGORY)

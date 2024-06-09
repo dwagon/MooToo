@@ -19,21 +19,21 @@ class ResearchNuclearMissile(Research):
 
 
 #####################################################################################################
-class StandardFuelCells(Research):
+class ResearchStandardFuelCells(Research):
     def __init__(self):
         super().__init__("Standard Fuel Cells", Technology.STANDARD_FUEL_CELLS, RESEARCH_POINTS, CATEGORY)
         self.general = general
 
 
 #####################################################################################################
-class ExtendedFuelTanks(Research):
+class ResearchExtendedFuelTanks(Research):
     def __init__(self):
         super().__init__("Extended Fuel Tanks", Technology.EXTENDED_FUEL_TANKS, RESEARCH_POINTS, CATEGORY)
         self.general = general
 
 
 #####################################################################################################
-class TitaniumArmour(Research):
+class ResearchTitaniumArmour(Research):
     def __init__(self):
         super().__init__("Titanium Armour", Technology.TITANIUM_ARMOUR, RESEARCH_POINTS, CATEGORY)
         self.general = general
