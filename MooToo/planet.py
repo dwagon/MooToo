@@ -346,6 +346,8 @@ class Planet:
             housing_bonus = int((self.work_production() * 40) / (self._population / 1e6))
         else:
             housing_bonus = 0
+        if self.current_population() == self.max_population():
+            return 0
         max_pop = self.max_population() * 1e6
         food_lack_penalty = 50 * self.food_lack()
         free_space = max_pop - self._population
