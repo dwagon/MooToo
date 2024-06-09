@@ -3,7 +3,7 @@
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
-from MooToo.constants import PlanetClimate, PlanetSize, Building, Technology
+from MooToo.constants import Building, Technology
 from MooToo.system import System
 from MooToo.planet import Planet, PopulationJobs
 from MooToo.research import ResearchCategory
@@ -20,7 +20,6 @@ class Empire:
         self.name = name
         self.galaxy = galaxy
         self.government = "Feudal"  # Fix me
-        self.home_planet = None
         self.money: int = 100
         self.income: int = 0
         self.known_systems: set[int] = set()
@@ -43,6 +42,20 @@ class Empire:
             Technology.MARINE_BARRACKS,
             Technology.COLONY_BASE,
         }
+
+    #####################################################################################################
+    def set_home_planet(self, planet: Planet):
+        """Make planet the home planet of the empire"""
+        planet.name = f"{self.name} Home"
+        planet.owner = self.name
+        planet._population = 8e6
+        planet.jobs[PopulationJobs.FARMER] = 4
+        planet.jobs[PopulationJobs.WORKERS] = 2
+        planet.jobs[PopulationJobs.SCIENTISTS] = 2
+        planet.buildings.add(Building.MARINE_BARRACKS)
+        planet.buildings.add(Building.STAR_BASE)
+        self.owned_planets.append(planet)
+        self.know_system(planet.system)
 
     #####################################################################################################
     def add_ship(self, ship: Ship, system: System):
@@ -117,25 +130,3 @@ class Empire:
     def is_known_system(self, system: System) -> bool:
         """Is the system known to this empire"""
         return system.id in self.known_systems
-
-    #####################################################################################################
-
-    def make_home_planet(self, system: "System") -> Planet:
-        """Return a suitable home planet in {system}"""
-        p = Planet(f"{self.name} Home", system, self.galaxy)
-        p.make_home_world()
-        p.owner = self.name
-        self.owned_planets.append(p)
-        p._population = 8e6
-        p.climate = PlanetClimate.TERRAN
-        p.size = PlanetSize.LARGE
-        p.jobs[PopulationJobs.FARMER] = 4
-        p.jobs[PopulationJobs.WORKERS] = 2
-        p.jobs[PopulationJobs.SCIENTISTS] = 2
-        p.build_queue = []
-        p.buildings.add(Building.MARINE_BARRACKS)
-        p.buildings.add(Building.STAR_BASE)
-        self.know_system(system)
-
-        p.gen_climate_image()
-        return p

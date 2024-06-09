@@ -13,6 +13,7 @@ if TYPE_CHECKING:
 
 #####################################################################################################
 class ShipType(StrEnum):
+    ColonyBase = auto()
     ColonyShip = auto()
     OutpostShip = auto()
     Transport = auto()
@@ -100,6 +101,31 @@ class Ship:
 
 
 #####################################################################################################
+class ColonyBase(Ship):
+    def __init__(self, name: str):
+        super().__init__()
+        self.cost = 200
+        self.space = 0
+        self.command_points = 0
+        self.maintenance = 0
+        self.type = ShipType.ColonyBase
+        self.name = "Colony Base"
+
+
+#####################################################################################################
+class ColonyShip(Ship):
+    def __init__(self, name: str):
+        super().__init__()
+        self.cost = 25  # ?
+        self.space = 0
+        self.command_points = 1
+        self.maintenance = 10
+        self.type = ShipType.ColonyShip
+        self.name = name
+        self.icon = "colony"
+
+
+#####################################################################################################
 class Transport(Ship):
     def __init__(self, name: str):
         super().__init__()
@@ -181,6 +207,10 @@ class DoomStar(Ship):
 #####################################################################################################
 def select_ship_type_by_name(name: str) -> Ship:
     match name:
+        case "ColonyBase":
+            return ColonyBase(f"ColonyBase")
+        case "ColonyShip":
+            return ColonyShip(f"Colony {counts[ShipType.ColonyShip]:03d}")
         case "Transport":
             counts[ShipType.Transport] += 1
             return Transport(f"Transport {counts[ShipType.Transport]:03d}")

@@ -1,5 +1,6 @@
 import unittest
-from MooToo.constants import Building, PopulationJobs
+from MooToo.constants import Building, PopulationJobs, Technology
+from MooToo.ship import ShipType
 from MooToo.galaxy import Galaxy
 from MooToo.system import System
 from MooToo.empire import Empire
@@ -11,7 +12,7 @@ class TestPlanet(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
         self.system = System(1, (0, 0), self.galaxy)
-        self.planet = Planet("test", self.system, self.galaxy)
+        self.planet = Planet(self.system, self.galaxy)
         self.empire = Empire("PlayerOne", self.galaxy)
         self.galaxy.empires["PlayerOne"] = self.empire
         self.planet.owner = "PlayerOne"
@@ -64,6 +65,19 @@ class TestPlanet(unittest.TestCase):
     def test_get_research_points(self):
         self.planet.jobs[PopulationJobs.SCIENTISTS] = 1
         self.assertEqual(self.planet.get_research_points(), 1)
+
+    #################################################################################################
+    def test_can_build_ship(self):
+        planet = Planet(self.system, self.galaxy)
+        planet.owner = self.empire.name
+        self.assertFalse(planet.can_build_ship(ShipType.Frigate))
+        self.empire.learnt(Technology.NUCLEAR_DRIVE)
+        self.assertFalse(planet.can_build_ship(ShipType.Frigate))
+        self.empire.learnt(Technology.STANDARD_FUEL_CELLS)
+        self.assertTrue(planet.can_build_ship(ShipType.Frigate))
+        self.assertFalse(planet.can_build_ship(ShipType.Battleship))
+        planet.buildings.add(Building.STAR_BASE)
+        self.assertTrue(planet.can_build_ship(ShipType.Battleship))
 
 
 #####################################################################################################

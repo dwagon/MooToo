@@ -59,7 +59,7 @@ class System:
         return f"<System {self.position}>"
 
     #####################################################################################################
-    def pick_star_colour(self) -> str:
+    def pick_star_colour(self) -> StarColour:
         while True:
             pct = random.randint(0, 100)
             prev = 0
@@ -82,17 +82,17 @@ class System:
         for _ in range(MAX_ORBITS):
             pct = random.randint(0, 100)
             if pct <= STAR_COLOURS[self.colour]["prob_orbit"]:
-                self.orbits.append(Planet("", self, self.galaxy))
+                self.orbits.append(Planet(self, self.galaxy))
             else:
                 self.orbits.append(None)
 
         # Name the planets
         random.shuffle(self.orbits)
         name_index = 0
-        for orbit in self.orbits:
-            if orbit:
-                if not orbit.name:
-                    orbit.name = f"{self.name} {ORBIT_NAMES[name_index]}"
+        for planet in self.orbits:
+            if planet:
+                if not planet.name:
+                    planet.name = f"{self.name} {ORBIT_NAMES[name_index]}"
                 name_index += 1
 
 

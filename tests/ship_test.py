@@ -12,7 +12,7 @@ class TestShip(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
         self.system = System(1, (0, 0), self.galaxy)
-        self.planet = Planet("test", self.system, self.galaxy)
+        self.planet = Planet(self.system, self.galaxy)
         self.empire = Empire("PlayerOne", self.galaxy)
         self.galaxy.empires["PlayerOne"] = self.empire
         self.planet.owner = "PlayerOne"

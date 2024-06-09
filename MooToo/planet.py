@@ -13,6 +13,7 @@ from MooToo.constants import (
     PlanetSize,
     StarColour,
     Building,
+    Technology,
 )
 from MooToo.ship import ShipType, Ship, select_ship_type_by_name
 
@@ -167,8 +168,8 @@ PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, name: str, system: "System", galaxy: "Galaxy"):
-        self.name = name
+    def __init__(self, system: "System", galaxy: "Galaxy"):
+        self.name = ""
         self.system = system
         self._galaxy = galaxy
         self.category = pick_planet_category()
@@ -211,6 +212,16 @@ class Planet:
         if not self._buildings_available:
             self._buildings_available = self.available_to_build()
         return self._buildings_available
+
+    #####################################################################################################
+    def can_build_big_ships(self) -> bool:
+        if (
+            Building.STAR_BASE in self.buildings
+            or Building.BATTLESTATION in self.buildings
+            or Building.STAR_FORTRESS in self.buildings
+        ):
+            return True
+        return False
 
     #####################################################################################################
     def available_to_build(self) -> set[Building]:
@@ -424,16 +435,47 @@ class Planet:
         return int(production)
 
     #####################################################################################################
-    def __repr__(self):
-        return f"<Planet {self.name}: {self.category.name} {self.size.name} {self.richness.name} {self.climate.name} {self.gravity.name}>"
+    def can_build_ship(self, ship: ShipType) -> bool:
+        """Can this empire build a type of ship"""
+        if not self.owner:
+            print("No owner")
+            return False
+        # TODO - make sure there is a suitable planet in the system
+        if ship == ShipType.ColonyBase:
+            return True
+
+        known_techs = self.owner.known_techs
+
+        # Need basic tech to build anything but a colony base
+        if Technology.STANDARD_FUEL_CELLS not in known_techs or Technology.NUCLEAR_DRIVE not in known_techs:
+            return False
+
+        match ship:
+            case ShipType.ColonyShip:
+                if Technology.COLONY_SHIP in known_techs:
+                    return True
+            case ShipType.OutpostShip:
+                if Technology.OUTPOST_SHIP in known_techs:
+                    return True
+            case ShipType.Transport:
+                if Technology.TRANSPORT in known_techs and Building.MARINE_BARRACKS in self.buildings:
+                    return True
+            case ShipType.Frigate | ShipType.Destroyer | ShipType.Cruiser:
+                return True
+            case ShipType.Battleship:
+                if self.can_build_big_ships():
+                    return True
+            case ShipType.Titan:
+                if Technology.TITAN_CONSTRUCTION in known_techs and self.can_build_big_ships():
+                    return True
+            case ShipType.DoomStar:
+                if Technology.DOOM_STAR_CONSTRUCTION in known_techs and self.can_build_big_ships():
+                    return True
+        return False
 
     #####################################################################################################
-    def make_home_world(self):
-        self.category = PlanetCategory.PLANET
-        self.size = PlanetSize.MEDIUM
-        self.richness = PlanetRichness.ABUNDANT
-        self.climate = PlanetClimate.TERRAN
-        self.gravity = PlanetGravity.NORMAL
+    def __repr__(self):
+        return f"<Planet {self.name}: {self.category.name} {self.size.name} {self.richness.name} {self.climate.name} {self.gravity.name}>"
 
 
 #####################################################################################################
