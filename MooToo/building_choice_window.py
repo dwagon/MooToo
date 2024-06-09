@@ -23,6 +23,7 @@ class BuildingChoiceWindow(BaseGraphics):
         self.ok_button = Button(self.load_image("COLBLDG.LBX", 3), pygame.Vector2(564, 450))
         self.cancel_button = Button(self.load_image("COLBLDG.LBX", 1), pygame.Vector2(495, 450))
         self.to_build_rects: dict[Building | ShipType, pygame.Rect] = {}
+        self.build_queue_rects: dict[int, pygame.Rect] = {}
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
@@ -89,13 +90,15 @@ class BuildingChoiceWindow(BaseGraphics):
     def draw_building_queue(self) -> None:
         top_left = pygame.Vector2(209, 330)
 
-        for construct in self.planet.build_queue:
+        for num, construct in enumerate(self.planet.build_queue):
             if isinstance(construct, Building):
                 name = self.planet.galaxy.get_building(construct).name
             else:
                 name = construct.name
-            text = self.text_font.render(name, True, "white")
-            self.screen.blit(text, top_left)
+            text = self.text_font.render(name, True, "white", "black")
+            rect = self.screen.blit(text, top_left)
+            pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
+            self.build_queue_rects[num] = rect
             top_left.y += 20
 
     #####################################################################################################
@@ -104,6 +107,9 @@ class BuildingChoiceWindow(BaseGraphics):
         for bld, rect in self.to_build_rects.items():
             if rect.collidepoint(mouse_x, mouse_y):
                 self.planet.toggle_build_queue_item(bld)
+        for num, rect in self.build_queue_rects.items():
+            if rect.collidepoint(mouse_x, mouse_y):
+                self.planet.build_queue.pop(num)
         if self.ok_button.clicked():
             return True
         if self.cancel_button.clicked():
