@@ -1,6 +1,7 @@
 import unittest
 from MooToo.galaxy import Galaxy
 from MooToo.empire import Empire
+from MooToo.ship import ShipType
 from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.constants import Building, Technology
@@ -13,15 +14,8 @@ class TestEmpire(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
         self.system = System(1, (0, 0), self.galaxy)
-        self.planet = Planet("test", self.system, self.galaxy)
         self.empire = Empire("PlayerOne", self.galaxy)
         self.galaxy.empires["PlayerOne"] = self.empire
-        self.planet.owner = "PlayerOne"
-
-    def test_make_home_planet(self):
-        pl = self.empire.make_home_planet(self.system)
-        self.assertIn(Building.MARINE_BARRACKS, pl.buildings)
-        self.assertTrue(self.empire.is_known_system(self.system))
 
     def test_next_research(self):
         avail = self.empire.next_research(ResearchCategory.SOCIOLOGY)
@@ -36,6 +30,13 @@ class TestEmpire(unittest.TestCase):
         self.empire.learnt(Technology.FREIGHTERS)
         self.assertTrue(Technology.FREIGHTERS in self.empire.known_techs)
         self.assertTrue(Technology.NUCLEAR_DRIVE in self.empire.known_techs)
+
+    def test_set_home_planet(self):
+        """Set the home planet of the empire"""
+        planet = Planet(self.system, self.galaxy)
+        self.empire.set_home_planet(planet)
+        self.assertIn(Building.MARINE_BARRACKS, planet.buildings)
+        self.assertIn(planet.system.id, self.empire.known_systems)
 
 
 if __name__ == "__main__":

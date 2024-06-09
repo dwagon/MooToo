@@ -9,10 +9,19 @@ import jsonpickle
 
 from MooToo.system import System, StarColour
 from MooToo.empire import Empire
+from MooToo.planet import Planet
 from MooToo.planet_building import PlanetBuilding
 from MooToo.research import Research
 from MooToo.names import empire_names
-from MooToo.constants import Building, Technology
+from MooToo.constants import (
+    Building,
+    Technology,
+    PlanetClimate,
+    PlanetSize,
+    PlanetCategory,
+    PlanetRichness,
+    PlanetGravity,
+)
 from MooToo.utils import get_distance, get_distance_tuple
 
 NUM_SYSTEMS = 40
@@ -34,13 +43,15 @@ class Galaxy:
     #####################################################################################################
     def populate(self):
         """Fill the galaxy with things"""
-        positions = self.get_positions()
+        positions = self.get_system_positions()
         for id, _ in enumerate(range(NUM_SYSTEMS)):
             position = random.choice(positions)
             positions.remove(position)
             self.systems[id] = System(id, position, self)
         for home_system in self.find_home_systems():
-            self.make_empire(home_system)
+            empire_name = random.choice(empire_names)
+            empire_names.remove(empire_name)
+            self.make_empire(empire_name, home_system)
         for system in self.systems.values():
             system.make_orbits()
 
@@ -56,7 +67,7 @@ class Galaxy:
     def find_home_systems(self) -> list[System]:
         """Find suitable planets for home planets"""
         # Create an arc around the galaxy and put home planets evenly spaced around that arc
-        home_planets = []
+        home_systems = []
         arc_distance = int(360 / NUM_EMPIRES)
         radius = min(MAX_X, MAX_Y) * 0.75 / 2
         for degree in range(0, 359, arc_distance):
@@ -73,8 +84,8 @@ class Galaxy:
                 if distance < min_dist:
                     min_dist = distance
                     min_system = system
-            home_planets.append(min_system)
-        return home_planets
+            home_systems.append(min_system)
+        return home_systems
 
     #####################################################################################################
     def turn(self):
@@ -84,18 +95,30 @@ class Galaxy:
             empire.turn()
 
     #####################################################################################################
-    def make_empire(self, home_system: System):
+    def make_empire(self, empire_name: str, home_system: System):
         """ """
-        name = random.choice(empire_names)
-        empire_names.remove(name)
         home_system.colour = StarColour.YELLOW
-        self.empires[name] = Empire(name, self)
-        home_system.orbits.append(self.empires[name].make_home_planet(home_system))
+        empire = Empire(empire_name, self)
+        self.empires[empire_name] = empire
+        home_planet = self.make_home_planet(home_system)
+        empire.set_home_planet(home_planet)
+        home_system.orbits.append(home_planet)
         random.shuffle(home_system.orbits)
-        self.empires[name].know_system(home_system)
 
     #####################################################################################################
-    def get_positions(self) -> list[tuple[int, int]]:
+    def make_home_planet(self, system: "System") -> Planet:
+        """Return a suitable home planet in {system}"""
+        p = Planet(system, self)
+        p.climate = PlanetClimate.TERRAN
+        p.size = PlanetSize.LARGE
+        p.category = PlanetCategory.PLANET
+        p.richness = PlanetRichness.ABUNDANT
+        p.gravity = PlanetGravity.NORMAL
+        p.gen_climate_image()
+        return p
+
+    #####################################################################################################
+    def get_system_positions(self) -> list[tuple[int, int]]:
         """Return suitable positions"""
         positions = []
         min_dist = 30
