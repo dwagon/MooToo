@@ -5,10 +5,7 @@ from typing import Optional
 
 import pygame
 from enum import Enum, auto
-from MooToo.galaxy import Galaxy, load, save
-from MooToo.system import System
-from MooToo.ship import Ship
-from MooToo.planet import Planet
+import MooToo
 from MooToo.gui_button import Button, InvisButton
 from MooToo.orbit_window import OrbitWindow
 from MooToo.base_graphics import BaseGraphics
@@ -28,7 +25,7 @@ class DisplayMode(Enum):
 
 #####################################################################################################
 class Game(BaseGraphics):
-    def __init__(self, galaxy: Galaxy, empire_name: str):
+    def __init__(self, galaxy: MooToo.Galaxy, empire_name: str):
         super().__init__(self)
         self.display_mode = DisplayMode.GALAXY
         self.galaxy = galaxy
@@ -42,8 +39,8 @@ class Game(BaseGraphics):
         self.images = self.load_images()
         self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
         self.science_button = InvisButton(pygame.Rect(547, 346, 65, 69))
-        self.ship_rects: list[tuple[pygame.Rect, list[Ship]]] = []
-        self.system_rects: list[tuple[pygame.Rect, System]] = []
+        self.ship_rects: list[tuple[pygame.Rect, list[MooToo.Ship]]] = []
+        self.system_rects: list[tuple[pygame.Rect, MooToo.System]] = []
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
@@ -134,7 +131,7 @@ class Game(BaseGraphics):
         mouse = pygame.mouse.get_pos()
         if self.turn_button.clicked():
             self.galaxy.turn()
-            save(self.galaxy, "save")
+            MooToo.save(self.galaxy, "save")
         if self.science_button.clicked():
             self.display_mode = DisplayMode.SCIENCE
         for rect, ships in self.ship_rects:
@@ -151,7 +148,7 @@ class Game(BaseGraphics):
             self.system = system
 
     #####################################################################################################
-    def click_system(self) -> Optional[System]:
+    def click_system(self) -> Optional[MooToo.System]:
         mouse = pygame.mouse.get_pos()
         for rect, system in self.system_rects:
             if rect.collidepoint(mouse[0], mouse[1]):
@@ -179,7 +176,7 @@ class Game(BaseGraphics):
                     self.fleet_window.select_destination(system)
 
     #####################################################################################################
-    def pick_planet(self, system: System) -> Planet:
+    def pick_planet(self, system: MooToo.System) -> MooToo.Planet:
         """When we look at a system which planet should we start with"""
         max_pop = -1
         pick_planet = None
@@ -222,7 +219,7 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_fleets(self):
-        rects: dict[tuple[int, int, int, int], list[Ship]] = {}
+        rects: dict[tuple[int, int, int, int], list[MooToo.Ship]] = {}
         self.ship_rects = []
         for empire in self.galaxy.empires:
             for ship in self.galaxy.empires[empire].ships:
@@ -262,7 +259,7 @@ class Game(BaseGraphics):
     #####################################################################################################
     def draw_income(self):
         """Draw money / income"""
-        top_left = pygame.Vector2(555, 72)
+        top_left = pygame.Vector2(555, 92)
         rp_text_surface = self.text_font.render(f"{self.empire.money} BC", True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
         top_left.y += rp_text_surface.get_size()[1]
@@ -276,26 +273,26 @@ class Game(BaseGraphics):
     #####################################################################################################
     def draw_research(self):
         """Draw what is being researched"""
-        if self.empire.researching:
-            research = self.galaxy.get_research(self.empire.researching)
-            words = research.name
-        else:
-            words = "Nothing"
+        top_left = pygame.Vector2(550, 380)
 
-        top_left = pygame.Vector2(550, 360)
-        for word in words.split():
+        if not self.empire.researching:
+            rp_text_surface = self.text_font.render("Nothing", True, "white", "black")
+            self.screen.blit(rp_text_surface, top_left)
+            return
+
+        research = self.galaxy.get_research(self.empire.researching)
+        time_left = int((research.cost - self.empire.research_spent) / self.empire.get_research_points())
+
+        words = [
+            research.name,
+            f"~{time_left} turns",
+            f"{self.empire.get_research_points()} RP",
+        ]
+
+        for word in words:
             rp_text_surface = self.text_font.render(word, True, "white", "black")
             self.screen.blit(rp_text_surface, top_left)
-            top_left.x = 570
             top_left.y += rp_text_surface.get_size()[1]
-
-        if self.empire.researching:
-            cost = research.cost
-            words = f"{self.empire.research_spent}/{cost} (+{self.empire.get_research_points()}) RP"
-        else:
-            words = f"+{self.empire.get_research_points()} RP"
-        rp = self.text_font.render(words, True, "white", "black")
-        self.screen.blit(rp, pygame.Vector2(550, top_left.y + 10))
 
     #####################################################################################################
     def draw_galaxy_view_system(self, system):
@@ -317,11 +314,11 @@ class Game(BaseGraphics):
 #####################################################################################################
 def main(load_file=""):
     if load_file:
-        galaxy = load(load_file)
+        galaxy = MooToo.load(load_file)
     else:
-        galaxy = Galaxy()
+        galaxy = MooToo.Galaxy()
         galaxy.populate()
-        save(galaxy, "initial")
+        MooToo.save(galaxy, "initial")
 
     empire_name = list(galaxy.empires.keys())[0]
 

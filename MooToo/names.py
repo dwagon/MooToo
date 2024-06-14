@@ -1,3 +1,5 @@
+""" Names of stuff"""
+
 system_names = [
     "Abbith",
     "Abeen",

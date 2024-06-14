@@ -2,20 +2,20 @@
 
 from typing import TYPE_CHECKING
 from MooToo.constants import Building
+from MooToo.construct import Construct, ConstructType
 
 if TYPE_CHECKING:
     from MooToo.planet import Planet
 
 
 #####################################################################################################
-class PlanetBuilding:
+class PlanetBuilding(Construct):
     """A Building on a Planet"""
 
-    def __init__(self, name: str, tag: Building):
+    def __init__(self, name: str, building_tag: Building):
+        super().__init__(ConstructType.BUILDING, building_tag)
         self.name = name
-        self.tag = tag
         self.maintenance = 0
-        self.cost = 0
 
     def __str__(self):
         return self.name
@@ -49,6 +49,6 @@ class PlanetBuilding:
         return 0
 
     def available_to_build(self, planet: "Planet") -> bool:
-        if self.tag in planet.buildings:
+        if self.tag in planet._buildings:
             return False
         return True

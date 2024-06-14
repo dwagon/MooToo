@@ -2,15 +2,12 @@
 
 from collections import defaultdict
 from typing import TYPE_CHECKING
-
-from MooToo.constants import Building, Technology
-from MooToo.system import System
-from MooToo.planet import Planet, PopulationJobs
-from MooToo.research import ResearchCategory
-from MooToo.ship import Ship
+from MooToo import Technology, PopulationJobs
+from MooToo.research import TechCategory
+from MooToo.planet_building import Building
 
 if TYPE_CHECKING:
-    from MooToo.galaxy import Galaxy
+    from MooToo import System, Planet, Ship, Galaxy
 
 
 #####################################################################################################
@@ -27,15 +24,15 @@ class Empire:
         self.ships: list[Ship] = []
         self.researching: Technology | None = None
         self.research_spent = 0
-        self.researched: dict[ResearchCategory, int] = {
-            ResearchCategory.FORCE_FIELDS: 0,
-            ResearchCategory.BIOLOGY: 0,
-            ResearchCategory.POWER: 0,
-            ResearchCategory.PHYSICS: 0,
-            ResearchCategory.COMPUTERS: 0,
-            ResearchCategory.SOCIOLOGY: 0,
-            ResearchCategory.CONSTRUCTION: 0,
-            ResearchCategory.CHEMISTRY: 0,
+        self.researched: dict[TechCategory, int] = {
+            TechCategory.FORCE_FIELDS: 0,
+            TechCategory.BIOLOGY: 0,
+            TechCategory.POWER: 0,
+            TechCategory.PHYSICS: 0,
+            TechCategory.COMPUTERS: 0,
+            TechCategory.SOCIOLOGY: 0,
+            TechCategory.CONSTRUCTION: 0,
+            TechCategory.CHEMISTRY: 0,
         }  # What category / price has been researched
         self.known_techs: set[Technology] = {
             Technology.STAR_BASE,
@@ -44,7 +41,7 @@ class Empire:
         }
 
     #####################################################################################################
-    def set_home_planet(self, planet: Planet):
+    def set_home_planet(self, planet: "Planet"):
         """Make planet the home planet of the empire"""
         planet.name = f"{self.name} Home"
         planet.owner = self.name
@@ -52,13 +49,13 @@ class Empire:
         planet.jobs[PopulationJobs.FARMER] = 4
         planet.jobs[PopulationJobs.WORKERS] = 2
         planet.jobs[PopulationJobs.SCIENTISTS] = 2
-        planet.buildings.add(Building.MARINE_BARRACKS)
-        planet.buildings.add(Building.STAR_BASE)
+        planet._buildings.add(Building.MARINE_BARRACKS)
+        planet._buildings.add(Building.STAR_BASE)
         self.owned_planets.append(planet)
         self.know_system(planet.system)
 
     #####################################################################################################
-    def add_ship(self, ship: Ship, system: System):
+    def add_ship(self, ship: "Ship", system: "System"):
         self.ships.append(ship)
         ship.orbit = system
         ship.location = system.position
@@ -68,6 +65,7 @@ class Empire:
         """Have a turn"""
         self.research_spent += self.get_research_points()
         if self.researching and self.research_spent > self.galaxy.get_research(self.researching).cost:
+            self.research_spent -= self.galaxy.get_research(self.researching).cost
             self.learnt(self.researching)
             self.researching = None
         income = 0
@@ -83,6 +81,7 @@ class Empire:
 
     #####################################################################################################
     def start_researching(self, to_research: Technology) -> None:
+        print(f"DBG Starting to research {to_research}")
         self.researching = to_research
 
     #####################################################################################################
@@ -96,7 +95,7 @@ class Empire:
         self.researched[research.category] = research.cost
 
     #####################################################################################################
-    def next_research(self, category: ResearchCategory) -> list[Technology]:
+    def next_research(self, category: "TechCategory") -> list[Technology]:
         """What are the next techs that can be researched"""
         available: dict[int, list[Technology]] = defaultdict(list)
 
@@ -123,10 +122,10 @@ class Empire:
         return rp
 
     #####################################################################################################
-    def know_system(self, system: System) -> None:
+    def know_system(self, system: "System") -> None:
         self.known_systems.add(system.id)
 
     #####################################################################################################
-    def is_known_system(self, system: System) -> bool:
+    def is_known_system(self, system: "System") -> bool:
         """Is the system known to this empire"""
         return system.id in self.known_systems

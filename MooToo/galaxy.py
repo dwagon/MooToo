@@ -1,28 +1,13 @@
 """ Galaxy class"""
 
-import glob
-import importlib
 import math
-import os
 import random
 import jsonpickle
 
-from MooToo.system import System, StarColour
+from MooToo import get_distance, get_distance_tuple, empire_names, StarColour
+from MooToo.system import System
 from MooToo.empire import Empire
-from MooToo.planet import Planet
-from MooToo.planet_building import PlanetBuilding
-from MooToo.research import Research
-from MooToo.names import empire_names
-from MooToo.constants import (
-    Building,
-    Technology,
-    PlanetClimate,
-    PlanetSize,
-    PlanetCategory,
-    PlanetRichness,
-    PlanetGravity,
-)
-from MooToo.utils import get_distance, get_distance_tuple
+from MooToo.planet import make_home_planet
 
 NUM_SYSTEMS = 40
 NUM_EMPIRES = 4
@@ -34,20 +19,18 @@ MAX_Y = 420
 #####################################################################################################
 class Galaxy:
     def __init__(self):
-        self.systems: dict[int, System] = {}
-        self.empires: dict[str, Empire] = {}
-        self._buildings: dict[Building, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
-        self._researches: dict[Technology, Research] = load_researches()
+        self.systems: dict[int, "System"] = {}
+        self.empires: dict[str, "Empire"] = {}
         self.turn_number = 0
 
     #####################################################################################################
     def populate(self):
         """Fill the galaxy with things"""
         positions = self.get_system_positions()
-        for id, _ in enumerate(range(NUM_SYSTEMS)):
+        for _id, _ in enumerate(range(NUM_SYSTEMS)):
             position = random.choice(positions)
             positions.remove(position)
-            self.systems[id] = System(id, position, self)
+            self.systems[_id] = System(_id, position)
         for home_system in self.find_home_systems():
             empire_name = random.choice(empire_names)
             empire_names.remove(empire_name)
@@ -56,15 +39,7 @@ class Galaxy:
             system.make_orbits()
 
     #####################################################################################################
-    def get_research(self, tech: Technology) -> Research:
-        return self._researches[tech]
-
-    #####################################################################################################
-    def get_building(self, bld: Building) -> PlanetBuilding:
-        return self._buildings[bld]
-
-    #####################################################################################################
-    def find_home_systems(self) -> list[System]:
+    def find_home_systems(self) -> list["System"]:
         """Find suitable planets for home planets"""
         # Create an arc around the galaxy and put home planets evenly spaced around that arc
         home_systems = []
@@ -95,27 +70,15 @@ class Galaxy:
             empire.turn()
 
     #####################################################################################################
-    def make_empire(self, empire_name: str, home_system: System):
+    def make_empire(self, empire_name: str, home_system: "System"):
         """ """
         home_system.colour = StarColour.YELLOW
         empire = Empire(empire_name, self)
         self.empires[empire_name] = empire
-        home_planet = self.make_home_planet(home_system)
+        home_planet = make_home_planet(home_system)
         empire.set_home_planet(home_planet)
         home_system.orbits.append(home_planet)
         random.shuffle(home_system.orbits)
-
-    #####################################################################################################
-    def make_home_planet(self, system: "System") -> Planet:
-        """Return a suitable home planet in {system}"""
-        p = Planet(system, self)
-        p.climate = PlanetClimate.TERRAN
-        p.size = PlanetSize.LARGE
-        p.category = PlanetCategory.PLANET
-        p.richness = PlanetRichness.ABUNDANT
-        p.gravity = PlanetGravity.NORMAL
-        p.gen_climate_image()
-        return p
 
     #####################################################################################################
     def get_system_positions(self) -> list[tuple[int, int]]:
@@ -134,40 +97,6 @@ class Galaxy:
                     positions.append((x, y))
                     break
         return positions
-
-
-#####################################################################################################
-def load_buildings() -> dict[Building, PlanetBuilding]:
-    path = "MooToo/buildings"
-    mapping: dict[Building, PlanetBuilding] = {}
-    files = glob.glob(f"{path}/*.py")
-    for file_name in [os.path.basename(_) for _ in files]:
-        file_name = file_name.replace(".py", "")
-        mod = importlib.import_module(f"{path.replace('/', '.')}.{file_name}")
-        classes = dir(mod)
-        for kls in classes:
-            if kls.startswith("Building") and kls != "Building":
-                klass = getattr(mod, kls)
-                mapping[klass().tag] = klass()
-                break
-    return mapping
-
-
-#####################################################################################################
-def load_researches() -> dict[Technology, Research]:
-    path = "MooToo/researches"
-    mapping: dict[Technology, Research] = {}
-    files = glob.glob(f"{path}/*.py")
-    for file_name in [os.path.basename(_) for _ in files]:
-        file_name = file_name.replace(".py", "")
-        mod = importlib.import_module(f"{path.replace('/', '.')}.{file_name}")
-        classes = dir(mod)
-        for kls in classes:
-            if kls.startswith("Research") and kls != "Research":
-                klass = getattr(mod, kls)
-                if issubclass(klass, Research):
-                    mapping[klass().tag] = klass()
-    return mapping
 
 
 #####################################################################################################

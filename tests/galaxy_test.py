@@ -11,12 +11,12 @@ class TestGalaxy(unittest.TestCase):
         self.galaxy = Galaxy()
 
     def test_make_home_planet(self):
-        system = System(0, (0, 0), self.galaxy)
+        system = System(0, (0, 0))
         pl = self.galaxy.make_home_planet(system)
         self.assertEqual(pl.climate, PlanetClimate.TERRAN)
 
     def test_make_empire(self):
-        system = System(0, (0, 0), self.galaxy)
+        system = System(0, (0, 0))
         self.galaxy.make_empire("fred", system)
         self.assertIn(0, self.galaxy.empires["fred"].known_systems)
 

@@ -5,10 +5,11 @@ import random
 
 from typing import TYPE_CHECKING, Optional
 from enum import StrEnum, auto
-from MooToo.utils import get_distance_tuple
+
+from MooToo.construct import Construct, ConstructType
 
 if TYPE_CHECKING:
-    from MooToo.system import System
+    from MooToo import System, get_distance_tuple
 
 
 #####################################################################################################
@@ -40,11 +41,11 @@ counts: dict[ShipType, int] = {
 
 
 #####################################################################################################
-class Ship:
+class Ship(Construct):
     """Things that move"""
 
     def __init__(self):
-        self.cost = 0
+        super().__init__(ConstructType.SHIP)
         self.space = 0
         self.command_points = 0
         self.maintenance = 0
@@ -208,29 +209,29 @@ class DoomStar(Ship):
 def select_ship_type_by_name(name: str) -> Ship:
     match name:
         case "ColonyBase":
-            return ColonyBase(f"ColonyBase")
+            return ColonyBase("ColonyBase")
         case "ColonyShip":
-            return ColonyShip(f"Colony {counts[ShipType.ColonyShip]:03d}")
+            return ColonyShip(f"Colony {counts[ShipType.ColonyShip]}")
         case "Transport":
             counts[ShipType.Transport] += 1
-            return Transport(f"Transport {counts[ShipType.Transport]:03d}")
+            return Transport(f"Transport {counts[ShipType.Transport]}")
         case "Frigate":
             counts[ShipType.Frigate] += 1
-            return Frigate(f"Frigate {counts[ShipType.Frigate]:03d}")
+            return Frigate(f"Frigate {counts[ShipType.Frigate]}")
         case "Destroyer":
             counts[ShipType.Destroyer] += 1
-            return Destroyer(f"Destroyer {counts[ShipType.Destroyer]:03d}")
+            return Destroyer(f"Destroyer {counts[ShipType.Destroyer]}")
         case "Cruiser":
             counts[ShipType.Cruiser] += 1
-            return Cruiser(f"Cruiser {counts[ShipType.Cruiser]:03d}")
+            return Cruiser(f"Cruiser {counts[ShipType.Cruiser]}")
         case "Battleship":
             counts[ShipType.Battleship] += 1
-            return Battleship(f"Battleship {counts[ShipType.Battleship]:03d}")
+            return Battleship(f"Battleship {counts[ShipType.Battleship]}")
         case "Titan":
             counts[ShipType.Titan] += 1
-            return Titan(f"Titan {counts[ShipType.Titan]:03d}")
+            return Titan(f"Titan {counts[ShipType.Titan]}")
         case "DoomStar":
             counts[ShipType.DoomStar] += 1
-            return DoomStar(f"DoomStar {counts[ShipType.DoomStar]:03d}")
+            return DoomStar(f"DoomStar {counts[ShipType.DoomStar]}")
         case _:
             raise NotImplementedError(f"Unhandled ship type {name=}")

@@ -20,8 +20,8 @@ class BuildingChoiceWindow(BaseGraphics):
         self.screen = screen
         self.planet = None
         self.images = self.load_images()
-        self.ok_button = Button(self.load_image("COLBLDG.LBX", 3), pygame.Vector2(564, 450))
-        self.cancel_button = Button(self.load_image("COLBLDG.LBX", 1), pygame.Vector2(495, 450))
+        self.ok_button = Button(self.images["ok_button"], pygame.Vector2(564, 450))
+        self.cancel_button = Button(self.images["cancel_button"], pygame.Vector2(495, 450))
         self.to_build_rects: dict[Building | ShipType, pygame.Rect] = {}
         self.build_queue_rects: dict[int, pygame.Rect] = {}
 
@@ -29,6 +29,8 @@ class BuildingChoiceWindow(BaseGraphics):
     def load_images(self) -> dict[str, pygame.Surface]:
         images = {}
         images["window"] = self.load_image("COLBLDG.LBX", 0, palette_index=2)
+        images["ok_button"] = self.load_image("COLBLDG.LBX", 3)
+        images["cancel_button"] = self.load_image("COLBLDG.LBX", 1)
         return images
 
     #####################################################################################################
@@ -69,7 +71,7 @@ class BuildingChoiceWindow(BaseGraphics):
         else:
             name = construct.name
 
-        text = self.text_font.render(name, True, "purple")
+        text = self.label_font.render(name, True, "purple")
         self.screen.blit(text, top_left)
 
     #####################################################################################################
