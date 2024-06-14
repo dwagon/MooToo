@@ -182,7 +182,7 @@ class Planet:
         self._population = 0.0
         self.buildings: set[Building] = set()
         self._buildings_available: set[Building] = set()
-        self.build_queue: list[Building | Ship] = []
+        self.build_queue = BuildQueue()
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
         self.climate_image = self.gen_climate_image()
@@ -291,41 +291,20 @@ class Planet:
         self.construction_spent += self.work_production()
         if not self.build_queue:
             return
-        if isinstance(self.build_queue[0], Building):
-            cost = self.galaxy.get_building(self.build_queue[0]).cost
-        else:
-            cost = self.build_queue[0].cost
+        cost = self.build_queue.cost
         if self.construction_spent >= cost:
             self.construction_spent -= cost
             self.finish_construction(self.build_queue.pop(0))
 
     #####################################################################################################
-    def finish_construction(self, construct: Building | Ship):
-        """Create a new building"""
-        if isinstance(construct, Building):
-            self.buildings.add(construct)
-        elif isinstance(construct, Ship):
-            self.owner.add_ship(construct, self.system)
-        else:
-            print(f"finish_construction: Unknown {construct=}")
-
-    #####################################################################################################
-    def add_to_build_queue(self, building: Building | Ship):
-        if len(self.build_queue) < 6:
-            self.build_queue.append(building)
-
-    #####################################################################################################
-    def toggle_build_queue_item(self, building: Building | ShipType):
-        """Add a building to the build queue, or remove it if it already exists"""
-        if isinstance(building, Building):
-            if building in self.build_queue:
-                self.build_queue.remove(building)
-            else:
-                self.add_to_build_queue(building)
-        elif building.lower() in ShipType:
-            self.add_to_build_queue(select_ship_type_by_name(building))
-        else:
-            print(f"toggle_build_queue_item({building=}): What you talking about?")
+    def finish_construction(self, construct: Construct) -> None:
+        """Create a new building or ship"""
+        print(f"DBG {type(construct)}")
+        match construct.category:
+            case ConstructType.BUILDING:
+                self._buildings.add(construct.tag)
+            case ConstructType.SHIP:
+                self.owner.add_ship(construct.ship, self.system)
 
     #####################################################################################################
     def grow_population(self) -> None:
@@ -342,7 +321,7 @@ class Planet:
         """
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
-        if self.build_queue and self.build_queue[0].name == Building.HOUSING:
+        if self.build_queue.is_building(Building.HOUSING):
             housing_bonus = int((self.work_production() * 40) / (self._population / 1e6))
         else:
             housing_bonus = 0
@@ -355,7 +334,7 @@ class Planet:
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )
-        if Building.CLONING_CENTER in self.buildings:
+        if Building.CLONING_CENTER in self._buildings:
             population_inc += 100_000
         return population_inc
 
@@ -372,7 +351,7 @@ class Planet:
         money = (
             self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
-        if self.build_queue and self.build_queue[0].name == Building.TRADE_GOODS:
+        if self.build_queue.is_building(Building.TRADE_GOODS):
             money += self.work_production()
         return money
 
