@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.FoodReplicators import BuildingFoodReplicators
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 2750
-CATEGORY = ResearchCategory.POWER
+CATEGORY = TechCategory.POWER
 
 
 #####################################################################################################

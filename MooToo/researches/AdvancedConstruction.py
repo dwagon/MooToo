@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.AutomatedFactory import BuildingAutomatedFactory
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 150
-CATEGORY = ResearchCategory.CONSTRUCTION
+CATEGORY = TechCategory.CONSTRUCTION
 
 
 #####################################################################################################

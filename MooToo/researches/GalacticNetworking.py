@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.GalacticCybernet import BuildingGalacticCybernet
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 4500
-CATEGORY = ResearchCategory.COMPUTERS
+CATEGORY = TechCategory.COMPUTERS
 
 
 #####################################################################################################

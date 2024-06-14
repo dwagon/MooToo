@@ -1,10 +1,10 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.RoboMiners import BuildingRoboMiners
 from MooToo.buildings.Battlestation import BuildingBattlestation
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 650
-CATEGORY = ResearchCategory.CONSTRUCTION
+CATEGORY = TechCategory.CONSTRUCTION
 
 
 #####################################################################################################

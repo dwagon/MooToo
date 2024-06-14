@@ -1,10 +1,10 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.DeepCoreMine import BuildingDeepCoreMine
 from MooToo.buildings.CoreWasteDump import BuildingCoreWasteDump
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 3500
-CATEGORY = ResearchCategory.CONSTRUCTION
+CATEGORY = TechCategory.CONSTRUCTION
 
 
 #####################################################################################################
