@@ -6,10 +6,10 @@ import random
 from typing import TYPE_CHECKING, Optional
 from enum import StrEnum, auto
 
-from MooToo.construct import Construct, ConstructType
+from MooToo.utils import get_distance_tuple
 
 if TYPE_CHECKING:
-    from MooToo import System, get_distance_tuple
+    from MooToo.system import System
 
 
 #####################################################################################################
@@ -41,15 +41,16 @@ counts: dict[ShipType, int] = {
 
 
 #####################################################################################################
-class Ship(Construct):
+class Ship:
     """Things that move"""
 
-    def __init__(self):
-        super().__init__(ConstructType.SHIP)
+    def __init__(self, name: str):
+        self.space = 0
+        self.cost = 0
         self.space = 0
         self.command_points = 0
         self.maintenance = 0
-        self.name = ""
+        self.name = name
         self.icon = ""
         self.destination: Optional[System] = None
         self.location: tuple[int, int] = (-1, -1)
@@ -104,59 +105,54 @@ class Ship(Construct):
 #####################################################################################################
 class ColonyBase(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 200
         self.space = 0
         self.command_points = 0
         self.maintenance = 0
         self.type = ShipType.ColonyBase
-        self.name = "Colony Base"
 
 
 #####################################################################################################
 class ColonyShip(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 25  # ?
         self.space = 0
         self.command_points = 1
         self.maintenance = 10
         self.type = ShipType.ColonyShip
-        self.name = name
         self.icon = "colony"
 
 
 #####################################################################################################
 class Transport(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 25  # ?
         self.space = 0
         self.command_points = 1
         self.maintenance = 10
         self.type = ShipType.Transport
-        self.name = name
         self.icon = "transport"
 
 
 #####################################################################################################
 class Frigate(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 25
         self.space = 25
         self.type = ShipType.Frigate
-        self.name = name
         self.icon = f"frigate_{random.randint(0, 7)}"
 
 
 #####################################################################################################
 class Destroyer(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 85
         self.space = 60
-        self.name = name
         self.type = ShipType.Destroyer
         self.icon = f"destroyer_{random.randint(0, 7)}"
 
@@ -164,10 +160,9 @@ class Destroyer(Ship):
 #####################################################################################################
 class Cruiser(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 300
         self.space = 120
-        self.name = name
         self.type = ShipType.Cruiser
         self.icon = f"cruiser_{random.randint(0, 7)}"
 
@@ -175,10 +170,9 @@ class Cruiser(Ship):
 #####################################################################################################
 class Battleship(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 725
         self.space = 250
-        self.name = name
         self.type = ShipType.Battleship
         self.icon = f"battleship_{random.randint(0, 7)}"
 
@@ -186,10 +180,9 @@ class Battleship(Ship):
 #####################################################################################################
 class Titan(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 1800
         self.space = 500
-        self.name = name
         self.type = ShipType.Titan
         self.icon = f"titan_{random.randint(0, 7)}"
 
@@ -197,10 +190,9 @@ class Titan(Ship):
 #####################################################################################################
 class DoomStar(Ship):
     def __init__(self, name: str):
-        super().__init__()
+        super().__init__(name)
         self.cost = 4800
         self.space = 1200
-        self.name = name
         self.type = ShipType.DoomStar
         self.icon = f"doomstar_{random.randint(0, 3)}"
 

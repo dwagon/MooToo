@@ -9,13 +9,16 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from MooToo import Research, PlanetBuilding, Building, Technology
 
+_BUILDINGS: dict["Building", "PlanetBuilding"] = {}
+_RESEARCHES: dict["Technology", "Research"] = {}
+
 
 #################################################################################################
 def prob_map(d):
     """Given a dictionary of choice probabilities {'a': 10, 'b': 20, ...}
     return a random choice based on the probability"""
-    totprob = sum(d.values())
-    r = random.randrange(totprob)
+    tot_prob = sum(d.values())
+    r = random.randrange(tot_prob)
     for k, v in d.items():
         if r < v:
             return k
@@ -30,15 +33,23 @@ def get_distance(x1: float, y1: float, x2: float, y2: float) -> float:
 
 #####################################################################################################
 def get_research(tech: "Technology") -> "Research":
-    pass
-    # TODO
+    global _RESEARCHES
+    if not _RESEARCHES:
+        _RESEARCHES = load_researches()
+    return _RESEARCHES[tech]
+
+
+#####################################################################################################
+def all_research() -> dict["Technology", "Research"]:
+    return _RESEARCHES
 
 
 #####################################################################################################
 def get_building(building: "Building") -> "PlanetBuilding":
-    from MooToo import _buildings
-
-    return _buildings[building]
+    global _BUILDINGS
+    if not _BUILDINGS:
+        _BUILDINGS = load_buildings()
+    return _BUILDINGS[building]
 
 
 #####################################################################################################
@@ -48,7 +59,6 @@ def get_distance_tuple(a: tuple[float, float], b: tuple[float, float]) -> float:
 
 #####################################################################################################
 def load_buildings() -> dict["Building", "PlanetBuilding"]:
-    print("Loading buildings")
     path = "MooToo/buildings"
     mapping: dict["Building", "PlanetBuilding"] = {}
     files = glob.glob(f"{path}/*.py")

@@ -20,6 +20,10 @@ class BuildQueue:
         return len(self._queue) != 0
 
     #############################################################################################
+    def __len__(self):
+        return len(self._queue)
+
+    #############################################################################################
     def __contains__(self, item):
         if isinstance(item, Building):
             return bool([_ for _ in self._queue if _.tag == item])
@@ -59,7 +63,7 @@ class BuildQueue:
             self.add(con)
 
     #############################################################################################
-    def add(self, obj: Any) -> None:
+    def add(self, obj: Building | Ship | Construct) -> None:
         if len(self._queue) >= MAX_QUEUE:
             return
         if isinstance(obj, Building):

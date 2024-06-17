@@ -1,7 +1,6 @@
 import unittest
-from MooToo.galaxy import Galaxy
+from MooToo.galaxy import EMPIRES
 from MooToo.empire import Empire
-from MooToo.ship import ShipType
 from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.constants import Building, Technology
@@ -12,10 +11,9 @@ from MooToo.research import TechCategory
 class TestEmpire(unittest.TestCase):
 
     def setUp(self):
-        self.galaxy = Galaxy()
         self.system = System(1, (0, 0))
-        self.empire = Empire("PlayerOne", self.galaxy)
-        self.galaxy.empires["PlayerOne"] = self.empire
+        self.empire = Empire("PlayerOne")
+        EMPIRES["PlayerOne"] = self.empire
 
     def test_next_research(self):
         avail = self.empire.next_research(TechCategory.SOCIOLOGY)
@@ -35,9 +33,10 @@ class TestEmpire(unittest.TestCase):
         """Set the home planet of the empire"""
         planet = Planet(self.system)
         self.empire.set_home_planet(planet)
-        self.assertIn(Building.MARINE_BARRACKS, planet._buildings)
+        self.assertIn(Building.MARINE_BARRACKS, planet.buildings)
         self.assertIn(planet.system.id, self.empire.known_systems)
 
 
+#####################################################################################################
 if __name__ == "__main__":
     unittest.main()

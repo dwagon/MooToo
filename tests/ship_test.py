@@ -1,5 +1,5 @@
 import unittest
-from MooToo.galaxy import Galaxy
+from MooToo.galaxy import EMPIRES
 from MooToo.empire import Empire
 from MooToo.system import System
 from MooToo.planet import Planet
@@ -10,11 +10,10 @@ from MooToo.utils import get_distance_tuple
 #####################################################################################################
 class TestShip(unittest.TestCase):
     def setUp(self):
-        self.galaxy = Galaxy()
         self.system = System(1, (0, 0))
         self.planet = Planet(self.system)
-        self.empire = Empire("PlayerOne", self.galaxy)
-        self.galaxy.empires["PlayerOne"] = self.empire
+        self.empire = Empire("PlayerOne")
+        EMPIRES["PlayerOne"] = self.empire
         self.planet.owner = "PlayerOne"
 
     def test_select_ship(self):

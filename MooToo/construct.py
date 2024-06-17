@@ -3,9 +3,10 @@
 from enum import Enum, auto
 
 from typing import Optional, TYPE_CHECKING
+from MooToo.utils import get_building
 
 if TYPE_CHECKING:
-    from MooToo import Building, Ship, _buildings
+    from MooToo import Building, Ship
 
 
 #########################################################################################################
@@ -26,11 +27,11 @@ class Construct:
         self.tag = building_tag
 
     #############################################################################################
-    def __repr__(self):
+    def __str__(self):
         if self.category == ConstructType.SHIP:
-            return f"<Construct {self.category} {self.ship}>"
+            return f"<Construct ship={self.ship}>"
         else:
-            return f"<Construct {self.category} {self.tag.name}>"
+            return f"<Construct building={self.tag.name}>"
 
     #############################################################################################
     def __eq__(self, other):
@@ -44,13 +45,6 @@ class Construct:
     @property
     def cost(self) -> int:
         if self.category == ConstructType.SHIP:
-            return self._cost
+            return self.ship.cost
         else:
-            return _buildings[self.tag]._cost
-
-    @cost.setter
-    def cost(self, value: int):
-        self._cost = value
-
-
-########################################################################################################
+            return get_building(self.tag).cost

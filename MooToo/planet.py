@@ -4,16 +4,17 @@ import math
 import random
 from typing import TYPE_CHECKING, Optional
 
-from MooToo import prob_map, get_research, get_building
-from MooToo import PlanetGravity, PlanetSize, PlanetCategory, PlanetRichness, PlanetClimate
-from MooToo import PopulationJobs, StarColour
-from MooToo import Building
+from MooToo.utils import prob_map, get_research, get_building
+from MooToo.constants import PlanetGravity, PlanetSize, PlanetCategory, PlanetRichness, PlanetClimate, Technology
+from MooToo.constants import PopulationJobs, StarColour
+from MooToo.planet_building import Building
 from MooToo.build_queue import BuildQueue
 from MooToo.construct import Construct, ConstructType
-from MooToo.ship import select_ship_type_by_name, ShipType
+from MooToo.ship import ShipType
+from MooToo.empire import Empire
 
 if TYPE_CHECKING:
-    from MooToo import Technology, Empire, System
+    from MooToo.system import System
 
 #####################################################################################################
 STAR_COLOURS = {
@@ -171,7 +172,7 @@ class Planet:
         self._owner: str = ""
         self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self._population = 0.0
-        self._buildings: set[Building] = set()
+        self.buildings: set[Building] = set()  # Built buildings
         self._buildings_available: set[Building] = set()
         self.build_queue = BuildQueue()
         self.construction_spent = 0
@@ -180,9 +181,10 @@ class Planet:
 
     #####################################################################################################
     @property
-    def owner(self) -> Optional["Empire"]:
-        return ""
-        # return self.galaxy.empires.get(self._owner)
+    def owner(self) -> Optional[Empire]:
+        from MooToo.galaxy import EMPIRES
+
+        return EMPIRES[self._owner]
 
     @owner.setter
     def owner(self, value: str):
@@ -204,14 +206,14 @@ class Planet:
         """How many turns left to build what we are building"""
         if not self.build_queue or not self.work_production():
             return 0
-        return int((self.build_queue.cost - self.construction_spent) / self.work_production())
+        return (self.build_queue.cost - self.construction_spent) // self.work_production()
 
     #####################################################################################################
     def can_build_big_ships(self) -> bool:
         return (
-            Building.STAR_BASE in self._buildings
-            or Building.BATTLESTATION in self._buildings
-            or Building.STAR_FORTRESS in self._buildings
+            Building.STAR_BASE in self.buildings
+            or Building.BATTLESTATION in self.buildings
+            or Building.STAR_FORTRESS in self.buildings
         )
 
     #####################################################################################################
@@ -219,7 +221,6 @@ class Planet:
         """What buildings are available to be built on this planet"""
         avail: set[Building] = {Building.TRADE_GOODS, Building.HOUSING}
         if not self.owner:
-            print("No owner")
             return set()
         for tech in self.owner.known_techs:
             if building := get_research(tech).enabled_building:
@@ -235,7 +236,7 @@ class Planet:
     #####################################################################################################
     def research_per(self) -> int:
         per = 1
-        for building in self._buildings:
+        for building in self.buildings:
             per += get_building(building).research_per_bonus(self)
         return per
 
@@ -243,7 +244,7 @@ class Planet:
     def get_research_points(self) -> int:
         """How many research points does this planet generate"""
         rp = 0
-        for building in self._buildings:
+        for building in self.buildings:
             rp += get_building(building).research_bonus(self)
         rp += self.jobs[PopulationJobs.SCIENTISTS] * self.research_per()
         rp = max(self.jobs[PopulationJobs.SCIENTISTS], rp)
@@ -254,7 +255,7 @@ class Planet:
     def morale(self) -> int:
         """Morale of planet (out of 10)"""
         morale = 5
-        for building in self._buildings:
+        for building in self.buildings:
             morale += get_building(building).morale_bonus(self)
         return morale
 
@@ -262,7 +263,7 @@ class Planet:
     def max_population(self) -> int:
         """What's the maximum population this planet can support"""
         max_pop = POP_SIZE_MAP[self.size] * POP_CLIMATE_MAP[self.climate]
-        for building in self._buildings:
+        for building in self.buildings:
             max_pop += get_building(building).max_pop_bonus(self)
         return max_pop
 
@@ -290,10 +291,9 @@ class Planet:
     #####################################################################################################
     def finish_construction(self, construct: Construct) -> None:
         """Create a new building or ship"""
-        print(f"DBG {type(construct)}")
         match construct.category:
             case ConstructType.BUILDING:
-                self._buildings.add(construct.tag)
+                self.buildings.add(construct.tag)
             case ConstructType.SHIP:
                 self.owner.add_ship(construct.ship, self.system)
 
@@ -325,7 +325,7 @@ class Planet:
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )
-        if Building.CLONING_CENTER in self._buildings:
+        if Building.CLONING_CENTER in self.buildings:
             population_inc += 100_000
         return population_inc
 
@@ -349,7 +349,7 @@ class Planet:
     #####################################################################################################
     def money_cost(self) -> int:
         """How much money the planet costs"""
-        return sum(get_building(_).maintenance for _ in self._buildings)
+        return sum(get_building(_).maintenance for _ in self.buildings)
 
     #####################################################################################################
     def current_population(self) -> int:
@@ -359,7 +359,7 @@ class Planet:
     def food_per(self) -> int:
         """How much food each farmer produces"""
         per = FOOD_CLIMATE_MAP[self.climate]
-        for building in self._buildings:
+        for building in self.buildings:
             per += get_building(building).food_per_bonus(self)
         return per
 
@@ -367,7 +367,7 @@ class Planet:
     def food_production(self) -> int:
         production = self.food_per() * self.jobs[PopulationJobs.FARMER]
         production *= GRAVITY_MAP[self.gravity]
-        for building in self._buildings:
+        for building in self.buildings:
             production += get_building(building).food_bonus(self)
         production = max(self.jobs[PopulationJobs.FARMER], production)
         return int(production)
@@ -381,7 +381,7 @@ class Planet:
     #####################################################################################################
     def production_per(self) -> int:
         per = PROD_RICHNESS_MAP[self.richness]
-        for building in self._buildings:
+        for building in self.buildings:
             per += get_building(building).prod_per_bonus(self)
         return per
 
@@ -389,7 +389,7 @@ class Planet:
     def work_production(self) -> int:
         production = self.production_per() * self.jobs[PopulationJobs.WORKERS]
         production *= GRAVITY_MAP[self.gravity]
-        for building in self._buildings:
+        for building in self.buildings:
             production += get_building(building).prod_bonus(self)
         production = max(self.jobs[PopulationJobs.WORKERS], production)
 
@@ -428,7 +428,7 @@ class Planet:
                 if Technology.OUTPOST_SHIP in known_techs:
                     return True
             case ShipType.Transport:
-                if Technology.TRANSPORT in known_techs and Building.MARINE_BARRACKS in self._buildings:
+                if Technology.TRANSPORT in known_techs and Building.MARINE_BARRACKS in self.buildings:
                     return True
             case ShipType.Frigate | ShipType.Destroyer:
                 return True

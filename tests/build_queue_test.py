@@ -3,6 +3,7 @@ import unittest
 from MooToo.build_queue import BuildQueue
 from MooToo.constants import Building
 from MooToo.construct import Construct, ConstructType
+from MooToo.ship import select_ship_type_by_name
 
 
 #################################################################################################
@@ -15,6 +16,18 @@ class TestBuildQueue(unittest.TestCase):
         self.q.add(Building.MARINE_BARRACKS)
         self.assertEqual(type(self.q._queue[0]), Construct)
         self.assertEqual(self.q._queue[0].tag, Building.MARINE_BARRACKS)
+        self.q.add(select_ship_type_by_name("Cruiser"))
+        self.assertEqual(type(self.q._queue[1]), Construct)
+        self.assertEqual(self.q._queue[1].ship.name, "Cruiser 1")
+        self.assertEqual(len(self.q), 2)
+
+    #############################################################################################
+    def test_cost(self):
+        ship = select_ship_type_by_name("Battleship")
+        print(f"DBG {ship=}")
+        self.q.add(ship)
+        print(f"DBG {self.q=}")
+        self.assertEqual(self.q.cost, 725)
 
     #############################################################################################
     def test_is_building(self):

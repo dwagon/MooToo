@@ -2,20 +2,22 @@
 
 from collections import defaultdict
 from typing import TYPE_CHECKING
-from MooToo import Technology, PopulationJobs
+from MooToo.constants import Technology, PopulationJobs
 from MooToo.research import TechCategory
 from MooToo.planet_building import Building
+from MooToo.utils import all_research, get_research
 
 if TYPE_CHECKING:
-    from MooToo import System, Planet, Ship, Galaxy
+    from MooToo.system import System
+    from MooToo.planet import Planet
+    from MooToo.ship import Ship
 
 
 #####################################################################################################
 #####################################################################################################
 class Empire:
-    def __init__(self, name: str, galaxy: "Galaxy"):
+    def __init__(self, name: str):
         self.name = name
-        self.galaxy = galaxy
         self.government = "Feudal"  # Fix me
         self.money: int = 100
         self.income: int = 0
@@ -49,8 +51,8 @@ class Empire:
         planet.jobs[PopulationJobs.FARMER] = 4
         planet.jobs[PopulationJobs.WORKERS] = 2
         planet.jobs[PopulationJobs.SCIENTISTS] = 2
-        planet._buildings.add(Building.MARINE_BARRACKS)
-        planet._buildings.add(Building.STAR_BASE)
+        planet.buildings.add(Building.MARINE_BARRACKS)
+        planet.buildings.add(Building.STAR_BASE)
         self.owned_planets.append(planet)
         self.know_system(planet.system)
 
@@ -64,8 +66,8 @@ class Empire:
     def turn(self):
         """Have a turn"""
         self.research_spent += self.get_research_points()
-        if self.researching and self.research_spent > self.galaxy.get_research(self.researching).cost:
-            self.research_spent -= self.galaxy.get_research(self.researching).cost
+        if self.researching and self.research_spent > get_research(self.researching).cost:
+            self.research_spent -= get_research(self.researching).cost
             self.learnt(self.researching)
             self.researching = None
         income = 0
@@ -81,14 +83,13 @@ class Empire:
 
     #####################################################################################################
     def start_researching(self, to_research: Technology) -> None:
-        print(f"DBG Starting to research {to_research}")
         self.researching = to_research
 
     #####################################################################################################
     def learnt(self, tech: Technology) -> None:
         """We have researched {tech}"""
         self.known_techs.add(tech)
-        research = self.galaxy.get_research(tech)
+        research = get_research(tech)
         if research.general:
             for tech in research.general:
                 self.known_techs.add(tech)
@@ -99,7 +100,7 @@ class Empire:
         """What are the next techs that can be researched"""
         available: dict[int, list[Technology]] = defaultdict(list)
 
-        for tech, research in self.galaxy._researches.items():
+        for tech, research in all_research().items():
             if research.category != category:
                 continue
             if tech in self.known_techs:
@@ -109,7 +110,9 @@ class Empire:
 
             available[research.cost].append(tech)
         if not available:
+            print("DBG None avail")
             return []
+        print(f"DBG {available=}")
         next_batch_cost = min(list(available.keys()))
 
         return available[next_batch_cost]

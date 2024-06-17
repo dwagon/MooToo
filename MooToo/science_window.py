@@ -3,6 +3,7 @@ import pygame
 from MooToo.base_graphics import BaseGraphics
 from MooToo.constants import Technology
 from MooToo.research import TechCategory
+from MooToo import get_research
 from MooToo.gui_button import Button
 
 
@@ -22,12 +23,10 @@ class ScienceWindow(BaseGraphics):
     def draw_category(self, category: TechCategory, top_left: pygame.Vector2, rp_place: pygame.Vector2) -> None:
         technologies = self.game.empire.next_research(category)
 
-        rp_text_surface = self.text_font.render(
-            f"{self.game.galaxy.get_research(technologies[0]).cost} RP", True, "white"
-        )
+        rp_text_surface = self.text_font.render(f"{get_research(technologies[0]).cost} RP", True, "white")
         self.screen.blit(rp_text_surface, rp_place)
         for tech in technologies:
-            research = self.game.galaxy.get_research(tech)
+            research = get_research(tech)
             text_surface = self.text_font.render(research.name, True, "white")
             r = self.screen.blit(text_surface, top_left)
             top_left.y += text_surface.get_size()[1]
