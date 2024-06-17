@@ -41,6 +41,9 @@ def get_research(tech: "Technology") -> "Research":
 
 #####################################################################################################
 def all_research() -> dict["Technology", "Research"]:
+    global _RESEARCHES
+    if not _RESEARCHES:
+        _RESEARCHES = load_researches()
     return _RESEARCHES
 
 

@@ -110,9 +110,7 @@ class Empire:
 
             available[research.cost].append(tech)
         if not available:
-            print("DBG None avail")
             return []
-        print(f"DBG {available=}")
         next_batch_cost = min(list(available.keys()))
 
         return available[next_batch_cost]

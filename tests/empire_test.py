@@ -15,6 +15,7 @@ class TestEmpire(unittest.TestCase):
         self.empire = Empire("PlayerOne")
         EMPIRES["PlayerOne"] = self.empire
 
+    #################################################################################################
     def test_next_research(self):
         avail = self.empire.next_research(TechCategory.SOCIOLOGY)
         self.assertEqual(avail, [Technology.MILITARY_TACTICS])
@@ -22,6 +23,7 @@ class TestEmpire(unittest.TestCase):
         avail = self.empire.next_research(TechCategory.SOCIOLOGY)
         self.assertEqual(avail, [Technology.SPACE_ACADEMY])
 
+    #################################################################################################
     def test_learn_tech(self):
         """Learn a new technology"""
         self.assertFalse(Technology.FREIGHTERS in self.empire.known_techs)
@@ -29,6 +31,7 @@ class TestEmpire(unittest.TestCase):
         self.assertTrue(Technology.FREIGHTERS in self.empire.known_techs)
         self.assertTrue(Technology.NUCLEAR_DRIVE in self.empire.known_techs)
 
+    #################################################################################################
     def test_set_home_planet(self):
         """Set the home planet of the empire"""
         planet = Planet(self.system)
