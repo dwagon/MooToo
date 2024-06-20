@@ -1,7 +1,7 @@
 """ Class to base all other pygame classes from"""
 
 import pygame
-from MooToo.lbx_image import LBXImage
+from MooToo.ui.lbx_image import LBXImage
 from MooToo.constants import MOO_PATH
 
 

@@ -1,5 +1,5 @@
 from enum import StrEnum, auto
-from MooToo.planet_building import PlanetBuilding
+from MooToo.ui.planet_building import PlanetBuilding
 from MooToo.constants import Technology
 
 

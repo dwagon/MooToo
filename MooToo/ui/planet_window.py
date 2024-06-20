@@ -5,13 +5,13 @@ from enum import Enum, StrEnum, auto
 from typing import Optional
 
 import pygame
-from MooToo.base_graphics import BaseGraphics
-from MooToo.textbox_window import TextBoxWindow
+from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.textbox_window import TextBoxWindow
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
 from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
-from MooToo.gui_button import Button
-from MooToo.building_choice_window import BuildingChoiceWindow
+from MooToo.ui.gui_button import Button
+from MooToo.ui.building_choice_window import BuildingChoiceWindow
 
 
 #####################################################################################################

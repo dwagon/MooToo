@@ -5,7 +5,7 @@ from collections import defaultdict
 from typing import TYPE_CHECKING
 from MooToo.constants import Technology, PopulationJobs, StarColour
 from MooToo.research import TechCategory
-from MooToo.planet_building import Building
+from MooToo.ui.planet_building import Building
 from MooToo.utils import all_research, get_research
 from MooToo.planet import make_home_planet
 

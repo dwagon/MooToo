@@ -6,12 +6,12 @@ from typing import Optional
 
 import pygame
 from enum import Enum, auto
-from MooToo.gui_button import Button, InvisButton
-from MooToo.orbit_window import OrbitWindow
-from MooToo.base_graphics import BaseGraphics
-from MooToo.planet_window import PlanetWindow
-from MooToo.science_window import ScienceWindow
-from MooToo.fleet_window import FleetWindow
+from MooToo.ui.gui_button import Button, InvisButton
+from MooToo.ui.orbit_window import OrbitWindow
+from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.planet_window import PlanetWindow
+from MooToo.ui.science_window import ScienceWindow
+from MooToo.ui.fleet_window import FleetWindow
 from MooToo.galaxy import Galaxy, save, load
 from MooToo.ship import Ship
 from MooToo.system import System

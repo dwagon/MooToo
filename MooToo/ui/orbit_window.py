@@ -6,14 +6,14 @@ from typing import Optional, TYPE_CHECKING
 
 import pygame
 from MooToo.planet import Planet
-from MooToo.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics
 from MooToo.system import System
-from MooToo.gui_button import Button
+from MooToo.ui.gui_button import Button
 from MooToo.constants import PlanetCategory, PlanetClimate, PlanetSize
 from MooToo.utils import get_distance_tuple
 
 if TYPE_CHECKING:
-    from MooToo.game import Game
+    from MooToo.ui.game import Game
 
 
 #####################################################################################################

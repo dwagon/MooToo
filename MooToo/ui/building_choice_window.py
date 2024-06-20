@@ -2,15 +2,15 @@
 
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics
 from MooToo.planet import Planet
-from MooToo.gui_button import Button
+from MooToo.ui.gui_button import Button
 from MooToo.ship import ShipType
 from MooToo.constants import Building
 from MooToo.utils import get_building
 
 if TYPE_CHECKING:
-    from MooToo.game import Game
+    from MooToo.ui.game import Game
 
 
 #####################################################################################################
