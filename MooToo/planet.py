@@ -538,5 +538,5 @@ def make_home_planet(system: "System") -> Planet:
     p.category = PlanetCategory.PLANET
     p.richness = PlanetRichness.ABUNDANT
     p.gravity = PlanetGravity.NORMAL
-    p.gen_climate_image()
+    p.climate_image = p.gen_climate_image()
     return p
