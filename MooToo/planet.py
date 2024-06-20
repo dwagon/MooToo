@@ -205,7 +205,7 @@ class Planet:
         """How many turns left to build what we are building"""
         if not self.build_queue or not self.work_production():
             return 0
-        return (self.build_queue.cost - self.construction_spent) // self.work_production()
+        return min(10000, (self.build_queue.cost - self.construction_spent) // self.work_production())
 
     #####################################################################################################
     def can_build_big_ships(self) -> bool:

@@ -246,7 +246,6 @@ class PlanetWindow(BaseGraphics):
         text_surface = self.label_font.render(building.name, True, "purple")
         self.screen.blit(text_surface, center - pygame.Vector2(text_surface.get_size()[0] / 2, 0))
         if turns := self.planet.turns_to_build():
-            turns = min(turns, 10000)
             text_surface = self.label_font.render(f"{turns:,} turn(s)", True, "white", "black")
             bottom_right = pygame.Vector2(626, 108)
             top_left = bottom_right - pygame.Vector2(text_surface.get_size()[0], text_surface.get_size()[1])
@@ -263,16 +262,6 @@ class PlanetWindow(BaseGraphics):
 
         dest = pygame.Vector2(309, 122)
         self.draw_population_sequence(dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS])
-
-    #####################################################################################################
-    def draw_population_sequence(
-        self, top_left: pygame.Vector2, worker_image: pygame.Surface, value: int
-    ) -> pygame.Vector2:
-        """Display a sequence of population images"""
-        for _ in range(value):
-            self.screen.blit(worker_image, top_left)
-            top_left.x += worker_image.get_size()[0]
-        return top_left
 
     #####################################################################################################
     def draw_resources(self, planet: Planet) -> None:

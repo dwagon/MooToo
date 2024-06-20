@@ -45,3 +45,13 @@ class BaseGraphics:
     def draw_centered_image(self, image: pygame.Surface) -> pygame.Rect:
         tl = self.top_left(image, self.mid_point)
         return self.screen.blit(image, tl)
+
+    #####################################################################################################
+    def draw_population_sequence(
+        self, top_left: pygame.Vector2, worker_image: pygame.Surface, value: int
+    ) -> pygame.Vector2:
+        """Display a sequence of population images"""
+        for _ in range(value):
+            self.screen.blit(worker_image, top_left)
+            top_left.x += worker_image.get_size()[0]
+        return top_left
