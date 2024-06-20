@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.ArtemisSystemNet import BuildingArtemisSystemNet
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 7500
-CATEGORY = ResearchCategory.CONSTRUCTION
+CATEGORY = TechCategory.CONSTRUCTION
 
 
 #####################################################################################################

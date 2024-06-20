@@ -1,28 +1,12 @@
 """ Galaxy class"""
 
-import glob
-import importlib
 import math
-import os
 import random
 import jsonpickle
-
-from MooToo.system import System, StarColour
-from MooToo.empire import Empire
-from MooToo.planet import Planet
-from MooToo.planet_building import PlanetBuilding
-from MooToo.research import Research
+from MooToo.utils import get_distance_tuple, get_distance
 from MooToo.names import empire_names
-from MooToo.constants import (
-    Building,
-    Technology,
-    PlanetClimate,
-    PlanetSize,
-    PlanetCategory,
-    PlanetRichness,
-    PlanetGravity,
-)
-from MooToo.utils import get_distance, get_distance_tuple
+from MooToo.empire import Empire, make_empire
+from MooToo.system import System
 
 NUM_SYSTEMS = 40
 NUM_EMPIRES = 4
@@ -31,44 +15,42 @@ MAX_Y = 420
 
 
 #####################################################################################################
-#####################################################################################################
 class Galaxy:
     def __init__(self):
-        self.systems: dict[int, System] = {}
-        self.empires: dict[str, Empire] = {}
-        self._buildings: dict[Building, PlanetBuilding] = load_buildings()  # Buildings are stateless, so one per game
-        self._researches: dict[Technology, Research] = load_researches()
+        self.systems: dict[int, "System"] = {}
+        self.empires: dict[str, "Empire"] = {}
         self.turn_number = 0
+        self.populate()
 
-    #####################################################################################################
+    #################################################################################################
     def populate(self):
         """Fill the galaxy with things"""
-        positions = self.get_system_positions()
-        for id, _ in enumerate(range(NUM_SYSTEMS)):
+        positions = get_system_positions(NUM_SYSTEMS)
+        for _id in range(NUM_SYSTEMS):
             position = random.choice(positions)
             positions.remove(position)
-            self.systems[id] = System(id, position, self)
-        for home_system in self.find_home_systems():
+            self.systems[_id] = System(_id, position, self)
+        for home_system in self.find_home_systems(NUM_EMPIRES):
             empire_name = random.choice(empire_names)
             empire_names.remove(empire_name)
-            self.make_empire(empire_name, home_system)
+            empire = make_empire(empire_name, home_system)
+            self.empires[empire_name] = empire
         for system in self.systems.values():
             system.make_orbits()
 
     #####################################################################################################
-    def get_research(self, tech: Technology) -> Research:
-        return self._researches[tech]
+    def turn(self):
+        """End of turn"""
+        self.turn_number += 1
+        for empire in self.empires.values():
+            empire.turn()
 
     #####################################################################################################
-    def get_building(self, bld: Building) -> PlanetBuilding:
-        return self._buildings[bld]
-
-    #####################################################################################################
-    def find_home_systems(self) -> list[System]:
+    def find_home_systems(self, num_empires: int) -> list["System"]:
         """Find suitable planets for home planets"""
         # Create an arc around the galaxy and put home planets evenly spaced around that arc
         home_systems = []
-        arc_distance = int(360 / NUM_EMPIRES)
+        arc_distance = 360 // num_empires
         radius = min(MAX_X, MAX_Y) * 0.75 / 2
         for degree in range(0, 359, arc_distance):
             angle = math.radians(degree)
@@ -87,87 +69,23 @@ class Galaxy:
             home_systems.append(min_system)
         return home_systems
 
-    #####################################################################################################
-    def turn(self):
-        """End of turn"""
-        self.turn_number += 1
-        for empire in self.empires.values():
-            empire.turn()
 
-    #####################################################################################################
-    def make_empire(self, empire_name: str, home_system: System):
-        """ """
-        home_system.colour = StarColour.YELLOW
-        empire = Empire(empire_name, self)
-        self.empires[empire_name] = empire
-        home_planet = self.make_home_planet(home_system)
-        empire.set_home_planet(home_planet)
-        home_system.orbits.append(home_planet)
-        random.shuffle(home_system.orbits)
-
-    #####################################################################################################
-    def make_home_planet(self, system: "System") -> Planet:
-        """Return a suitable home planet in {system}"""
-        p = Planet(system, self)
-        p.climate = PlanetClimate.TERRAN
-        p.size = PlanetSize.LARGE
-        p.category = PlanetCategory.PLANET
-        p.richness = PlanetRichness.ABUNDANT
-        p.gravity = PlanetGravity.NORMAL
-        p.gen_climate_image()
-        return p
-
-    #####################################################################################################
-    def get_system_positions(self) -> list[tuple[int, int]]:
-        """Return suitable positions"""
-        positions = []
-        min_dist = 30
-        num_objects = NUM_SYSTEMS
-        for _ in range(num_objects):
-            while True:
-                x = random.randrange(min_dist, MAX_X - min_dist)
-                y = random.randrange(min_dist, MAX_Y - min_dist)
-                for a, b in positions:  # Find a spot not too close to existing positions
-                    if get_distance(x, y, a, b) < min_dist:
-                        break
-                else:
-                    positions.append((x, y))
+#####################################################################################################
+def get_system_positions(num_systems: int) -> list[tuple[int, int]]:
+    """Return suitable positions"""
+    positions = []
+    min_dist = 30
+    for _ in range(num_systems):
+        while True:
+            x = random.randrange(min_dist, MAX_X - min_dist)
+            y = random.randrange(min_dist, MAX_Y - min_dist)
+            for a, b in positions:  # Find a spot not too close to existing positions
+                if get_distance(x, y, a, b) < min_dist:
                     break
-        return positions
-
-
-#####################################################################################################
-def load_buildings() -> dict[Building, PlanetBuilding]:
-    path = "MooToo/buildings"
-    mapping: dict[Building, PlanetBuilding] = {}
-    files = glob.glob(f"{path}/*.py")
-    for file_name in [os.path.basename(_) for _ in files]:
-        file_name = file_name.replace(".py", "")
-        mod = importlib.import_module(f"{path.replace('/', '.')}.{file_name}")
-        classes = dir(mod)
-        for kls in classes:
-            if kls.startswith("Building") and kls != "Building":
-                klass = getattr(mod, kls)
-                mapping[klass().tag] = klass()
+            else:
+                positions.append((x, y))
                 break
-    return mapping
-
-
-#####################################################################################################
-def load_researches() -> dict[Technology, Research]:
-    path = "MooToo/researches"
-    mapping: dict[Technology, Research] = {}
-    files = glob.glob(f"{path}/*.py")
-    for file_name in [os.path.basename(_) for _ in files]:
-        file_name = file_name.replace(".py", "")
-        mod = importlib.import_module(f"{path.replace('/', '.')}.{file_name}")
-        classes = dir(mod)
-        for kls in classes:
-            if kls.startswith("Research") and kls != "Research":
-                klass = getattr(mod, kls)
-                if issubclass(klass, Research):
-                    mapping[klass().tag] = klass()
-    return mapping
+    return positions
 
 
 #####################################################################################################

@@ -215,7 +215,7 @@ class PlanetWindow(BaseGraphics):
         """Draw the current buildings on the planet"""
         top_left = pygame.Vector2(8, 170)
         for building in planet.buildings:
-            text = self.text_font.render(planet.galaxy.get_building(building).name, True, "purple")
+            text = self.text_font.render(planet[building].name, True, "purple")
             self.screen.blit(text, top_left)
             top_left.y += text.get_size()[1]
 
@@ -241,10 +241,16 @@ class PlanetWindow(BaseGraphics):
     def draw_currently_building(self, planet: Planet) -> None:
         if not planet.build_queue:
             return
-        top_left = pygame.Vector2(527, 27)
+        center = pygame.Vector2(580, 33)
         building = self.planet.build_queue[0]
-        text = self.text_font.render(building.name, True, "purple")
-        self.screen.blit(text, top_left)
+        text_surface = self.label_font.render(building.name, True, "purple")
+        self.screen.blit(text_surface, center - pygame.Vector2(text_surface.get_size()[0] / 2, 0))
+        if turns := self.planet.turns_to_build():
+            turns = min(turns, 10000)
+            text_surface = self.label_font.render(f"{turns:,} turn(s)", True, "white", "black")
+            bottom_right = pygame.Vector2(626, 108)
+            top_left = bottom_right - pygame.Vector2(text_surface.get_size()[0], text_surface.get_size()[1])
+            self.screen.blit(text_surface, top_left)
 
     #####################################################################################################
     def draw_population(self, planet: Planet) -> None:
@@ -432,7 +438,7 @@ class PlanetWindow(BaseGraphics):
             r = pygame.Rect(sys_rect[0], sys_rect[1], sys_rect[2], sys_rect[3])
             if r.collidepoint(pygame.mouse.get_pos()):
                 self.planet = planet
-        if self.detail_rect.collidepoint(pygame.mouse.get_pos()):
+        if self.detail_rect and self.detail_rect.collidepoint(pygame.mouse.get_pos()):
             self.display_mode = PlanetDisplayMode.DETAILS
         return False
 

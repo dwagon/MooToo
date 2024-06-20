@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.AlienManagementCenter import BuildingAlienManagementCenter
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 650
-CATEGORY = ResearchCategory.SOCIOLOGY
+CATEGORY = TechCategory.SOCIOLOGY
 
 
 #####################################################################################################

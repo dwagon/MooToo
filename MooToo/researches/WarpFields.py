@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.WarpInterdictor import BuildingWarpInterdictor
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 2000
-CATEGORY = ResearchCategory.FORCE_FIELDS
+CATEGORY = TechCategory.FORCE_FIELDS
 
 
 #####################################################################################################

@@ -1,6 +1,6 @@
 import unittest
-from MooToo.galaxy import Galaxy
 from MooToo.empire import Empire
+from MooToo.galaxy import Galaxy
 from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.ship import select_ship_type_by_name
@@ -12,8 +12,8 @@ class TestShip(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
         self.system = System(1, (0, 0), self.galaxy)
-        self.planet = Planet(self.system, self.galaxy)
-        self.empire = Empire("PlayerOne", self.galaxy)
+        self.planet = Planet(self.system)
+        self.empire = Empire("PlayerOne")
         self.galaxy.empires["PlayerOne"] = self.empire
         self.planet.owner = "PlayerOne"
 

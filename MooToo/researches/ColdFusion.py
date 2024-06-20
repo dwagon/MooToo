@@ -1,8 +1,8 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 80
-CATEGORY = ResearchCategory.POWER
+CATEGORY = TechCategory.POWER
 general = [Technology.COLONY_SHIP, Technology.OUTPOST_SHIP, Technology.TRANSPORT]
 
 

@@ -11,9 +11,9 @@ if TYPE_CHECKING:
 class PlanetBuilding:
     """A Building on a Planet"""
 
-    def __init__(self, name: str, tag: Building):
+    def __init__(self, name: str, building_tag: Building):
+        self.tag = building_tag
         self.name = name
-        self.tag = tag
         self.maintenance = 0
         self.cost = 0
 

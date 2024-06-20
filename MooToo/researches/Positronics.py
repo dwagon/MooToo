@@ -1,10 +1,10 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.Supercomputer import BuildingSupercomputer
 from MooToo.buildings.HoloSimulator import BuildingHoloSimulator
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 900
-CATEGORY = ResearchCategory.COMPUTERS
+CATEGORY = TechCategory.COMPUTERS
 
 
 #####################################################################################################

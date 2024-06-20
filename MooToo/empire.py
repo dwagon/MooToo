@@ -1,24 +1,26 @@
 """ Relating to player's empires"""
 
+import random
 from collections import defaultdict
 from typing import TYPE_CHECKING
+from MooToo.constants import Technology, PopulationJobs, StarColour
+from MooToo.research import TechCategory
+from MooToo.planet_building import Building
+from MooToo.utils import all_research, get_research
+from MooToo.planet import make_home_planet
 
-from MooToo.constants import Building, Technology
-from MooToo.system import System
-from MooToo.planet import Planet, PopulationJobs
-from MooToo.research import ResearchCategory
-from MooToo.ship import Ship
 
 if TYPE_CHECKING:
-    from MooToo.galaxy import Galaxy
+    from MooToo.system import System
+    from MooToo.planet import Planet
+    from MooToo.ship import Ship
 
 
 #####################################################################################################
 #####################################################################################################
 class Empire:
-    def __init__(self, name: str, galaxy: "Galaxy"):
+    def __init__(self, name: str):
         self.name = name
-        self.galaxy = galaxy
         self.government = "Feudal"  # Fix me
         self.money: int = 100
         self.income: int = 0
@@ -27,15 +29,15 @@ class Empire:
         self.ships: list[Ship] = []
         self.researching: Technology | None = None
         self.research_spent = 0
-        self.researched: dict[ResearchCategory, int] = {
-            ResearchCategory.FORCE_FIELDS: 0,
-            ResearchCategory.BIOLOGY: 0,
-            ResearchCategory.POWER: 0,
-            ResearchCategory.PHYSICS: 0,
-            ResearchCategory.COMPUTERS: 0,
-            ResearchCategory.SOCIOLOGY: 0,
-            ResearchCategory.CONSTRUCTION: 0,
-            ResearchCategory.CHEMISTRY: 0,
+        self.researched: dict[TechCategory, int] = {
+            TechCategory.FORCE_FIELDS: 0,
+            TechCategory.BIOLOGY: 0,
+            TechCategory.POWER: 0,
+            TechCategory.PHYSICS: 0,
+            TechCategory.COMPUTERS: 0,
+            TechCategory.SOCIOLOGY: 0,
+            TechCategory.CONSTRUCTION: 0,
+            TechCategory.CHEMISTRY: 0,
         }  # What category / price has been researched
         self.known_techs: set[Technology] = {
             Technology.STAR_BASE,
@@ -44,7 +46,7 @@ class Empire:
         }
 
     #####################################################################################################
-    def set_home_planet(self, planet: Planet):
+    def set_home_planet(self, planet: "Planet"):
         """Make planet the home planet of the empire"""
         planet.name = f"{self.name} Home"
         planet.owner = self.name
@@ -58,7 +60,7 @@ class Empire:
         self.know_system(planet.system)
 
     #####################################################################################################
-    def add_ship(self, ship: Ship, system: System):
+    def add_ship(self, ship: "Ship", system: "System"):
         self.ships.append(ship)
         ship.orbit = system
         ship.location = system.position
@@ -67,7 +69,8 @@ class Empire:
     def turn(self):
         """Have a turn"""
         self.research_spent += self.get_research_points()
-        if self.researching and self.research_spent > self.galaxy.get_research(self.researching).cost:
+        if self.researching and self.research_spent > get_research(self.researching).cost:
+            self.research_spent -= get_research(self.researching).cost
             self.learnt(self.researching)
             self.researching = None
         income = 0
@@ -89,18 +92,18 @@ class Empire:
     def learnt(self, tech: Technology) -> None:
         """We have researched {tech}"""
         self.known_techs.add(tech)
-        research = self.galaxy.get_research(tech)
+        research = get_research(tech)
         if research.general:
             for tech in research.general:
                 self.known_techs.add(tech)
         self.researched[research.category] = research.cost
 
     #####################################################################################################
-    def next_research(self, category: ResearchCategory) -> list[Technology]:
+    def next_research(self, category: "TechCategory") -> list[Technology]:
         """What are the next techs that can be researched"""
         available: dict[int, list[Technology]] = defaultdict(list)
 
-        for tech, research in self.galaxy._researches.items():
+        for tech, research in all_research().items():
             if research.category != category:
                 continue
             if tech in self.known_techs:
@@ -123,10 +126,22 @@ class Empire:
         return rp
 
     #####################################################################################################
-    def know_system(self, system: System) -> None:
+    def know_system(self, system: "System") -> None:
         self.known_systems.add(system.id)
 
     #####################################################################################################
-    def is_known_system(self, system: System) -> bool:
+    def is_known_system(self, system: "System") -> bool:
         """Is the system known to this empire"""
         return system.id in self.known_systems
+
+
+#####################################################################################################
+def make_empire(empire_name: str, home_system: "System") -> Empire:
+    """ """
+    home_system.colour = StarColour.YELLOW
+    empire = Empire(empire_name)
+    home_planet = make_home_planet(home_system)
+    empire.set_home_planet(home_planet)
+    home_system.orbits.append(home_planet)
+    random.shuffle(home_system.orbits)
+    return empire

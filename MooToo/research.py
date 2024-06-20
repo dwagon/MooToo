@@ -3,7 +3,8 @@ from MooToo.planet_building import PlanetBuilding
 from MooToo.constants import Technology
 
 
-class ResearchCategory(StrEnum):
+#####################################################################################################
+class TechCategory(StrEnum):
     CONSTRUCTION = auto()
     POWER = auto()
     CHEMISTRY = auto()
@@ -17,10 +18,10 @@ class ResearchCategory(StrEnum):
 #####################################################################################################
 #####################################################################################################
 class Research:
-    def __init__(self, name: str, tag: Technology, cost: int, category: ResearchCategory):
+    def __init__(self, name: str, tag: Technology, cost: int, category: TechCategory):
         self.name: str = name
         self.tag = tag
         self.cost: int = cost
         self.enabled_building: PlanetBuilding | None = None
-        self.category: ResearchCategory = category
+        self.category: TechCategory = category
         self.general = []  # Techs that get learnt along with this one

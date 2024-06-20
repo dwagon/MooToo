@@ -1,10 +1,10 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.SubterraneanFarms import BuildingSubterraneanFarms
 from MooToo.buildings.WeatherController import BuildingWeatherController
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 1500
-CATEGORY = ResearchCategory.BIOLOGY
+CATEGORY = TechCategory.BIOLOGY
 
 
 #####################################################################################################

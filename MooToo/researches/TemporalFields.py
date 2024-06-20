@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.PlanetaryBarrierShield import BuildingPlanetaryBarrierShield
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 15000
-CATEGORY = ResearchCategory.FORCE_FIELDS
+CATEGORY = TechCategory.FORCE_FIELDS
 
 
 #####################################################################################################

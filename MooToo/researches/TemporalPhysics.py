@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.StellarConverter import BuildingStellarConverter
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 15000
-CATEGORY = ResearchCategory.PHYSICS
+CATEGORY = TechCategory.PHYSICS
 
 
 #####################################################################################################

@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.HydroponicFarm import BuildingHydroponicFarm
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 400
-CATEGORY = ResearchCategory.BIOLOGY
+CATEGORY = TechCategory.BIOLOGY
 
 
 #####################################################################################################

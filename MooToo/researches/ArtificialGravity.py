@@ -1,9 +1,9 @@
-from MooToo.research import Research, ResearchCategory
+from MooToo.research import Research, TechCategory
 from MooToo.buildings.GravityGenerator import BuildingGravityGenerator
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 1150
-CATEGORY = ResearchCategory.PHYSICS
+CATEGORY = TechCategory.PHYSICS
 
 
 #####################################################################################################
