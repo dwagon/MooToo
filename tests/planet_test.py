@@ -1,7 +1,7 @@
 import unittest
 from MooToo.constants import Building, PopulationJobs, Technology
 from MooToo.ship import ShipType, select_ship_type_by_name
-from MooToo.galaxy import EMPIRES
+from MooToo.galaxy import Galaxy
 from MooToo.system import System
 from MooToo.empire import Empire
 from MooToo.construct import Construct, ConstructType
@@ -11,10 +11,11 @@ from MooToo.planet import Planet, PlanetSize, PlanetClimate, PlanetRichness, Pla
 #####################################################################################################
 class TestPlanet(unittest.TestCase):
     def setUp(self):
-        self.system = System(1, (0, 0))
+        self.galaxy = Galaxy()
+        self.system = System(1, (0, 0), self.galaxy)
         self.planet = Planet(self.system)
         self.empire = Empire("PlayerOne")
-        EMPIRES["PlayerOne"] = self.empire
+        self.galaxy.empires["PlayerOne"] = self.empire
         self.planet.owner = "PlayerOne"
 
     #################################################################################################

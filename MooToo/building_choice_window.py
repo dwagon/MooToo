@@ -5,11 +5,12 @@ import pygame
 from MooToo.base_graphics import BaseGraphics
 from MooToo.planet import Planet
 from MooToo.gui_button import Button
-from MooToo.ship import ShipType, Ship
+from MooToo.ship import ShipType
 from MooToo.constants import Building
+from MooToo.utils import get_building
 
 if TYPE_CHECKING:
-    from MooToo.main import Game
+    from MooToo.game import Game
 
 
 #####################################################################################################
@@ -57,7 +58,7 @@ class BuildingChoiceWindow(BaseGraphics):
                 text_surface = self.text_font.render(ship_type.name, True, "white")
                 rect = self.screen.blit(text_surface, top_left)
                 top_left.y += text_surface.get_size()[1]
-                self.to_build_rects[ship_type.name] = rect
+                self.to_build_rects[ship_type] = rect
                 pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
 
     #####################################################################################################
@@ -66,19 +67,12 @@ class BuildingChoiceWindow(BaseGraphics):
             return
         top_left = pygame.Vector2(205, 10)
         construct = self.planet.build_queue[0]
-        if isinstance(construct, Building):
-            name = self.planet.galaxy.get_building(construct).name
-        else:
-            name = construct.name
-
-        text = self.label_font.render(name, True, "purple")
+        text = self.label_font.render(construct.name, True, "purple")
         self.screen.blit(text, top_left)
 
     #####################################################################################################
     def draw_available_buildings(self) -> None:
-        buildings: dict[str, Building] = {
-            self.planet.galaxy.get_building(_).name: _ for _ in self.planet.buildings_available
-        }
+        buildings: dict[str, Building] = {get_building(_).name: _ for _ in self.planet.buildings_available}
 
         top_left = pygame.Vector2(12, 12)
         for building in sorted(buildings.keys()):
@@ -94,7 +88,7 @@ class BuildingChoiceWindow(BaseGraphics):
 
         for num, construct in enumerate(self.planet.build_queue):
             if isinstance(construct, Building):
-                name = self.planet.galaxy.get_building(construct).name
+                name = get_building(construct).name
             else:
                 name = construct.name
             text = self.text_font.render(name, True, "white", "black")
@@ -108,7 +102,7 @@ class BuildingChoiceWindow(BaseGraphics):
         mouse_x, mouse_y = pygame.mouse.get_pos()
         for bld, rect in self.to_build_rects.items():
             if rect.collidepoint(mouse_x, mouse_y):
-                self.planet.toggle_build_queue_item(bld)
+                self.planet.build_queue.toggle(bld)
         for num, rect in self.build_queue_rects.items():
             if rect.collidepoint(mouse_x, mouse_y):
                 self.planet.build_queue.pop(num)

@@ -6,7 +6,8 @@ from typing import Optional, TYPE_CHECKING
 from MooToo.utils import get_building
 
 if TYPE_CHECKING:
-    from MooToo import Building, Ship
+    from MooToo.planet_building import Building
+    from MooToo.ship import Ship
 
 
 #########################################################################################################
@@ -25,6 +26,14 @@ class Construct:
         self.category = category
         self.ship = ship
         self.tag = building_tag
+
+    #############################################################################################
+    @property
+    def name(self) -> str:
+        if self.category == ConstructType.SHIP:
+            return self.ship.name
+        else:
+            return self.tag.name.title()
 
     #############################################################################################
     def __str__(self):

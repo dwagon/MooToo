@@ -3,16 +3,14 @@
 import random
 from typing import TYPE_CHECKING
 from MooToo.planet import Planet
-from MooToo.galaxy import EMPIRES
 from MooToo.names import system_names
 from MooToo.constants import StarColour
 
 if TYPE_CHECKING:
     from MooToo.ship import Ship
-
+    from MooToo.galaxy import Galaxy
 
 #####################################################################################################
-
 MAX_ORBITS = 5
 ORBIT_NAMES = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII")
 
@@ -47,12 +45,13 @@ STAR_COLOURS = {
 
 #####################################################################################################
 class System:
-    def __init__(self, _id, position: tuple[int, int]):
+    def __init__(self, _id, position: tuple[int, int], galaxy: "Galaxy"):
         self.id = _id
         self.position = position
         self.name = pick_name()
         self.colour = pick_star_colour()
         self.orbits: list[Planet | None] = []
+        self.galaxy = galaxy
 
     #####################################################################################################
     def __repr__(self):
@@ -62,7 +61,7 @@ class System:
     def ships_in_orbit(self) -> list["Ship"]:
         """Return the list of ships (of all players) in orbit"""
         ships: list["Ship"] = []
-        for emp in EMPIRES.values():
+        for emp in self.galaxy.empires.values():
             ships.extend([_ for _ in emp.ships if _.location == self])
         return ships
 

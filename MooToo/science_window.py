@@ -3,7 +3,7 @@ import pygame
 from MooToo.base_graphics import BaseGraphics
 from MooToo.constants import Technology
 from MooToo.research import TechCategory
-from MooToo import get_research
+from MooToo.utils import get_research
 from MooToo.gui_button import Button
 
 

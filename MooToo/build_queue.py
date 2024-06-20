@@ -1,6 +1,6 @@
 from typing import Any
 from MooToo.construct import Construct, ConstructType
-from MooToo.ship import Ship
+from MooToo.ship import Ship, ShipType, select_ship_type_by_name
 from MooToo.constants import Building
 
 MAX_QUEUE = 6
@@ -9,6 +9,7 @@ MAX_QUEUE = 6
 #################################################################################################
 class BuildQueue:
     def __init__(self):
+        self._index = -1
         self._queue: list[Construct] = []
 
     #############################################################################################
@@ -22,6 +23,23 @@ class BuildQueue:
     #############################################################################################
     def __len__(self):
         return len(self._queue)
+
+    #############################################################################################
+    def __iter__(self):
+        self._index = -1
+        return self
+
+    #############################################################################################
+    def __next__(self):
+        self._index += 1
+        try:
+            return self._queue[self._index]
+        except IndexError as e:
+            raise StopIteration from e
+
+    #############################################################################################
+    def __getitem__(self, item):
+        return self._queue[item]
 
     #############################################################################################
     def __contains__(self, item):
@@ -54,6 +72,9 @@ class BuildQueue:
             con = construct
         elif isinstance(construct, Ship):
             con = Construct(ConstructType.SHIP, ship=construct)
+        elif isinstance(construct, ShipType):
+            ship = select_ship_type_by_name(construct.name)
+            con = Construct(ConstructType.SHIP, ship=ship)
         else:
             raise NotImplementedError(f"build_queue.toggle({construct=}) Unknown type {type(construct)}")
 

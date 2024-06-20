@@ -10,10 +10,10 @@ from MooToo.base_graphics import BaseGraphics
 from MooToo.system import System
 from MooToo.gui_button import Button
 from MooToo.constants import PlanetCategory, PlanetClimate, PlanetSize
-from MooToo import get_distance_tuple
+from MooToo.utils import get_distance_tuple
 
 if TYPE_CHECKING:
-    from MooToo.main import Game
+    from MooToo.game import Game
 
 
 #####################################################################################################

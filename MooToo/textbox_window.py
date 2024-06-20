@@ -7,7 +7,7 @@ from MooToo.base_graphics import BaseGraphics
 from MooToo.gui_button import Button
 
 if TYPE_CHECKING:
-    from MooToo.main import Game
+    from MooToo.game import Game
 
 
 #####################################################################################################

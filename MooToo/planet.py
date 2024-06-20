@@ -11,10 +11,10 @@ from MooToo.planet_building import Building
 from MooToo.build_queue import BuildQueue
 from MooToo.construct import Construct, ConstructType
 from MooToo.ship import ShipType
-from MooToo.empire import Empire
 
 if TYPE_CHECKING:
     from MooToo.system import System
+    from MooToo.empire import Empire
 
 #####################################################################################################
 STAR_COLOURS = {
@@ -181,10 +181,9 @@ class Planet:
 
     #####################################################################################################
     @property
-    def owner(self) -> Optional[Empire]:
-        from MooToo.galaxy import EMPIRES
+    def owner(self) -> Optional["Empire"]:
 
-        return EMPIRES[self._owner]
+        return self.system.galaxy.empires.get(self._owner)
 
     @owner.setter
     def owner(self, value: str):

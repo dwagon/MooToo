@@ -1,17 +1,22 @@
 #!/usr/bin/env python
+import random
 import sys
 import time
 from typing import Optional
 
 import pygame
 from enum import Enum, auto
-import MooToo
 from MooToo.gui_button import Button, InvisButton
 from MooToo.orbit_window import OrbitWindow
 from MooToo.base_graphics import BaseGraphics
 from MooToo.planet_window import PlanetWindow
 from MooToo.science_window import ScienceWindow
 from MooToo.fleet_window import FleetWindow
+from MooToo.galaxy import Galaxy, save, load
+from MooToo.ship import Ship
+from MooToo.system import System
+from MooToo.utils import get_research
+from MooToo.planet import Planet
 
 
 #####################################################################################################
@@ -25,10 +30,10 @@ class DisplayMode(Enum):
 
 #####################################################################################################
 class Game(BaseGraphics):
-    def __init__(self, galaxy: MooToo.Galaxy, empire_name: str):
+    def __init__(self, galaxy: Galaxy, empire_name: str):
         super().__init__(self)
-        self.display_mode = DisplayMode.GALAXY
         self.galaxy = galaxy
+        self.display_mode = DisplayMode.GALAXY
         self.empire = galaxy.empires[empire_name]
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
@@ -39,8 +44,8 @@ class Game(BaseGraphics):
         self.images = self.load_images()
         self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
         self.science_button = InvisButton(pygame.Rect(547, 346, 65, 69))
-        self.ship_rects: list[tuple[pygame.Rect, list[MooToo.Ship]]] = []
-        self.system_rects: list[tuple[pygame.Rect, MooToo.System]] = []
+        self.ship_rects: list[tuple[pygame.Rect, list[Ship]]] = []
+        self.system_rects: list[tuple[pygame.Rect, System]] = []
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
@@ -131,7 +136,7 @@ class Game(BaseGraphics):
         mouse = pygame.mouse.get_pos()
         if self.turn_button.clicked():
             self.galaxy.turn()
-            MooToo.save(self.galaxy, "save")
+            save(self.galaxy, "save")
         if self.science_button.clicked():
             self.display_mode = DisplayMode.SCIENCE
         for rect, ships in self.ship_rects:
@@ -148,7 +153,7 @@ class Game(BaseGraphics):
             self.system = system
 
     #####################################################################################################
-    def click_system(self) -> Optional[MooToo.System]:
+    def click_system(self) -> Optional[System]:
         mouse = pygame.mouse.get_pos()
         for rect, system in self.system_rects:
             if rect.collidepoint(mouse[0], mouse[1]):
@@ -176,7 +181,7 @@ class Game(BaseGraphics):
                     self.fleet_window.select_destination(system)
 
     #####################################################################################################
-    def pick_planet(self, system: MooToo.System) -> MooToo.Planet:
+    def pick_planet(self, system: System) -> Planet:
         """When we look at a system which planet should we start with"""
         max_pop = -1
         pick_planet = None
@@ -219,7 +224,7 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_fleets(self):
-        rects: dict[tuple[int, int, int, int], list[MooToo.Ship]] = {}
+        rects: dict[tuple[int, int, int, int], list[Ship]] = {}
         self.ship_rects = []
         for empire in self.galaxy.empires:
             for ship in self.galaxy.empires[empire].ships:
@@ -280,7 +285,7 @@ class Game(BaseGraphics):
             self.screen.blit(rp_text_surface, top_left)
             return
 
-        research = self.galaxy.get_research(self.empire.researching)
+        research = get_research(self.empire.researching)
         time_left = int((research.cost - self.empire.research_spent) / self.empire.get_research_points())
 
         words = [
@@ -313,14 +318,13 @@ class Game(BaseGraphics):
 
 #####################################################################################################
 def main(load_file=""):
+    galaxy = Galaxy()
     if load_file:
-        galaxy = MooToo.load(load_file)
+        galaxy = load(load_file)
     else:
-        galaxy = MooToo.Galaxy()
-        galaxy.populate()
-        MooToo.save(galaxy, "initial")
+        save(galaxy, "initial")
 
-    empire_name = list(galaxy.empires.keys())[0]
+    empire_name = random.choice(list(galaxy.empires.keys()))
 
     g = Game(galaxy, empire_name)
     g.loop()

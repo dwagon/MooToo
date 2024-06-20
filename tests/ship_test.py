@@ -1,6 +1,6 @@
 import unittest
-from MooToo.galaxy import EMPIRES
 from MooToo.empire import Empire
+from MooToo.galaxy import Galaxy
 from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.ship import select_ship_type_by_name
@@ -10,10 +10,11 @@ from MooToo.utils import get_distance_tuple
 #####################################################################################################
 class TestShip(unittest.TestCase):
     def setUp(self):
-        self.system = System(1, (0, 0))
+        self.galaxy = Galaxy()
+        self.system = System(1, (0, 0), self.galaxy)
         self.planet = Planet(self.system)
         self.empire = Empire("PlayerOne")
-        EMPIRES["PlayerOne"] = self.empire
+        self.galaxy.empires["PlayerOne"] = self.empire
         self.planet.owner = "PlayerOne"
 
     def test_select_ship(self):
@@ -23,7 +24,7 @@ class TestShip(unittest.TestCase):
         self.assertIn("Frigate", ship.name)
 
     def test_move_ship(self):
-        destination = System(2, (4, 0))
+        destination = System(2, (4, 0), self.galaxy)
         ship = select_ship_type_by_name("Cruiser")
         self.empire.add_ship(ship, self.system)
         ship.set_destination(destination)

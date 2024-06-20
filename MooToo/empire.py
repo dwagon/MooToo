@@ -1,11 +1,14 @@
 """ Relating to player's empires"""
 
+import random
 from collections import defaultdict
 from typing import TYPE_CHECKING
-from MooToo.constants import Technology, PopulationJobs
+from MooToo.constants import Technology, PopulationJobs, StarColour
 from MooToo.research import TechCategory
 from MooToo.planet_building import Building
 from MooToo.utils import all_research, get_research
+from MooToo.planet import make_home_planet
+
 
 if TYPE_CHECKING:
     from MooToo.system import System
@@ -130,3 +133,15 @@ class Empire:
     def is_known_system(self, system: "System") -> bool:
         """Is the system known to this empire"""
         return system.id in self.known_systems
+
+
+#####################################################################################################
+def make_empire(empire_name: str, home_system: "System") -> Empire:
+    """ """
+    home_system.colour = StarColour.YELLOW
+    empire = Empire(empire_name)
+    home_planet = make_home_planet(home_system)
+    empire.set_home_planet(home_planet)
+    home_system.orbits.append(home_planet)
+    random.shuffle(home_system.orbits)
+    return empire
