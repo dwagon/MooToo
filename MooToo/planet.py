@@ -205,6 +205,8 @@ class Planet:
         """How many turns left to build what we are building"""
         if not self.build_queue or not self.work_production():
             return 0
+        if self.build_queue.is_building(Building.TRADE_GOODS) or self.build_queue.is_building(Building.HOUSING):
+            return 0
         return min(10000, (self.build_queue.cost - self.construction_spent) // self.work_production())
 
     #####################################################################################################

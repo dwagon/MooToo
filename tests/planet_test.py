@@ -78,6 +78,10 @@ class TestPlanet(unittest.TestCase):
         planet.construction_spent = 200
         self.assertEqual(planet.turns_to_build(), int((725 - 200) / 15))
 
+        planet.build_queue.pop()  # Remove existing
+        planet.build_queue.add(Building.TRADE_GOODS)
+        self.assertEqual(planet.turns_to_build(), 0)
+
 
 #####################################################################################################
 if __name__ == "__main__":
