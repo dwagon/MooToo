@@ -255,13 +255,13 @@ class PlanetWindow(BaseGraphics):
     def draw_population(self, planet: Planet) -> None:
         """Draw farmers etc"""
         dest = pygame.Vector2(309, 62)
-        self.draw_population_sequence(dest, self.images["farmer"], planet.jobs[PopulationJobs.FARMER])
+        self.draw_population_sequence(dest, self.images["farmer"], planet.jobs[PopulationJobs.FARMER], 200)
 
         dest = pygame.Vector2(309, 92)
-        self.draw_population_sequence(dest, self.images["worker"], planet.jobs[PopulationJobs.WORKERS])
+        self.draw_population_sequence(dest, self.images["worker"], planet.jobs[PopulationJobs.WORKERS], 200)
 
         dest = pygame.Vector2(309, 122)
-        self.draw_population_sequence(dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS])
+        self.draw_population_sequence(dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS], 200)
 
     #####################################################################################################
     def draw_resources(self, planet: Planet) -> None:

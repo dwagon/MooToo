@@ -51,19 +51,13 @@ class ColonyWindow(BaseGraphics):
         name_surface = self.text_font.render(planet.name, True, "white")
         self.screen.blit(name_surface, top_left)
         self.draw_population_sequence(
-            top_left + pygame.Vector2(100, 0),
-            self.images["farmer"],
-            planet.jobs[PopulationJobs.FARMER],
+            top_left + pygame.Vector2(90, 0), self.images["farmer"], planet.jobs[PopulationJobs.FARMER], 130
         )
         self.draw_population_sequence(
-            top_left + pygame.Vector2(230, 0),
-            self.images["worker"],
-            planet.jobs[PopulationJobs.WORKERS],
+            top_left + pygame.Vector2(225, 0), self.images["worker"], planet.jobs[PopulationJobs.WORKERS], 130
         )
         self.draw_population_sequence(
-            top_left + pygame.Vector2(370, 0),
-            self.images["scientist"],
-            planet.jobs[PopulationJobs.SCIENTISTS],
+            top_left + pygame.Vector2(370, 0), self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS], 130
         )
         if planet.build_queue:
             self.draw_building(planet, top_left)
@@ -74,7 +68,7 @@ class ColonyWindow(BaseGraphics):
         text_surface = self.label_font.render(building.name, True, "white")
         self.screen.blit(text_surface, top_left + pygame.Vector2(510, 0))
         if turns := planet.turns_to_build():
-            text_surface = self.label_font.render(f"{turns} t", True, "white")
+            text_surface = self.label_font.render(f"{turns:,} t", True, "white")
             self.screen.blit(text_surface, top_left + pygame.Vector2(510, 12))
 
     #####################################################################################################
