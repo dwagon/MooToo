@@ -94,8 +94,8 @@ class Empire:
         self.known_techs.add(tech)
         research = get_research(tech)
         if research.general:
-            for tech in research.general:
-                self.known_techs.add(tech)
+            for gen_tech in research.general:
+                self.known_techs.add(gen_tech)
         self.researched[research.category] = research.cost
 
     #####################################################################################################
