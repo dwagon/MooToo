@@ -1,5 +1,6 @@
 from MooToo.research import Research, TechCategory
 from MooToo.buildings.HydroponicFarm import BuildingHydroponicFarm
+from MooToo.buildings.Biosphere import BuildingBiosphere
 from MooToo.constants import Technology
 
 RESEARCH_POINTS = 80
@@ -17,4 +18,4 @@ class ResearchHydroponicFarm(Research):
 class ResearchBiosphere(Research):
     def __init__(self):
         super().__init__("Biosphere", Technology.BIOSPHERE, RESEARCH_POINTS, CATEGORY)
-        self.enabled_building = BuildingHydroponicFarm()
+        self.enabled_building = BuildingBiosphere()
