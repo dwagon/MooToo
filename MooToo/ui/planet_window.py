@@ -5,13 +5,13 @@ from enum import Enum, StrEnum, auto
 from typing import Optional
 
 import pygame
-from MooToo.base_graphics import BaseGraphics
-from MooToo.textbox_window import TextBoxWindow
+from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.textbox_window import TextBoxWindow
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
 from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
-from MooToo.gui_button import Button
-from MooToo.building_choice_window import BuildingChoiceWindow
+from MooToo.ui.gui_button import Button
+from MooToo.ui.building_choice_window import BuildingChoiceWindow
 
 
 #####################################################################################################
@@ -246,7 +246,6 @@ class PlanetWindow(BaseGraphics):
         text_surface = self.label_font.render(building.name, True, "purple")
         self.screen.blit(text_surface, center - pygame.Vector2(text_surface.get_size()[0] / 2, 0))
         if turns := self.planet.turns_to_build():
-            turns = min(turns, 10000)
             text_surface = self.label_font.render(f"{turns:,} turn(s)", True, "white", "black")
             bottom_right = pygame.Vector2(626, 108)
             top_left = bottom_right - pygame.Vector2(text_surface.get_size()[0], text_surface.get_size()[1])
@@ -256,23 +255,13 @@ class PlanetWindow(BaseGraphics):
     def draw_population(self, planet: Planet) -> None:
         """Draw farmers etc"""
         dest = pygame.Vector2(309, 62)
-        self.draw_population_sequence(dest, self.images["farmer"], planet.jobs[PopulationJobs.FARMER])
+        self.draw_population_sequence(dest, self.images["farmer"], planet.jobs[PopulationJobs.FARMER], 200)
 
         dest = pygame.Vector2(309, 92)
-        self.draw_population_sequence(dest, self.images["worker"], planet.jobs[PopulationJobs.WORKERS])
+        self.draw_population_sequence(dest, self.images["worker"], planet.jobs[PopulationJobs.WORKERS], 200)
 
         dest = pygame.Vector2(309, 122)
-        self.draw_population_sequence(dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS])
-
-    #####################################################################################################
-    def draw_population_sequence(
-        self, top_left: pygame.Vector2, worker_image: pygame.Surface, value: int
-    ) -> pygame.Vector2:
-        """Display a sequence of population images"""
-        for _ in range(value):
-            self.screen.blit(worker_image, top_left)
-            top_left.x += worker_image.get_size()[0]
-        return top_left
+        self.draw_population_sequence(dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS], 200)
 
     #####################################################################################################
     def draw_resources(self, planet: Planet) -> None:

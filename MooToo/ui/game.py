@@ -6,12 +6,13 @@ from typing import Optional
 
 import pygame
 from enum import Enum, auto
-from MooToo.gui_button import Button, InvisButton
-from MooToo.orbit_window import OrbitWindow
-from MooToo.base_graphics import BaseGraphics
-from MooToo.planet_window import PlanetWindow
-from MooToo.science_window import ScienceWindow
-from MooToo.fleet_window import FleetWindow
+from MooToo.ui.gui_button import Button, InvisButton
+from MooToo.ui.orbit_window import OrbitWindow
+from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.planet_window import PlanetWindow
+from MooToo.ui.science_window import ScienceWindow
+from MooToo.ui.fleet_window import FleetWindow
+from MooToo.ui.colony_window import ColonyWindow
 from MooToo.galaxy import Galaxy, save, load
 from MooToo.ship import Ship
 from MooToo.system import System
@@ -26,6 +27,7 @@ class DisplayMode(Enum):
     ORBIT = auto()
     SCIENCE = auto()
     FLEET = auto()
+    COLONIES = auto()
 
 
 #####################################################################################################
@@ -41,9 +43,11 @@ class Game(BaseGraphics):
         self.planet_window = PlanetWindow(self.screen, self)
         self.science_window = ScienceWindow(self.screen, self)
         self.fleet_window = FleetWindow(self.screen, self)
+        self.colonies_window = ColonyWindow(self.screen, self)
         self.images = self.load_images()
-        self.turn_button = Button(self.load_image("BUFFER0.LBX", 2), pygame.Vector2(540, 440))
+        self.turn_button = Button(self.images["turn_button"], pygame.Vector2(540, 440))
         self.science_button = InvisButton(pygame.Rect(547, 346, 65, 69))
+        self.colonies_button = Button(self.images["colonies_button"], pygame.Vector2(0, 428))
         self.ship_rects: list[tuple[pygame.Rect, list[Ship]]] = []
         self.system_rects: list[tuple[pygame.Rect, System]] = []
 
@@ -61,6 +65,9 @@ class Game(BaseGraphics):
         images["small_red_star"] = self.load_image("BUFFER0.LBX", 173)
         images["small_brown_star"] = self.load_image("BUFFER0.LBX", 179)
         images["ship"] = self.load_image("BUFFER0.LBX", 205)
+        images["turn_button"] = self.load_image("BUFFER0.LBX", 2)
+        images["colonies_button"] = self.load_image("BUFFER0.LBX", 3)
+
         end = time.time()
         print(f"Main: Loaded {len(images)} in {end-start} seconds")
 
@@ -129,6 +136,8 @@ class Game(BaseGraphics):
                 pass
             case DisplayMode.ORBIT:
                 self.display_mode = DisplayMode.SYSTEM
+            case DisplayMode.COLONIES:
+                self.display_mode = DisplayMode.GALAXY
 
     #####################################################################################################
     def button_left_down_galaxy_view(self):
@@ -137,6 +146,8 @@ class Game(BaseGraphics):
         if self.turn_button.clicked():
             self.galaxy.turn()
             save(self.galaxy, "save")
+        if self.colonies_button.clicked():
+            self.display_mode = DisplayMode.COLONIES
         if self.science_button.clicked():
             self.display_mode = DisplayMode.SCIENCE
         for rect, ships in self.ship_rects:
@@ -179,6 +190,9 @@ class Game(BaseGraphics):
                     self.display_mode = DisplayMode.GALAXY
                 if system := self.click_system():
                     self.fleet_window.select_destination(system)
+            case DisplayMode.COLONIES:
+                if self.colonies_window.button_left_down():
+                    self.display_mode = DisplayMode.GALAXY
 
     #####################################################################################################
     def pick_planet(self, system: System) -> Planet:
@@ -209,6 +223,8 @@ class Game(BaseGraphics):
             case DisplayMode.FLEET:
                 self.draw_galaxy_view()
                 self.fleet_window.draw()
+            case DisplayMode.COLONIES:
+                self.colonies_window.draw()
 
     #####################################################################################################
     def draw_galaxy_view(self):

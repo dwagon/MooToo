@@ -1,7 +1,7 @@
 """ Class to base all other pygame classes from"""
 
 import pygame
-from MooToo.lbx_image import LBXImage
+from MooToo.ui.lbx_image import LBXImage
 from MooToo.constants import MOO_PATH
 
 
@@ -45,3 +45,17 @@ class BaseGraphics:
     def draw_centered_image(self, image: pygame.Surface) -> pygame.Rect:
         tl = self.top_left(image, self.mid_point)
         return self.screen.blit(image, tl)
+
+    #####################################################################################################
+    def draw_population_sequence(
+        self, top_left: pygame.Vector2, worker_image: pygame.Surface, value: int, max_width=200
+    ) -> pygame.Vector2:
+        """Display a sequence of population images"""
+        delta = worker_image.get_size()[0]
+        total_width = delta * value
+        if total_width > max_width:
+            delta = max_width / value
+        for _ in range(value):
+            self.screen.blit(worker_image, top_left)
+            top_left.x += delta
+        return top_left

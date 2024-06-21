@@ -3,11 +3,11 @@
 import time
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.base_graphics import BaseGraphics
-from MooToo.gui_button import Button
+from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.gui_button import Button
 
 if TYPE_CHECKING:
-    from MooToo.game import Game
+    from MooToo.ui.game import Game
 
 
 #####################################################################################################
