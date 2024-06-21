@@ -22,6 +22,8 @@ class ColonyWindow(BaseGraphics):
         self.screen = screen
         self.images = self.load_images()
         self.return_button = Button(self.images["return_button"], pygame.Vector2(530, 445))
+        self.buy_now_rects: dict[Planet, pygame.Rect] = {}
+        self.building_rect: dict[Planet, pygame.Rect] = {}
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
@@ -29,6 +31,8 @@ class ColonyWindow(BaseGraphics):
         start = time.time()
         images["window"] = self.load_image("COLSUM.LBX", 0, palette_index=2)
         images["return_button"] = self.load_image("COLSUM.LBX", 1, palette_index=2)
+        images["purchase_button"] = self.load_image("COLSUM.LBX", 11, palette_index=2)
+
         images["farmer"] = self.load_image("RACEICON.LBX", 0, palette_index=2)
         images["worker"] = self.load_image("RACEICON.LBX", 3, palette_index=2)
         images["scientist"] = self.load_image("RACEICON.LBX", 5, palette_index=2)
@@ -41,7 +45,9 @@ class ColonyWindow(BaseGraphics):
         """Draw the window"""
         self.screen.blit(self.images["window"], pygame.Vector2(0, 0))
         self.return_button.draw(self.screen)
-        top_left = pygame.Vector2(10, 40)
+        self.buy_now_rects = {}
+        self.building_rect = {}
+        top_left = pygame.Vector2(10, 39)
         for planet in self.game.empire.owned_planets:
             self.draw_planet(planet, top_left)
             top_left += pygame.Vector2(0, 32)
@@ -59,8 +65,14 @@ class ColonyWindow(BaseGraphics):
         self.draw_population_sequence(
             top_left + pygame.Vector2(370, 0), self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS], 130
         )
+        self.building_rect[planet] = pygame.Rect(510, top_left.y, 90, 25)
+        pygame.draw.rect(self.screen, "purple", self.building_rect[planet], width=1)  # DBG
         if planet.build_queue:
             self.draw_building(planet, top_left)
+            if planet.buy_cost() < planet.owner.money:
+                rect = self.screen.blit(self.images["purchase_button"], top_left + pygame.Vector2(590, 0))
+                self.buy_now_rects[planet] = rect
+                pygame.draw.rect(self.screen, "purple", self.buy_now_rects[planet], width=1)  # DBG
 
     #####################################################################################################
     def draw_building(self, planet: "Planet", top_left: pygame.Vector2) -> None:
@@ -75,4 +87,12 @@ class ColonyWindow(BaseGraphics):
     def button_left_down(self) -> bool:
         if self.return_button.clicked():
             return True
+        mouse = pygame.mouse.get_pos()
+        for planet, rect in self.buy_now_rects.items():
+            if rect.collidepoint(mouse[0], mouse[1]):
+                print(f"DBG Buy on {planet}")
+        for planet, rect in self.building_rect.items():
+            if rect.collidepoint(mouse[0], mouse[1]):
+                print(f"DBG Change building on {planet}")
+
         return False
