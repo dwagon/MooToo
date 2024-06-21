@@ -6,7 +6,7 @@ from typing import Optional, TYPE_CHECKING
 from MooToo.utils import get_building
 
 if TYPE_CHECKING:
-    from MooToo.ui.planet_building import Building
+    from MooToo.planet_building import Building
     from MooToo.ship import Ship
 
 

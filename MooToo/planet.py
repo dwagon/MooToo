@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Optional
 from MooToo.utils import prob_map, get_research, get_building
 from MooToo.constants import PlanetGravity, PlanetSize, PlanetCategory, PlanetRichness, PlanetClimate, Technology
 from MooToo.constants import PopulationJobs, StarColour
-from MooToo.ui.planet_building import Building
+from MooToo.planet_building import Building
 from MooToo.build_queue import BuildQueue
 from MooToo.construct import Construct, ConstructType
 from MooToo.ship import ShipType
