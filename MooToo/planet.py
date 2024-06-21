@@ -201,6 +201,18 @@ class Planet:
         return get_building(item)
 
     #####################################################################################################
+    def buy_cost(self) -> int:
+        """How much to buy production"""
+        pct_complete = self.construction_spent / self.build_queue.cost
+        if pct_complete > 0.5:
+            return int(2 * self.build_queue.cost - self.construction_spent * 2)
+        if pct_complete > 0.1:
+            return int(3.5 * self.build_queue.cost - self.construction_spent * 5)
+        if pct_complete > 0:
+            return int(4 * self.build_queue.cost - self.construction_spent * 10)
+        return self.build_queue.cost * 4
+
+    #####################################################################################################
     def turns_to_build(self) -> int:
         """How many turns left to build what we are building"""
         if not self.build_queue or not self.work_production():
@@ -281,10 +293,12 @@ class Planet:
     #####################################################################################################
     def building_production(self) -> None:
         """Produce buildings"""
-        self.construction_spent += self.work_production()
         if not self.build_queue:
             return
+        self.construction_spent += self.work_production()
         cost = self.build_queue.cost
+        if self.build_queue.is_building(Building.HOUSING) or self.build_queue.is_building(Building.TRADE_GOODS):
+            self.construction_spent = 0
         if self.construction_spent >= cost:
             self.construction_spent -= cost
             self.finish_construction(self.build_queue.pop(0))

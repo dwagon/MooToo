@@ -82,6 +82,17 @@ class TestPlanet(unittest.TestCase):
         planet.build_queue.add(Building.TRADE_GOODS)
         self.assertEqual(planet.turns_to_build(), 0)
 
+    #################################################################################################
+    def test_buy_cost(self):
+        planet = Planet(self.system)
+        ship = select_ship_type_by_name("Battleship")  # Cost 725
+        planet.build_queue.add(ship)
+        self.assertEqual(planet.buy_cost(), 2900)
+        planet.construction_spent = 725
+        self.assertEqual(planet.buy_cost(), 0)
+        planet.construction_spent = 700
+        self.assertEqual(planet.buy_cost(), 50)
+
 
 #####################################################################################################
 if __name__ == "__main__":
