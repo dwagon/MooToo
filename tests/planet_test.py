@@ -19,6 +19,20 @@ class TestPlanet(unittest.TestCase):
         self.planet.owner = "PlayerOne"
 
     #################################################################################################
+    def test_colonize(self):
+        new_planet = Planet(self.system, climate=PlanetClimate.TERRAN)
+        new_planet.colonize("PlayerOne")
+        self.assertEqual(new_planet.current_population(), 1)
+        self.assertEqual(new_planet.jobs[PopulationJobs.FARMERS], 1)
+        self.assertEqual(new_planet.jobs[PopulationJobs.WORKERS], 0)
+        self.assertIn(new_planet, self.empire.owned_planets)
+
+        new_planet = Planet(self.system, climate=PlanetClimate.BARREN)
+        new_planet.colonize("PlayerOne")
+        self.assertEqual(new_planet.jobs[PopulationJobs.FARMERS], 0)
+        self.assertEqual(new_planet.jobs[PopulationJobs.WORKERS], 1)
+
+    #################################################################################################
     def test_max_population(self):
         self.planet.size = PlanetSize.MEDIUM
         self.planet.climate = PlanetClimate.TERRAN

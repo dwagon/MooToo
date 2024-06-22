@@ -2,7 +2,7 @@
 
 import time
 from enum import Enum, StrEnum, auto
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 import pygame
 from MooToo.ui.base_graphics import BaseGraphics
@@ -12,6 +12,9 @@ from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
 from MooToo.ui.gui_button import Button
 from MooToo.ui.building_choice_window import BuildingChoiceWindow
+
+if TYPE_CHECKING:
+    from MooToo.ui.game import Game
 
 
 #####################################################################################################
@@ -313,10 +316,11 @@ class PlanetWindow(BaseGraphics):
         self, top_left: pygame.Vector2, image_1: pygame.Surface, image_5: pygame.Surface, in_value: int, out_value: int
     ) -> None:
         """Display a resource"""
+        # TO DO - need to draw negative values properly
+        surplus = in_value - out_value
         if out_value:
             top_left = self.draw_resource_sequence(top_left, image_1, image_5, out_value)
             top_left.x += 10  # Gap
-        surplus = in_value - out_value
         self.draw_resource_sequence(top_left, image_1, image_5, surplus)
 
     #####################################################################################################

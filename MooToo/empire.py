@@ -25,7 +25,7 @@ class Empire:
         self.money: int = 100
         self.income: int = 0
         self.known_systems: set[int] = set()
-        self.owned_planets: list[Planet] = []
+        self.owned_planets: set[Planet] = set()
         self.ships: list[Ship] = []
         self.researching: Technology | None = None
         self.research_spent = 0
@@ -46,6 +46,10 @@ class Empire:
         }
 
     #####################################################################################################
+    def __repr__(self):
+        return f"<Empire {self.name}>"
+
+    #####################################################################################################
     def set_home_planet(self, planet: "Planet"):
         """Make planet the home planet of the empire"""
         planet.name = f"{self.name} Home"
@@ -56,14 +60,24 @@ class Empire:
         planet.jobs[PopulationJobs.SCIENTISTS] = 2
         planet.buildings.add(Building.MARINE_BARRACKS)
         planet.buildings.add(Building.STAR_BASE)
-        self.owned_planets.append(planet)
+        self.owned_planets.add(planet)
         self.know_system(planet.system)
+
+    #####################################################################################################
+    def own_planet(self, planet: "Planet"):
+        self.owned_planets.add(planet)
 
     #####################################################################################################
     def add_ship(self, ship: "Ship", system: "System"):
         self.ships.append(ship)
         ship.orbit = system
         ship.location = system.position
+        ship.owner = self
+
+    #####################################################################################################
+    def delete_ship(self, ship: "Ship"):
+        print(f"DBG delete_ship({ship=}")
+        self.ships.remove(ship)
 
     #####################################################################################################
     def turn(self):
@@ -74,7 +88,7 @@ class Empire:
             self.learnt(self.researching)
             self.researching = None
         income = 0
-        for planet in self.owned_planets:
+        for planet in self.owned_planets.copy():
             planet.turn()
             income += planet.money_production() - planet.money_cost()
         for ship in self.ships:

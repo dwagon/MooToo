@@ -161,20 +161,21 @@ PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, system: "System"):
+    def __init__(self, system: "System", **kwargs):
         self.name = ""
         self.system = system
-        self.category = pick_planet_category()
-        self.size = pick_planet_size()
-        self.richness = pick_planet_richness(STAR_COLOURS[self.system.colour]["richness"])
-        self.climate = pick_planet_climate(STAR_COLOURS[self.system.colour]["climate"])
-        self.gravity = pick_planet_gravity(self.size, self.richness)
+
         self._owner: str = ""
         self.jobs = {PopulationJobs.FARMERS: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
+        self.category = kwargs.get("category", pick_planet_category())
+        self.size = kwargs.get("size", pick_planet_size())
+        self.richness = kwargs.get("richness", pick_planet_richness(STAR_COLOURS[self.system.colour]["richness"]))
+        self.climate = kwargs.get("climate", pick_planet_climate(STAR_COLOURS[self.system.colour]["climate"]))
+        self.gravity = kwargs.get("richness", pick_planet_gravity(self.size, self.richness))
         self._population = 0.0
         self.buildings: set[Building] = set()  # Built buildings
         self._buildings_available: set[Building] = set()
-        self.build_queue = BuildQueue()
+        self.build_queue = BuildQueue(self)
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
         self.climate_image = self.gen_climate_image()
@@ -182,7 +183,6 @@ class Planet:
     #####################################################################################################
     @property
     def owner(self) -> Optional["Empire"]:
-
         return self.system.galaxy.empires.get(self._owner)
 
     @owner.setter
@@ -309,6 +309,17 @@ class Planet:
         self.add_workers(num, target_job)
 
     #####################################################################################################
+    def colonize(self, owner: str) -> None:
+        """Make the planet an active colony"""
+        if FOOD_CLIMATE_MAP[self.climate]:
+            self.jobs[PopulationJobs.FARMERS] = 1
+        else:
+            self.jobs[PopulationJobs.WORKERS] = 1
+        self._population = 1e6
+        self.owner = owner
+        self.owner.own_planet(self)
+
+    #####################################################################################################
     def building_production(self) -> None:
         """Produce buildings"""
         if not self.build_queue:
@@ -329,6 +340,8 @@ class Planet:
                 self.buildings.add(construct.tag)
             case ConstructType.SHIP:
                 self.owner.add_ship(construct.ship, self.system)
+                if not construct.ship.built():
+                    self.owner.delete_ship(construct.ship)
 
     #####################################################################################################
     def grow_population(self) -> None:
@@ -336,7 +349,10 @@ class Planet:
         self._population += self.population_increment()
         if int(self._population / 1e6) > old_pop:
             for _ in range(int(self._population / 1e6) - old_pop):  # Assign to new jobs
-                self.jobs[PopulationJobs.FARMERS] += 1  # TODO: Make this cleverer
+                if FOOD_CLIMATE_MAP[self.climate] and self.food_production() - self.food_consumption() < 5:
+                    self.jobs[PopulationJobs.FARMERS] += 1
+                else:
+                    self.jobs[PopulationJobs.WORKERS] += 1
 
     #####################################################################################################
     def population_increment(self) -> int:
@@ -478,7 +494,11 @@ class Planet:
 
     #####################################################################################################
     def __repr__(self):
-        return f"<Planet {self.name}: {self.category.name} {self.size.name} {self.richness.name} {self.climate.name} {self.gravity.name}>"
+        category = self.category.name
+        richness = self.richness.name
+        climate = self.climate.name
+
+        return f"<Planet {self.name}: {category} {self.size.name} {richness} {climate} {self.gravity.name}>"
 
 
 #####################################################################################################
