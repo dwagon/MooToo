@@ -51,7 +51,7 @@ class Empire:
         planet.name = f"{self.name} Home"
         planet.owner = self.name
         planet._population = 8e6
-        planet.jobs[PopulationJobs.FARMER] = 4
+        planet.jobs[PopulationJobs.FARMERS] = 4
         planet.jobs[PopulationJobs.WORKERS] = 2
         planet.jobs[PopulationJobs.SCIENTISTS] = 2
         planet.buildings.add(Building.MARINE_BARRACKS)

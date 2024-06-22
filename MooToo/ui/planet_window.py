@@ -34,9 +34,11 @@ class PlanetWindow(BaseGraphics):
         """ """
         super().__init__(game)
         self.screen = screen
-        self.planet = None
+        self.planet: Planet
         self.images = self.load_images()
         self.planet_rects: dict[tuple[float, float, float, float], Planet] = {}
+        self.worker_rects: dict[tuple[PopulationJobs, int], pygame.Rect] = {}
+        self.worker: Optional[tuple[PopulationJobs, int]] = None
         self.detail_rect: Optional[pygame.Rect] = None
         self.colony_font = pygame.font.SysFont("Ariel", 18, bold=True)
         self.display_mode = PlanetDisplayMode.NORMAL
@@ -255,13 +257,21 @@ class PlanetWindow(BaseGraphics):
     def draw_population(self, planet: Planet) -> None:
         """Draw farmers etc"""
         dest = pygame.Vector2(309, 62)
-        self.draw_population_sequence(dest, self.images["farmer"], planet.jobs[PopulationJobs.FARMER], 200)
+        rects = self.draw_population_sequence(dest, self.images["farmer"], planet.jobs[PopulationJobs.FARMERS], 200)
+        for num, rect in enumerate(rects):
+            self.worker_rects[(PopulationJobs.FARMERS, self.planet.jobs[PopulationJobs.FARMERS] - num)] = rect
 
         dest = pygame.Vector2(309, 92)
-        self.draw_population_sequence(dest, self.images["worker"], planet.jobs[PopulationJobs.WORKERS], 200)
+        rects = self.draw_population_sequence(dest, self.images["worker"], planet.jobs[PopulationJobs.WORKERS], 200)
+        for num, rect in enumerate(rects):
+            self.worker_rects[(PopulationJobs.WORKERS, self.planet.jobs[PopulationJobs.WORKERS] - num)] = rect
 
         dest = pygame.Vector2(309, 122)
-        self.draw_population_sequence(dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS], 200)
+        rects = self.draw_population_sequence(
+            dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS], 200
+        )
+        for num, rect in enumerate(rects):
+            self.worker_rects[(PopulationJobs.SCIENTISTS, self.planet.jobs[PopulationJobs.SCIENTISTS] - num)] = rect
 
     #####################################################################################################
     def draw_resources(self, planet: Planet) -> None:
@@ -408,6 +418,67 @@ class PlanetWindow(BaseGraphics):
         return f"{owner} {pop}"
 
     #####################################################################################################
+    def mouse_pos(self, event: pygame.event):
+        """ """
+        if self.worker:
+            match self.worker[0]:
+                case PopulationJobs.FARMERS:
+                    image = self.images["farmer"]
+                case PopulationJobs.WORKERS:
+                    image = self.images["worker"]
+                case PopulationJobs.SCIENTISTS:
+                    image = self.images["scientist"]
+                case _:
+                    image = None
+            delta = 0
+            for _ in range(self.worker[1]):
+                self.screen.blit(image, pygame.mouse.get_pos() + pygame.Vector2(delta, 0))
+                delta += image.get_size()[0]
+
+    #####################################################################################################
+    def button_up(self):
+        """ """
+        if self.worker:
+            farm_target_rect = pygame.Rect(307, 60, 205, 30)
+            work_target_rect = pygame.Rect(307, 90, 205, 30)
+            science_target_rect = pygame.Rect(307, 120, 205, 30)
+            if farm_target_rect.collidepoint(pygame.mouse.get_pos()):
+                self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.FARMERS)
+            if work_target_rect.collidepoint(pygame.mouse.get_pos()):
+                self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.WORKERS)
+            if science_target_rect.collidepoint(pygame.mouse.get_pos()):
+                self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.SCIENTISTS)
+
+            self.worker = None
+
+    #####################################################################################################
+    def loop(self, planet: Planet) -> None:
+        self.planet = planet
+        while True:
+            self.screen.fill("black")
+            self.draw(self.planet.system)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit(1)
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    buttons = pygame.mouse.get_pressed()
+                    if buttons[0]:
+                        if self.buttons[PlanetButtons.RETURN].clicked():
+                            return
+                        self.button_left_down()
+                    elif buttons[2]:
+                        return
+                if event.type == pygame.MOUSEMOTION:
+                    self.mouse_pos(event)
+                if event.type == pygame.MOUSEBUTTONUP:
+                    self.button_up()
+
+            pygame.display.flip()
+
+            self.clock.tick(60)
+
+    #####################################################################################################
     def button_left_down(self) -> bool:
         if self.display_mode == PlanetDisplayMode.BUILD:
             if self.building_choice_window.button_left_down():
@@ -417,9 +488,6 @@ class PlanetWindow(BaseGraphics):
             if self.details_textbox.button_left_down():
                 self.display_mode = PlanetDisplayMode.NORMAL
                 return False
-        if self.buttons[PlanetButtons.RETURN].clicked():
-            self.planet = None
-            return True
         if self.buttons[PlanetButtons.BUILD].clicked():
             self.display_mode = PlanetDisplayMode.BUILD
 
@@ -429,6 +497,10 @@ class PlanetWindow(BaseGraphics):
                 self.planet = planet
         if self.detail_rect and self.detail_rect.collidepoint(pygame.mouse.get_pos()):
             self.display_mode = PlanetDisplayMode.DETAILS
+
+        for job, rect in self.worker_rects.items():
+            if rect.collidepoint(pygame.mouse.get_pos()):
+                self.worker = job
         return False
 
 

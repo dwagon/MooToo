@@ -57,7 +57,7 @@ class ColonyWindow(BaseGraphics):
         name_surface = self.text_font.render(planet.name, True, "white")
         self.screen.blit(name_surface, top_left)
         self.draw_population_sequence(
-            top_left + pygame.Vector2(90, 0), self.images["farmer"], planet.jobs[PopulationJobs.FARMER], 130
+            top_left + pygame.Vector2(90, 0), self.images["farmer"], planet.jobs[PopulationJobs.FARMERS], 130
         )
         self.draw_population_sequence(
             top_left + pygame.Vector2(225, 0), self.images["worker"], planet.jobs[PopulationJobs.WORKERS], 130

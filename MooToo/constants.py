@@ -51,7 +51,7 @@ class PlanetClimate(StrEnum):
 
 #####################################################################################################
 class PopulationJobs(StrEnum):
-    FARMER = "F"
+    FARMERS = "F"
     WORKERS = "W"
     SCIENTISTS = "S"
 

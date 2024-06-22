@@ -23,7 +23,7 @@ from MooToo.planet import Planet
 #####################################################################################################
 class DisplayMode(Enum):
     GALAXY = auto()
-    SYSTEM = auto()
+    PLANET = auto()
     ORBIT = auto()
     SCIENCE = auto()
     FLEET = auto()
@@ -108,7 +108,7 @@ class Game(BaseGraphics):
                 pass
             case DisplayMode.ORBIT:
                 pass
-            case DisplayMode.SYSTEM:
+            case DisplayMode.PLANET:
                 pass
             case DisplayMode.FLEET:
                 self.fleet_window.button_up()
@@ -121,7 +121,7 @@ class Game(BaseGraphics):
                 pass
             case DisplayMode.ORBIT:
                 self.orbit_window.mouse_pos()
-            case DisplayMode.SYSTEM:
+            case DisplayMode.PLANET:
                 pass
             case DisplayMode.FLEET:
                 self.fleet_window.mouse_pos(event)
@@ -132,10 +132,10 @@ class Game(BaseGraphics):
         match self.display_mode:
             case DisplayMode.GALAXY:
                 pass
-            case DisplayMode.SYSTEM:
+            case DisplayMode.PLANET:
                 pass
             case DisplayMode.ORBIT:
-                self.display_mode = DisplayMode.SYSTEM
+                self.display_mode = DisplayMode.PLANET
             case DisplayMode.COLONIES:
                 self.display_mode = DisplayMode.GALAXY
 
@@ -157,8 +157,7 @@ class Game(BaseGraphics):
 
         if system := self.click_system():
             if self.empire.is_known_system(system):
-                self.planet_window.planet = self.pick_planet(system)
-                self.display_mode = DisplayMode.SYSTEM
+                self.planet_window.loop(self.pick_planet(system))
             else:
                 self.display_mode = DisplayMode.ORBIT
             self.system = system
@@ -179,9 +178,8 @@ class Game(BaseGraphics):
             case DisplayMode.ORBIT:
                 if self.orbit_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
-            case DisplayMode.SYSTEM:
-                if self.planet_window.button_left_down():
-                    self.display_mode = DisplayMode.GALAXY
+            case DisplayMode.PLANET:
+                pass  # Handled in the planet_window
             case DisplayMode.SCIENCE:
                 if self.science_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
@@ -215,8 +213,8 @@ class Game(BaseGraphics):
             case DisplayMode.ORBIT:
                 self.draw_galaxy_view()
                 self.orbit_window.draw(self.system)
-            case DisplayMode.SYSTEM:
-                self.planet_window.draw(self.system)
+            case DisplayMode.PLANET:
+                pass  # Handled in the planet_window
             case DisplayMode.SCIENCE:
                 self.draw_galaxy_view()
                 self.science_window.draw()

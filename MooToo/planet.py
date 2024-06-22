@@ -170,7 +170,7 @@ class Planet:
         self.climate = pick_planet_climate(STAR_COLOURS[self.system.colour]["climate"])
         self.gravity = pick_planet_gravity(self.size, self.richness)
         self._owner: str = ""
-        self.jobs = {PopulationJobs.FARMER: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
+        self.jobs = {PopulationJobs.FARMERS: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self._population = 0.0
         self.buildings: set[Building] = set()  # Built buildings
         self._buildings_available: set[Building] = set()
@@ -291,6 +291,24 @@ class Planet:
         self._buildings_available = self.available_to_build()
 
     #####################################################################################################
+    def remove_workers(self, num: int, job: PopulationJobs) -> int:
+        """Remove workers from a job"""
+        num = min(self.jobs[job], num)
+        self.jobs[job] -= num
+        return num
+
+    #####################################################################################################
+    def add_workers(self, num: int, job: PopulationJobs):
+        """Add workers to a job"""
+        self.jobs[job] += num
+
+    #####################################################################################################
+    def move_workers(self, num: int, src_job: PopulationJobs, target_job: PopulationJobs):
+        """Move workers from a job to another"""
+        num = self.remove_workers(num, src_job)
+        self.add_workers(num, target_job)
+
+    #####################################################################################################
     def building_production(self) -> None:
         """Produce buildings"""
         if not self.build_queue:
@@ -318,7 +336,7 @@ class Planet:
         self._population += self.population_increment()
         if int(self._population / 1e6) > old_pop:
             for _ in range(int(self._population / 1e6) - old_pop):  # Assign to new jobs
-                self.jobs[PopulationJobs.FARMER] += 1  # TODO: Make this cleverer
+                self.jobs[PopulationJobs.FARMERS] += 1  # TODO: Make this cleverer
 
     #####################################################################################################
     def population_increment(self) -> int:
@@ -355,7 +373,7 @@ class Planet:
     def money_production(self) -> int:
         """How much money the planet produces"""
         money = (
-            self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
+            self.jobs[PopulationJobs.FARMERS] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
         if self.build_queue.is_building(Building.TRADE_GOODS):
             money += self.work_production()
@@ -380,17 +398,17 @@ class Planet:
 
     #####################################################################################################
     def food_production(self) -> int:
-        production = self.food_per() * self.jobs[PopulationJobs.FARMER]
+        production = self.food_per() * self.jobs[PopulationJobs.FARMERS]
         production *= GRAVITY_MAP[self.gravity]
         for building in self.buildings:
             production += get_building(building).food_bonus(self)
-        production = max(self.jobs[PopulationJobs.FARMER], production)
+        production = max(self.jobs[PopulationJobs.FARMERS], production)
         return int(production)
 
     #####################################################################################################
     def food_consumption(self) -> int:
         return (
-            self.jobs[PopulationJobs.FARMER] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
+            self.jobs[PopulationJobs.FARMERS] + self.jobs[PopulationJobs.WORKERS] + self.jobs[PopulationJobs.SCIENTISTS]
         )
 
     #####################################################################################################
