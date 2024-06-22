@@ -49,13 +49,16 @@ class BaseGraphics:
     #####################################################################################################
     def draw_population_sequence(
         self, top_left: pygame.Vector2, worker_image: pygame.Surface, value: int, max_width=200
-    ) -> pygame.Vector2:
+    ) -> list[pygame.Rect]:
         """Display a sequence of population images"""
         delta = worker_image.get_size()[0]
         total_width = delta * value
         if total_width > max_width:
             delta = max_width / value
+        rects = []
         for _ in range(value):
-            self.screen.blit(worker_image, top_left)
+            rect = self.screen.blit(worker_image, top_left)
+            pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
             top_left.x += delta
-        return top_left
+            rects.append(rect)
+        return rects
