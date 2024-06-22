@@ -1,16 +1,22 @@
-from typing import Any
+from typing import Any, TYPE_CHECKING
 from MooToo.construct import Construct, ConstructType
 from MooToo.ship import Ship, ShipType, select_ship_type_by_name
 from MooToo.constants import Building
+
+if TYPE_CHECKING:
+    from MooToo.empire import Empire
+    from MooToo.planet import Planet
 
 MAX_QUEUE = 6
 
 
 #################################################################################################
 class BuildQueue:
-    def __init__(self):
+    def __init__(self, planet: "Planet"):
         self._index = -1
         self._queue: list[Construct] = []
+        self.planet = planet
+        self.empire: Empire = planet.owner
 
     #############################################################################################
     def __repr__(self):

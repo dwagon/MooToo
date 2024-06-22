@@ -4,12 +4,21 @@ from MooToo.build_queue import BuildQueue
 from MooToo.constants import Building
 from MooToo.construct import Construct, ConstructType
 from MooToo.ship import select_ship_type_by_name
+from MooToo.galaxy import Galaxy
+from MooToo.system import System
+from MooToo.planet import Planet
+from MooToo.empire import Empire
 
 
 #################################################################################################
 class TestBuildQueue(unittest.TestCase):
     def setUp(self):
-        self.q = BuildQueue()
+        galaxy = Galaxy()
+        system = System(1, (0, 0), galaxy)
+        planet = Planet(system)
+        self.empire = Empire("Foo")
+        planet.owner = self.empire
+        self.q = BuildQueue(planet)
 
     #############################################################################################
     def test_add(self):

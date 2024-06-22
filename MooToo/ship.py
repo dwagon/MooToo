@@ -7,9 +7,12 @@ from typing import TYPE_CHECKING, Optional
 from enum import StrEnum, auto
 
 from MooToo.utils import get_distance_tuple
+from MooToo.constants import PlanetCategory
 
 if TYPE_CHECKING:
     from MooToo.system import System
+    from MooToo.empire import Empire
+    from MooToo.planet import Planet
 
 
 #####################################################################################################
@@ -48,6 +51,7 @@ class Ship:
         self.space = 0
         self.cost = 0
         self.space = 0
+        self.owner: Optional["Empire"] = None
         self.command_points = 0
         self.maintenance = 0
         self.name = name
@@ -55,6 +59,11 @@ class Ship:
         self.destination: Optional[System] = None
         self.location: tuple[int, int] = (-1, -1)
         self.orbit: Optional[System] = None
+
+    #################################################################################################
+    def built(self) -> bool:
+        """Just been built; return False to delete on build"""
+        return True
 
     #################################################################################################
     def __repr__(self):
@@ -112,6 +121,14 @@ class ColonyBase(Ship):
         self.maintenance = 0
         self.type = ShipType.ColonyBase
 
+    def built(self) -> bool:
+        """TODO: make the player choose"""
+        for orbit in self.orbit:
+            if orbit and not orbit.owner and orbit.category == PlanetCategory.PLANET:
+                orbit.colonize(self.owner.name)
+                break
+        return False
+
 
 #####################################################################################################
 class ColonyShip(Ship):
@@ -122,7 +139,13 @@ class ColonyShip(Ship):
         self.command_points = 1
         self.maintenance = 10
         self.type = ShipType.ColonyShip
+        self.target_planet: Optional["Planet"] = None
         self.icon = "colony"
+
+    def arrived_at_destination(self):
+        super().arrived_at_destination()
+        if self.target_planet:
+            self.target_planet.colonize(self.owner.name)
 
 
 #####################################################################################################
