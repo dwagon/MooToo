@@ -1,11 +1,20 @@
 import unittest
-from MooToo.constants import Building, PopulationJobs, Technology
+from MooToo.constants import (
+    Building,
+    PopulationJobs,
+    Technology,
+    PlanetSize,
+    PlanetClimate,
+    PlanetRichness,
+    PlanetGravity,
+)
 from MooToo.ship import ShipType, select_ship_type_by_name
 from MooToo.galaxy import Galaxy
 from MooToo.system import System
 from MooToo.empire import Empire
 from MooToo.construct import Construct, ConstructType
-from MooToo.planet import Planet, PlanetSize, PlanetClimate, PlanetRichness, PlanetGravity
+from MooToo.planet import Planet
+from MooToo.planet_work import work_surplus
 
 
 #####################################################################################################
@@ -64,11 +73,6 @@ class TestPlanet(unittest.TestCase):
         self.assertNotIn(Building.MARINE_BARRACKS, self.planet.available_to_build())
 
     #################################################################################################
-    def test_get_research_points(self):
-        self.planet.jobs[PopulationJobs.SCIENTISTS] = 1
-        self.assertEqual(self.planet.get_research_points(), 1)
-
-    #################################################################################################
     def test_can_build_ship(self):
         planet = Planet(self.system)
         planet.owner = self.empire.name
@@ -83,14 +87,15 @@ class TestPlanet(unittest.TestCase):
 
     #################################################################################################
     def test_turns_to_build(self):
-        planet = Planet(self.system)
-        planet.gravity = PlanetGravity.NORMAL
-        planet.richness = PlanetRichness.ABUNDANT
+        planet = Planet(
+            self.system, size=PlanetSize.MEDIUM, gravity=PlanetGravity.NORMAL, richness=PlanetRichness.ABUNDANT
+        )
         ship = select_ship_type_by_name("Battleship")
         planet.build_queue.add(ship)
-        planet.jobs[PopulationJobs.WORKERS] = 5  # Work Prod = 15
+        planet.jobs[PopulationJobs.WORKERS] = 5  # Work Prod = 11 (15 prod -4 poll)
         planet.construction_spent = 200
-        self.assertEqual(planet.turns_to_build(), int((725 - 200) / 15))
+        self.assertEqual(work_surplus(planet), 11)
+        self.assertEqual(planet.turns_to_build(), int((725 - 200) / 11))
 
         planet.build_queue.pop()  # Remove existing
         planet.build_queue.add(Building.TRADE_GOODS)

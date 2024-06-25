@@ -12,6 +12,10 @@ from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
 from MooToo.ui.gui_button import Button
 from MooToo.ui.building_choice_window import BuildingChoiceWindow
+from MooToo.planet_money import money_production, money_cost
+from MooToo.planet_work import work_cost, work_per, work_surplus
+from MooToo.planet_food import food_per, food_surplus, food_cost
+from MooToo.planet_science import science_production, science_per
 
 if TYPE_CHECKING:
     from MooToo.ui.game import Game
@@ -31,6 +35,36 @@ class PlanetDisplayMode(Enum):
 
 
 #####################################################################################################
+class ImageNames(Enum):
+    FOOD_1 = auto()
+    FOOD_X = auto()
+    HUNGER_1 = auto()
+    HUNGER_X = auto()
+    WORK_1 = auto()
+    WORK_X = auto()
+    POLLUTION_1 = auto()
+    POLLUTION_X = auto()
+    SCIENCE_1 = auto()
+    SCIENCE_X = auto()
+    IGNORANCE_1 = auto()
+    IGNORANCE_X = auto()
+    MONEY_1 = auto()
+    MONEY_X = auto()
+    DEBT_1 = auto()
+    DEBT_X = auto()
+    HAPPY = auto()
+
+    FARMER = auto()
+    WORKER = auto()
+    SCIENTIST = auto()
+
+    WINDOW = auto()
+    RETURN_BUTTON = auto()
+    BUILD_BUTTON = auto()
+    ORBIT_ARROW = auto()
+
+
+#####################################################################################################
 #####################################################################################################
 class PlanetWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
@@ -47,19 +81,19 @@ class PlanetWindow(BaseGraphics):
         self.display_mode = PlanetDisplayMode.NORMAL
         self.building_choice_window = BuildingChoiceWindow(screen, game)
         self.buttons = {
-            PlanetButtons.RETURN: Button(self.images["return_button"], pygame.Vector2(555, 460)),
-            PlanetButtons.BUILD: Button(self.images["build_button"], pygame.Vector2(525, 123)),
+            PlanetButtons.RETURN: Button(self.images[ImageNames.RETURN_BUTTON], pygame.Vector2(555, 460)),
+            PlanetButtons.BUILD: Button(self.images[ImageNames.BUILD_BUTTON], pygame.Vector2(525, 123)),
         }
         self.details_textbox = TextBoxWindow(screen, game)
 
     #####################################################################################################
-    def load_images(self) -> dict[str, pygame.Surface]:
+    def load_images(self) -> dict[ImageNames, pygame.Surface]:
         start = time.time()
         images = {}
-        images["window"] = self.load_image("COLPUPS.LBX", 5, palette_index=2)
-        images["orbit_arrow"] = self.load_image("COLSYSDI.LBX", 64, palette_index=2)
-        images["return_button"] = self.load_image("COLPUPS.LBX", 4, palette_index=2)
-        images["build_button"] = self.load_image("COLPUPS.LBX", 1, palette_index=2)
+        images[ImageNames.WINDOW] = self.load_image("COLPUPS.LBX", 5, palette_index=2)
+        images[ImageNames.ORBIT_ARROW] = self.load_image("COLSYSDI.LBX", 64, palette_index=2)
+        images[ImageNames.RETURN_BUTTON] = self.load_image("COLPUPS.LBX", 4, palette_index=2)
+        images[ImageNames.BUILD_BUTTON] = self.load_image("COLPUPS.LBX", 1, palette_index=2)
         images |= self.load_climate_images()
         images |= self.load_orbit_images()
         images |= self.load_resource_images()
@@ -72,12 +106,12 @@ class PlanetWindow(BaseGraphics):
         return images
 
     #####################################################################################################
-    def load_construction_images(self) -> dict[str, pygame.Surface]:
+    def load_construction_images(self) -> dict[ImageNames, pygame.Surface]:
         images = {}
         return images
 
     #####################################################################################################
-    def load_race_images(self) -> dict[str, pygame.Surface]:
+    def load_race_images(self) -> dict[ImageNames, pygame.Surface]:
         """Load farmer/worker/scientist/etc race images"""
         # 1  Farmer
         # 2  Unknown
@@ -92,31 +126,39 @@ class PlanetWindow(BaseGraphics):
         # 11 Spy?
         # 12 Prisoner
         images = {}
-        images["farmer"] = self.load_image("RACEICON.LBX", 0, palette_index=2)
-        images["worker"] = self.load_image("RACEICON.LBX", 3, palette_index=2)
-        images["scientist"] = self.load_image("RACEICON.LBX", 5, palette_index=2)
+        images[ImageNames.FARMER] = self.load_image("RACEICON.LBX", 0, palette_index=2)
+        images[ImageNames.WORKER] = self.load_image("RACEICON.LBX", 3, palette_index=2)
+        images[ImageNames.SCIENTIST] = self.load_image("RACEICON.LBX", 5, palette_index=2)
 
         return images
 
     #####################################################################################################
-    def load_government_images(self) -> dict[str, pygame.Surface]:
+    def load_government_images(self) -> dict[ImageNames, pygame.Surface]:
         images = {}
         images["government_Feudal"] = self.load_image("COLONY2.LBX", 19, palette_index=2)
 
         return images
 
     #####################################################################################################
-    def load_resource_images(self) -> dict[str, pygame.Surface]:
+    def load_resource_images(self) -> dict[ImageNames, pygame.Surface]:
         images = {}
-        images["food_1"] = self.load_image("COLONY2.LBX", 0, palette_index=2)
-        images["work_1"] = self.load_image("COLONY2.LBX", 1, palette_index=2)
-        images["science_1"] = self.load_image("COLONY2.LBX", 2, palette_index=2)
-        images["coin_1"] = self.load_image("COLONY2.LBX", 3, palette_index=2)
-        images["food_5"] = self.load_image("COLONY2.LBX", 4, palette_index=2)
-        images["work_5"] = self.load_image("COLONY2.LBX", 5, palette_index=2)
-        images["science_5"] = self.load_image("COLONY2.LBX", 6, palette_index=2)
-        images["coin_5"] = self.load_image("COLONY2.LBX", 7, palette_index=2)
-        images["happy"] = self.load_image("COLONY2.LBX", 16, palette_index=2)
+        images[ImageNames.FOOD_1] = self.load_image("COLONY2.LBX", 0, palette_index=2)
+        images[ImageNames.WORK_1] = self.load_image("COLONY2.LBX", 1, palette_index=2)
+        images[ImageNames.SCIENCE_1] = self.load_image("COLONY2.LBX", 2, palette_index=2)
+        images[ImageNames.MONEY_1] = self.load_image("COLONY2.LBX", 3, palette_index=2)
+        images[ImageNames.FOOD_X] = self.load_image("COLONY2.LBX", 4, palette_index=2)
+        images[ImageNames.WORK_X] = self.load_image("COLONY2.LBX", 5, palette_index=2)
+        images[ImageNames.SCIENCE_X] = self.load_image("COLONY2.LBX", 6, palette_index=2)
+        images[ImageNames.MONEY_X] = self.load_image("COLONY2.LBX", 7, palette_index=2)
+        images[ImageNames.HUNGER_1] = self.load_image("COLONY2.LBX", 8, palette_index=2)
+        images[ImageNames.POLLUTION_1] = self.load_image("COLONY2.LBX", 9, palette_index=2)
+        images[ImageNames.IGNORANCE_1] = self.load_image("COLONY2.LBX", 10, palette_index=2)
+        images[ImageNames.DEBT_1] = self.load_image("COLONY2.LBX", 11, palette_index=2)
+        images[ImageNames.HUNGER_X] = self.load_image("COLONY2.LBX", 12, palette_index=2)
+        images[ImageNames.POLLUTION_X] = self.load_image("COLONY2.LBX", 13, palette_index=2)
+        images[ImageNames.IGNORANCE_X] = self.load_image("COLONY2.LBX", 14, palette_index=2)
+        images[ImageNames.DEBT_X] = self.load_image("COLONY2.LBX", 15, palette_index=2)
+        images[ImageNames.HAPPY] = self.load_image("COLONY2.LBX", 16, palette_index=2)
 
         return images
 
@@ -174,9 +216,9 @@ class PlanetWindow(BaseGraphics):
             f"Mineral {self.planet.richness}",
             f"{self.planet.gravity} G",
             "",
-            f"{'Base food per':<20}{self.planet.food_per():>30}",
-            f"{'Base industry per':<20}{self.planet.production_per():>30}",
-            f"{'Base research per':<20}{self.planet.research_per():>30}",
+            f"{'Base food per':<20}{food_per(self.planet):>30}",
+            f"{'Base industry per':<20}{work_per(self.planet):>30}",
+            f"{'Base research per':<20}{science_per(self.planet):>30}",
             "",
             f"{'Morale':<20}{self.planet.morale()*10:>29}%",
             "",
@@ -193,7 +235,7 @@ class PlanetWindow(BaseGraphics):
             self.details_textbox.draw(self.details_text(), self.title_font)
             return
 
-        self.window = self.draw_centered_image(self.images["window"])
+        self.window = self.draw_centered_image(self.images[ImageNames.WINDOW])
         self.draw_orbits(system)
         self.draw_resources(self.planet)
         self.draw_pop_label(self.planet)
@@ -230,7 +272,7 @@ class PlanetWindow(BaseGraphics):
         if not planet.owner:
             return
         for _ in range(planet.morale()):
-            pos = self.screen.blit(self.images["happy"], top_left)
+            pos = self.screen.blit(self.images[ImageNames.HAPPY], top_left)
             top_left.x += pos.width
 
     #####################################################################################################
@@ -260,18 +302,22 @@ class PlanetWindow(BaseGraphics):
     def draw_population(self, planet: Planet) -> None:
         """Draw farmers etc"""
         dest = pygame.Vector2(309, 62)
-        rects = self.draw_population_sequence(dest, self.images["farmer"], planet.jobs[PopulationJobs.FARMERS], 200)
+        rects = self.draw_population_sequence(
+            dest, self.images[ImageNames.FARMER], planet.jobs[PopulationJobs.FARMERS], 200
+        )
         for num, rect in enumerate(rects):
             self.worker_rects[(PopulationJobs.FARMERS, self.planet.jobs[PopulationJobs.FARMERS] - num)] = rect
 
         dest = pygame.Vector2(309, 92)
-        rects = self.draw_population_sequence(dest, self.images["worker"], planet.jobs[PopulationJobs.WORKERS], 200)
+        rects = self.draw_population_sequence(
+            dest, self.images[ImageNames.WORKER], planet.jobs[PopulationJobs.WORKERS], 200
+        )
         for num, rect in enumerate(rects):
             self.worker_rects[(PopulationJobs.WORKERS, self.planet.jobs[PopulationJobs.WORKERS] - num)] = rect
 
         dest = pygame.Vector2(309, 122)
         rects = self.draw_population_sequence(
-            dest, self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS], 200
+            dest, self.images[ImageNames.SCIENTIST], planet.jobs[PopulationJobs.SCIENTISTS], 200
         )
         for num, rect in enumerate(rects):
             self.worker_rects[(PopulationJobs.SCIENTISTS, self.planet.jobs[PopulationJobs.SCIENTISTS] - num)] = rect
@@ -286,54 +332,78 @@ class PlanetWindow(BaseGraphics):
 
     #####################################################################################################
     def draw_income(self, planet: Planet) -> None:
-        income = planet.money_production()
-        cost = planet.money_cost()
+        income = money_production(planet)
+        cost = money_cost(planet)
         dest = pygame.Vector2(126, 31)
-        self.draw_resource(dest, self.images["coin_1"], self.images["coin_5"], income, cost)
+
+        dest = self.draw_resource_sequence(
+            dest,
+            self.images[ImageNames.MONEY_1],
+            self.images[ImageNames.MONEY_X],
+            income,
+        )
+        dest.x += 10
+        self.draw_resource_sequence(
+            dest,
+            self.images[ImageNames.DEBT_1],
+            self.images[ImageNames.DEBT_X],
+            cost,
+        )
 
     #####################################################################################################
     def draw_food(self, planet: Planet) -> None:
-        income = planet.food_production()
-        cost = planet.food_lack()
+        # Eating Surplus
+        eating = food_cost(planet)
+        surplus = food_surplus(planet)
         dest = pygame.Vector2(126, 60)
-        self.draw_resource(dest, self.images["food_1"], self.images["food_5"], income, cost)
+        dest = self.draw_resource_sequence(dest, self.images[ImageNames.FOOD_1], self.images[ImageNames.FOOD_X], eating)
+        dest.x += 10
+        if surplus > 0:
+            self.draw_resource_sequence(dest, self.images[ImageNames.FOOD_1], self.images[ImageNames.FOOD_X], surplus)
+        else:
+            self.draw_resource_sequence(
+                dest, self.images[ImageNames.HUNGER_1], self.images[ImageNames.HUNGER_X], -surplus
+            )
 
     #####################################################################################################
     def draw_work(self, planet: Planet) -> None:
-        income = planet.work_production()
-        cost = planet.pollution()
+        # Surplus Pollution
+        work = work_surplus(planet)
+        pollution = work_cost(planet)
         dest = pygame.Vector2(126, 90)
-        self.draw_resource(dest, self.images["work_1"], self.images["work_5"], income, cost)
+        dest = self.draw_resource_sequence(dest, self.images[ImageNames.WORK_1], self.images[ImageNames.WORK_X], work)
+        self.draw_resource_sequence(
+            dest,
+            self.images[ImageNames.POLLUTION_1],
+            self.images[ImageNames.POLLUTION_X],
+            pollution,
+        )
 
     #####################################################################################################
     def draw_science(self, planet: Planet) -> None:
-        labs = planet.science_production()
+        labs = science_production(planet)
         dest = pygame.Vector2(126, 120)
-        self.draw_resource(dest, self.images["science_1"], self.images["science_5"], labs, 0)
-
-    #####################################################################################################
-    def draw_resource(
-        self, top_left: pygame.Vector2, image_1: pygame.Surface, image_5: pygame.Surface, in_value: int, out_value: int
-    ) -> None:
-        """Display a resource"""
-        # TO DO - need to draw negative values properly
-        surplus = in_value - out_value
-        if out_value:
-            top_left = self.draw_resource_sequence(top_left, image_1, image_5, out_value)
-            top_left.x += 10  # Gap
-        self.draw_resource_sequence(top_left, image_1, image_5, surplus)
+        self.draw_resource_sequence(
+            dest,
+            self.images[ImageNames.SCIENCE_1],
+            self.images[ImageNames.SCIENCE_X],
+            labs,
+        )
 
     #####################################################################################################
     def draw_resource_sequence(
-        self, top_left: pygame.Vector2, image_1: pygame.Surface, image_5: pygame.Surface, value: int
+        self, top_left: pygame.Vector2, image_1: pygame.Surface, image_x: pygame.Surface, value: int
     ) -> pygame.Vector2:
         """Display a sequence of resource images"""
-        for _ in range(value // 5):
-            self.screen.blit(image_5, top_left)
-            top_left.x += image_5.get_size()[0]
-        for _ in range(value % 5):
+
+        for _ in range(value // 10):
+            self.screen.blit(image_x, top_left)
+            top_left.x += image_x.get_size()[0]
+        for _ in range(value % 10):
             self.screen.blit(image_1, top_left)
             top_left.x += image_1.get_size()[0]
+        self.debug_text(value, top_left)
+
         return top_left
 
     #####################################################################################################
@@ -361,14 +431,14 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def draw_orbit_arrow(self, arrow_col: float, row_middle: float) -> None:
         # Draw the arrow
-        image_size = self.images["orbit_arrow"].get_size()
+        image_size = self.images[ImageNames.ORBIT_ARROW].get_size()
         arrow_dest = pygame.Rect(
             arrow_col,
             row_middle - image_size[1] / 2,
             image_size[0],
             image_size[1],
         )
-        self.screen.blit(self.images["orbit_arrow"], arrow_dest)
+        self.screen.blit(self.images[ImageNames.ORBIT_ARROW], arrow_dest)
 
     #####################################################################################################
     def draw_orbit_planet(self, planet: Planet, planet_col: float, row_middle: float) -> None:
@@ -427,11 +497,11 @@ class PlanetWindow(BaseGraphics):
         if self.worker:
             match self.worker[0]:
                 case PopulationJobs.FARMERS:
-                    image = self.images["farmer"]
+                    image = self.images[ImageNames.FARMER]
                 case PopulationJobs.WORKERS:
-                    image = self.images["worker"]
+                    image = self.images[ImageNames.WORKER]
                 case PopulationJobs.SCIENTISTS:
-                    image = self.images["scientist"]
+                    image = self.images[ImageNames.SCIENTIST]
                 case _:
                     image = None
             delta = 0
@@ -441,19 +511,20 @@ class PlanetWindow(BaseGraphics):
 
     #####################################################################################################
     def button_up(self):
-        """ """
-        if self.worker:
-            farm_target_rect = pygame.Rect(307, 60, 205, 30)
-            work_target_rect = pygame.Rect(307, 90, 205, 30)
-            science_target_rect = pygame.Rect(307, 120, 205, 30)
-            if farm_target_rect.collidepoint(pygame.mouse.get_pos()):
-                self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.FARMERS)
-            if work_target_rect.collidepoint(pygame.mouse.get_pos()):
-                self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.WORKERS)
-            if science_target_rect.collidepoint(pygame.mouse.get_pos()):
-                self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.SCIENTISTS)
+        """Mouse button up - if we are moving workers then put them down"""
+        if not self.worker:
+            return
+        farm_target_rect = pygame.Rect(307, 60, 205, 30)
+        work_target_rect = pygame.Rect(307, 90, 205, 30)
+        science_target_rect = pygame.Rect(307, 120, 205, 30)
+        if farm_target_rect.collidepoint(pygame.mouse.get_pos()):
+            self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.FARMERS)
+        if work_target_rect.collidepoint(pygame.mouse.get_pos()):
+            self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.WORKERS)
+        if science_target_rect.collidepoint(pygame.mouse.get_pos()):
+            self.planet.move_workers(self.worker[1], self.worker[0], PopulationJobs.SCIENTISTS)
 
-            self.worker = None
+        self.worker = None
 
     #####################################################################################################
     def loop(self, planet: Planet) -> None:

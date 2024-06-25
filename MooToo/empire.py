@@ -8,6 +8,8 @@ from MooToo.research import TechCategory
 from MooToo.planet_building import Building
 from MooToo.utils import all_research, get_research
 from MooToo.planet import make_home_planet
+from MooToo.planet_science import science_surplus
+from MooToo.planet_money import money_surplus
 
 
 if TYPE_CHECKING:
@@ -90,7 +92,7 @@ class Empire:
         income = 0
         for planet in self.owned_planets.copy():
             planet.turn()
-            income += planet.money_production() - planet.money_cost()
+            income += money_surplus(planet)
         for ship in self.ships:
             ship.turn()
             if ship.orbit:
@@ -136,7 +138,7 @@ class Empire:
     def get_research_points(self) -> int:
         rp = 0
         for planet in self.owned_planets:
-            rp += planet.get_research_points()
+            rp += science_surplus(planet)
         return rp
 
     #####################################################################################################

@@ -20,7 +20,6 @@ class Galaxy:
         self.systems: dict[int, "System"] = {}
         self.empires: dict[str, "Empire"] = {}
         self.turn_number = 0
-        self.populate()
 
     #################################################################################################
     def populate(self):

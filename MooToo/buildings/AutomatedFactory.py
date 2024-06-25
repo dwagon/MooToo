@@ -15,3 +15,6 @@ class BuildingAutomatedFactory(PlanetBuilding):
 
     def prod_bonus(self, planet: Planet) -> int:
         return planet.current_population() + 5
+
+    def prod_per_bonus(self, planet: "Planet") -> int:
+        return 1

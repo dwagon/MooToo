@@ -48,6 +48,10 @@ class PlanetBuilding:
     def max_pop_bonus(self, planet: "Planet") -> int:
         return 0
 
+    def pollution_divisor(self, planet: "Planet") -> int:
+        """Effect on work_cost"""
+        return 1
+
     def available_to_build(self, planet: "Planet") -> bool:
         if self.tag in planet.buildings:
             return False
