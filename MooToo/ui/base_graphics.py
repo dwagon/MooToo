@@ -47,6 +47,12 @@ class BaseGraphics:
         return self.screen.blit(image, tl)
 
     #####################################################################################################
+    def debug_text(self, value: int, top_left: pygame.Vector2) -> pygame.Rect:
+        out_string = f"{value}"  # DBG
+        text_rect = self.text_font.render(out_string, True, "purple")
+        return self.screen.blit(text_rect, top_left)
+
+    #####################################################################################################
     def draw_population_sequence(
         self, top_left: pygame.Vector2, worker_image: pygame.Surface, value: int, max_width=200
     ) -> list[pygame.Rect]:

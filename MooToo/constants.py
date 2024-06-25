@@ -74,6 +74,7 @@ class Building(StrEnum):
     ARMOUR_BARRACKS = auto()
     ARTEMIS_SYSTEM_NET = auto()
     ASTRO_UNIVERSITY = auto()
+    ATMOSPHERIC_RENEWER = auto()
     AUTOLAB = auto()
     AUTOMATED_FACTORY = auto()
     BATTLESTATION = auto()
@@ -308,3 +309,144 @@ class Technology(StrEnum):
     XENO_PSYCHOLOGY = auto()
     ZEON_MISSILE = auto()
     ZORTRIUM_ARMOR = auto()
+
+
+#####################################################################################################
+STAR_COLOURS = {
+    StarColour.BLUE: {
+        "climate": {
+            "Toxic": 16,
+            "Radiated": 50,
+            "Barren": 27,
+            "Desert": 7,
+            "Tundra": 0,
+            "Ocean": 0,
+            "Swamp": 0,
+            "Arid": 0,
+            "Terran": 0,
+            "Gaia": 0,
+        },
+        "richness": {"Ultra Poor": 0, "Poor": 0, "Abundant": 40, "Rich": 20, "Ultra Rich": 20},
+    },
+    StarColour.WHITE: {
+        "climate": {
+            "Toxic": 16,
+            "Radiated": 37,
+            "Barren": 27,
+            "Desert": 6,
+            "Tundra": 4,
+            "Ocean": 2,
+            "Swamp": 1,
+            "Arid": 3,
+            "Terran": 3,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 0, "Poor": 20, "Abundant": 40, "Rich": 30, "Ultra Rich": 10},
+    },
+    StarColour.YELLOW: {
+        "climate": {
+            "Toxic": 12,
+            "Radiated": 27,
+            "Barren": 30,
+            "Desert": 6,
+            "Tundra": 8,
+            "Ocean": 5,
+            "Swamp": 4,
+            "Arid": 3,
+            "Terran": 4,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 0, "Poor": 30, "Abundant": 40, "Rich": 20, "Ultra Rich": 10},
+    },
+    StarColour.ORANGE: {
+        "climate": {
+            "Toxic": 16,
+            "Radiated": 17,
+            "Barren": 23,
+            "Desert": 8,
+            "Tundra": 7,
+            "Ocean": 6,
+            "Swamp": 7,
+            "Arid": 6,
+            "Terran": 7,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 10, "Poor": 40, "Abundant": 40, "Rich": 10, "Ultra Rich": 0},
+    },
+    StarColour.RED: {
+        "climate": {
+            "Toxic": 16,
+            "Radiated": 13,
+            "Barren": 50,
+            "Desert": 3,
+            "Tundra": 7,
+            "Ocean": 2,
+            "Swamp": 2,
+            "Arid": 2,
+            "Terran": 4,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 20, "Poor": 40, "Abundant": 40, "Rich": 0, "Ultra Rich": 0},
+    },
+    StarColour.BROWN: {
+        "climate": {
+            "Toxic": 20,
+            "Radiated": 30,
+            "Barren": 10,
+            "Desert": 20,
+            "Tundra": 10,
+            "Ocean": 2,
+            "Swamp": 2,
+            "Arid": 2,
+            "Terran": 3,
+            "Gaia": 1,
+        },
+        "richness": {"Ultra Poor": 5, "Poor": 10, "Abundant": 60, "Rich": 20, "Ultra Rich": 5},
+    },
+}
+GRAVITY_MAP: dict[PlanetGravity, float] = {
+    PlanetGravity.LOW: 0.75,
+    PlanetGravity.NORMAL: 1.0,
+    PlanetGravity.HIGH: 0.5,
+}
+
+POP_SIZE_MAP: dict[PlanetSize, int] = {
+    PlanetSize.TINY: 1,
+    PlanetSize.SMALL: 2,
+    PlanetSize.MEDIUM: 4,
+    PlanetSize.LARGE: 5,
+    PlanetSize.HUGE: 6,
+}
+POP_CLIMATE_MAP: dict[PlanetClimate, int] = {
+    PlanetClimate.RADIATED: 1,
+    PlanetClimate.TOXIC: 1,
+    PlanetClimate.BARREN: 2,
+    PlanetClimate.DESERT: 2,
+    PlanetClimate.TUNDRA: 2,
+    PlanetClimate.OCEAN: 3,
+    PlanetClimate.SWAMP: 3,
+    PlanetClimate.ARID: 3,
+    PlanetClimate.TERRAN: 4,
+    PlanetClimate.GAIA: 5,
+}
+
+FOOD_CLIMATE_MAP: dict[PlanetClimate:int] = {
+    PlanetClimate.RADIATED: 0,
+    PlanetClimate.TOXIC: 0,
+    PlanetClimate.BARREN: 0,
+    PlanetClimate.DESERT: 1,
+    PlanetClimate.TUNDRA: 1,
+    PlanetClimate.OCEAN: 2,
+    PlanetClimate.SWAMP: 2,
+    PlanetClimate.ARID: 1,
+    PlanetClimate.TERRAN: 2,
+    PlanetClimate.GAIA: 3,
+}
+
+PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
+    PlanetRichness.ULTRA_POOR: 1,
+    PlanetRichness.POOR: 2,
+    PlanetRichness.ABUNDANT: 3,
+    PlanetRichness.RICH: 5,
+    PlanetRichness.ULTRA_RICH: 8,
+}

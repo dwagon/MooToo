@@ -336,6 +336,7 @@ def main(load_file=""):
     if load_file:
         galaxy = load(load_file)
     else:
+        galaxy.populate()
         save(galaxy, "initial")
 
     empire_name = random.choice(list(galaxy.empires.keys()))

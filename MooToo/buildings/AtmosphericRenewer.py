@@ -3,12 +3,12 @@ from MooToo.constants import Building
 
 
 #####################################################################################################
-class BuildingPollutionProcessor(PlanetBuilding):
+class BuildingAtmosphericRenewer(PlanetBuilding):
 
     def __init__(self):
-        super().__init__("Pollution Processor", Building.POLLUTION_PROCESSOR)
-        self.maintenance = 1
-        self.cost = 80
+        super().__init__("Atmospheric Renewer", Building.ATMOSPHERIC_RENEWER)
+        self.maintenance = 3
+        self.cost = 150
 
     def pollution_divisor(self, planet: "Planet") -> int:
-        return 2
+        return 4
