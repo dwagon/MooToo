@@ -20,6 +20,8 @@ from MooToo.utils import get_research
 from MooToo.planet import Planet
 from MooToo.food import empire_food
 
+MAX_NEBULAE = 5
+
 
 #####################################################################################################
 class DisplayMode(Enum):
@@ -46,6 +48,7 @@ class Game(BaseGraphics):
         self.fleet_window = FleetWindow(self.screen, self)
         self.colonies_window = ColonyWindow(self.screen, self)
         self.images = self.load_images()
+        self.nebulae: list[tuple[str, pygame.Vector2]] = self.calculate_nebulae()
         self.turn_button = Button(self.images["turn_button"], pygame.Vector2(540, 440))
         self.science_button = InvisButton(pygame.Rect(547, 346, 65, 69))
         self.colonies_button = Button(self.images["colonies_button"], pygame.Vector2(0, 428))
@@ -53,11 +56,30 @@ class Game(BaseGraphics):
         self.system_rects: list[tuple[pygame.Rect, System]] = []
 
     #####################################################################################################
+    def calculate_nebulae(self) -> list[tuple[str, pygame.Vector2]]:
+        nebulae = []
+        num_nebulae = random.randint(1, MAX_NEBULAE)
+        neb_images = [_ for _ in self.images if _.startswith("nebula")]
+        for _ in range(num_nebulae):
+            x = random.randint(0, 520)
+            y = random.randint(0, 400)
+            nebula = random.choice(neb_images)
+            neb_images.remove(nebula)
+            nebulae.append((nebula, pygame.Vector2(x, y)))
+        return nebulae
+
+    #####################################################################################################
     def load_images(self) -> dict[str, pygame.surface.Surface]:
         """Load all the images from disk"""
         start = time.time()
         images = {}
         images["base_window"] = self.load_image("BUFFER0.LBX", 0)
+        images["star_bg"] = self.load_image("STARBG.LBX", 0, palette_index=2)
+        for neb in range(6, 52):
+            try:
+                images[f"nebula_{neb}"] = self.load_image("STARBG.LBX", neb)
+            except IndexError:
+                pass
 
         images["small_blue_star"] = self.load_image("BUFFER0.LBX", 149)
         images["small_white_star"] = self.load_image("BUFFER0.LBX", 155)
@@ -158,7 +180,7 @@ class Game(BaseGraphics):
 
         if system := self.click_system():
             if self.empire.is_known_system(system):
-                self.planet_window.loop(self.pick_planet(system))
+                self.planet_window.loop(pick_planet(system))
             else:
                 self.display_mode = DisplayMode.ORBIT
             self.system = system
@@ -194,19 +216,6 @@ class Game(BaseGraphics):
                     self.display_mode = DisplayMode.GALAXY
 
     #####################################################################################################
-    def pick_planet(self, system: System) -> Planet:
-        """When we look at a system which planet should we start with"""
-        max_pop = -1
-        pick_planet = None
-        for planet in system.orbits:
-            if not planet:
-                continue
-            if planet.current_population() > max_pop:
-                max_pop = planet.current_population()
-                pick_planet = planet
-        return pick_planet
-
-    #####################################################################################################
     def draw_screen(self):
         match self.display_mode:
             case DisplayMode.GALAXY:
@@ -227,7 +236,7 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_galaxy_view(self):
-        self.screen.blit(self.images["base_window"], (0, 0))
+        self.draw_background()
         self.system_rects = []
         for system in self.galaxy.systems.values():
             self.draw_galaxy_view_system(system)
@@ -237,6 +246,15 @@ class Game(BaseGraphics):
         self.draw_date()
         self.draw_food()
         self.draw_fleets()
+
+    #####################################################################################################
+    def draw_background(self):
+        """Draw the background"""
+        self.screen.blit(self.images["star_bg"], (0, 0))
+
+        for image_name, location in self.nebulae:
+            self.screen.blit(self.images[image_name], location)
+        self.screen.blit(self.images["base_window"], (0, 0))
 
     #####################################################################################################
     def draw_fleets(self):
@@ -340,6 +358,20 @@ class Game(BaseGraphics):
             text_size = text_surface.get_size()
             text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
             self.screen.blit(text_surface, text_coord)
+
+
+#####################################################################################################
+def pick_planet(system: System) -> Planet:
+    """When we look at a system which planet should we start with"""
+    max_pop = -1
+    picked_planet = None
+    for planet in system.orbits:
+        if not planet:
+            continue
+        if planet.current_population() > max_pop:
+            max_pop = planet.current_population()
+            picked_planet = planet
+    return picked_planet
 
 
 #####################################################################################################
