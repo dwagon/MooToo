@@ -6,6 +6,7 @@ from MooToo.utils import get_building
 
 if TYPE_CHECKING:
     from MooToo.planet import Planet
+    from MooToo.empire import Empire
 
 
 #####################################################################################################
@@ -36,3 +37,9 @@ def food_production(planet: "Planet") -> int:
 #####################################################################################################
 def food_cost(planet: "Planet") -> int:
     return planet.current_population()
+
+
+#####################################################################################################
+def empire_food(empire: "Empire") -> int:
+    """How much food is being made across the empire"""
+    return sum(food_surplus(planet) for planet in empire.owned_planets)

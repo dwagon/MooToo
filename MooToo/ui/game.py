@@ -18,6 +18,7 @@ from MooToo.ship import Ship
 from MooToo.system import System
 from MooToo.utils import get_research
 from MooToo.planet import Planet
+from MooToo.food import empire_food
 
 
 #####################################################################################################
@@ -234,6 +235,7 @@ class Game(BaseGraphics):
         self.draw_research()
         self.draw_income()
         self.draw_date()
+        self.draw_food()
         self.draw_fleets()
 
     #####################################################################################################
@@ -267,12 +269,19 @@ class Game(BaseGraphics):
         self.ship_rects.extend((pygame.Rect(k[0], k[1], k[2], k[3]), v) for k, v in rects.items())
 
     #####################################################################################################
-    def draw_date(self):
+    def draw_date(self) -> None:
         date_year = 3500 + self.galaxy.turn_number // 10
         date_month = self.galaxy.turn_number % 10
         date_str = f"{date_year}.{date_month}"
         top_left = pygame.Vector2(557, 29)
         rp_text_surface = self.text_font.render(date_str, True, "white", "black")
+        self.screen.blit(rp_text_surface, top_left)
+
+    #####################################################################################################
+    def draw_food(self) -> None:
+        food = empire_food(self.empire)
+        top_left = pygame.Vector2(580, 250)
+        rp_text_surface = self.text_font.render(f"{food}", True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
 
     #####################################################################################################
@@ -300,7 +309,10 @@ class Game(BaseGraphics):
             return
 
         research = get_research(self.empire.researching)
-        time_left = int((research.cost - self.empire.research_spent) / self.empire.get_research_points())
+        try:
+            time_left = int((research.cost - self.empire.research_spent) / self.empire.get_research_points())
+        except ZeroDivisionError:
+            time_left = 10000
 
         words = [
             research.name,

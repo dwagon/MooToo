@@ -4,7 +4,7 @@ from MooToo.planet import Planet
 from MooToo.system import System
 from MooToo.galaxy import Galaxy
 from MooToo.constants import PlanetSize, PlanetClimate, PlanetGravity, PopulationJobs, Building
-from MooToo.planet_food import food_cost, food_production, food_surplus, food_per
+from MooToo.food import food_cost, food_production, food_surplus, food_per
 
 
 #####################################################################################################

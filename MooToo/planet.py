@@ -188,7 +188,7 @@ class Planet:
 
     #####################################################################################################
     def grow_population(self) -> None:
-        from MooToo.planet_food import food_surplus
+        from MooToo.food import food_surplus
 
         old_pop = int(self._population / 1e6)
         self._population += self.population_increment()
@@ -204,7 +204,7 @@ class Planet:
         """How much population will grow this turn
         See https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations
         """
-        from MooToo.planet_food import food_surplus
+        from MooToo.food import food_surplus
 
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
