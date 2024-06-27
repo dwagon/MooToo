@@ -14,7 +14,7 @@ from MooToo.ui.gui_button import Button
 from MooToo.ui.building_choice_window import BuildingChoiceWindow
 from MooToo.planet_money import money_production, money_cost
 from MooToo.planet_work import work_cost, work_per, work_surplus
-from MooToo.planet_food import food_per, food_surplus, food_cost
+from MooToo.food import food_per, food_surplus, food_cost
 from MooToo.planet_science import science_production, science_per
 
 if TYPE_CHECKING:
