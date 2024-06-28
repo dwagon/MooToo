@@ -123,7 +123,7 @@ class Graphic:
         try:
             frame_indicator = dread(fd)
         except struct.error:
-            print("No frame indicator")
+            print(f"{fd.name} No frame indicator")
             return None
 
         if frame_indicator != 1:
@@ -196,7 +196,7 @@ def main() -> None:
         for filename in sys.argv[1:]:
             try:
                 g = Graphic()
-                print(f"loading {filename}")
+                print(f"loading {filename}; Palette {palfile}")
                 with open(filename, "rb") as fd:
                     try:
                         g.load(fd, palette.copy())

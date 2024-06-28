@@ -5,14 +5,15 @@ import time
 from typing import Optional
 
 import pygame
-from enum import Enum, auto
+from enum import Enum, StrEnum, auto
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.ui.orbit_window import OrbitWindow
 from MooToo.ui.base_graphics import BaseGraphics
 from MooToo.ui.planet_window import PlanetWindow
 from MooToo.ui.science_window import ScienceWindow
 from MooToo.ui.fleet_window import FleetWindow
-from MooToo.ui.colony_window import ColonyWindow
+from MooToo.ui.colony_window import ColonySummaryWindow
+from MooToo.ui.planet_summary import PlanetSummaryWindow
 from MooToo.galaxy import Galaxy, save, load
 from MooToo.ship import Ship
 from MooToo.system import System
@@ -30,7 +31,16 @@ class DisplayMode(Enum):
     ORBIT = auto()
     SCIENCE = auto()
     FLEET = auto()
-    COLONIES = auto()
+    COLONY_SUM = auto()
+    PLANET_SUM = auto()
+
+
+#####################################################################################################
+class MainButtons(StrEnum):
+    TURN = auto()
+    SCIENCE = auto()
+    COLONY_SUMMARY = auto()
+    PLANET_SUMMARY = auto()
 
 
 #####################################################################################################
@@ -46,12 +56,22 @@ class Game(BaseGraphics):
         self.planet_window = PlanetWindow(self.screen, self)
         self.science_window = ScienceWindow(self.screen, self)
         self.fleet_window = FleetWindow(self.screen, self)
-        self.colonies_window = ColonyWindow(self.screen, self)
+        self.colonies_window = ColonySummaryWindow(self.screen, self)
+        self.planet_summary_window = PlanetSummaryWindow(self.screen, self, self.empire)
         self.images = self.load_images()
         self.nebulae: list[tuple[str, pygame.Vector2]] = self.calculate_nebulae()
-        self.turn_button = Button(self.images["turn_button"], pygame.Vector2(540, 440))
-        self.science_button = InvisButton(pygame.Rect(547, 346, 65, 69))
-        self.colonies_button = Button(self.images["colonies_button"], pygame.Vector2(0, 428))
+        self.buttons = {
+            MainButtons.TURN: Button(self.images["turn_button"], pygame.Vector2(540, 440)),
+            MainButtons.SCIENCE: InvisButton(pygame.Rect(547, 346, 65, 69)),
+            MainButtons.COLONY_SUMMARY: Button(
+                self.images["colonies_button"], pygame.Vector2(0, 428), click_area=pygame.Rect(0, 434, 74, 52)
+            ),
+            MainButtons.PLANET_SUMMARY: Button(
+                self.images["planets_button"],
+                pygame.Vector2(0, 428),
+                pygame.Rect(82, 434, 74, 52),
+            ),
+        }
         self.ship_rects: list[tuple[pygame.Rect, list[Ship]]] = []
         self.system_rects: list[tuple[pygame.Rect, System]] = []
 
@@ -90,6 +110,7 @@ class Game(BaseGraphics):
         images["ship"] = self.load_image("BUFFER0.LBX", 205)
         images["turn_button"] = self.load_image("BUFFER0.LBX", 2)
         images["colonies_button"] = self.load_image("BUFFER0.LBX", 3)
+        images["planets_button"] = self.load_image("BUFFER0.LBX", 4)
 
         end = time.time()
         print(f"Main: Loaded {len(images)} in {end-start} seconds")
@@ -159,19 +180,21 @@ class Game(BaseGraphics):
                 pass
             case DisplayMode.ORBIT:
                 self.display_mode = DisplayMode.PLANET
-            case DisplayMode.COLONIES:
+            case DisplayMode.COLONY_SUM:
                 self.display_mode = DisplayMode.GALAXY
 
     #####################################################################################################
     def button_left_down_galaxy_view(self):
         """In the galaxy view someone has clicked the left button"""
         mouse = pygame.mouse.get_pos()
-        if self.turn_button.clicked():
+        if self.buttons[MainButtons.TURN].clicked():
             self.galaxy.turn()
             save(self.galaxy, "save")
-        if self.colonies_button.clicked():
-            self.display_mode = DisplayMode.COLONIES
-        if self.science_button.clicked():
+        elif self.buttons[MainButtons.COLONY_SUMMARY].clicked():
+            self.display_mode = DisplayMode.COLONY_SUM
+        elif self.buttons[MainButtons.PLANET_SUMMARY].clicked():
+            self.planet_summary_window.loop()
+        elif self.buttons[MainButtons.SCIENCE].clicked():
             self.display_mode = DisplayMode.SCIENCE
         for rect, ships in self.ship_rects:
             if rect.collidepoint(mouse[0], mouse[1]):
@@ -211,9 +234,11 @@ class Game(BaseGraphics):
                     self.display_mode = DisplayMode.GALAXY
                 if system := self.click_system():
                     self.fleet_window.select_destination(system)
-            case DisplayMode.COLONIES:
+            case DisplayMode.COLONY_SUM:
                 if self.colonies_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
+            case DisplayMode.PLANET_SUM:
+                pass  # Handled in the planet summary window
 
     #####################################################################################################
     def draw_screen(self):
@@ -223,16 +248,16 @@ class Game(BaseGraphics):
             case DisplayMode.ORBIT:
                 self.draw_galaxy_view()
                 self.orbit_window.draw(self.system)
-            case DisplayMode.PLANET:
-                pass  # Handled in the planet_window
             case DisplayMode.SCIENCE:
                 self.draw_galaxy_view()
                 self.science_window.draw()
             case DisplayMode.FLEET:
                 self.draw_galaxy_view()
                 self.fleet_window.draw()
-            case DisplayMode.COLONIES:
+            case DisplayMode.COLONY_SUM:
                 self.colonies_window.draw()
+            case DisplayMode.PLANET_SUM | DisplayMode.PLANET:
+                pass  # Handled in the window
 
     #####################################################################################################
     def draw_galaxy_view(self):
@@ -240,7 +265,8 @@ class Game(BaseGraphics):
         self.system_rects = []
         for system in self.galaxy.systems.values():
             self.draw_galaxy_view_system(system)
-        self.turn_button.draw(self.screen)
+        for button in self.buttons.values():
+            button.draw(self.screen)
         self.draw_research()
         self.draw_income()
         self.draw_date()
