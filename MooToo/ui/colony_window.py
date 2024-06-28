@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 #####################################################################################################
 #####################################################################################################
-class ColonyWindow(BaseGraphics):
+class ColonySummaryWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
         super().__init__(game)
         self.screen = screen

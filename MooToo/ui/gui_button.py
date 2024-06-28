@@ -1,19 +1,17 @@
+from typing import Optional
 import pygame
 
 
 #####################################################################################################
 class BaseButton:
-    def __init__(self, rect: pygame.Rect):
+    def __init__(self, rect: pygame.Rect, click_area: Optional[pygame.Rect] = None):
         self.rect = rect
-
-    #####################################################################################################
-    def draw(self, surface: pygame.Surface) -> None:
-        pygame.draw.rect(surface, "purple", self.rect, width=1)
+        self.click_area = click_area or self.rect
 
     #####################################################################################################
     def clicked(self) -> bool:
         mouse = pygame.mouse.get_pos()
-        return self.rect.collidepoint(mouse[0], mouse[1])
+        return self.click_area.collidepoint(mouse[0], mouse[1])
 
     #####################################################################################################
     def move(self, top_left: pygame.Vector2) -> None:
@@ -22,15 +20,17 @@ class BaseButton:
 
 #####################################################################################################
 class Button(BaseButton):
-    def __init__(self, image: pygame.Surface, tl_point: pygame.Vector2):
+    def __init__(self, image: pygame.Surface, draw_top_left: pygame.Vector2, click_area: Optional[pygame.Rect] = None):
         self.image = image
         self.size = self.image.get_size()
-        self.rect = pygame.Rect(tl_point[0], tl_point[1], self.size[0], self.size[1])
-        super().__init__(self.rect)
+        self.rect = pygame.Rect(draw_top_left[0], draw_top_left[1], self.size[0], self.size[1])
+
+        super().__init__(self.rect, click_area)
 
     #####################################################################################################
     def draw(self, surface: pygame.Surface) -> None:
         surface.blit(self.image, self.rect)
+        pygame.draw.rect(surface, "purple", self.click_area, width=1)
 
 
 #####################################################################################################
@@ -40,3 +40,10 @@ class InvisButton(BaseButton):
     def __init__(self, rect: pygame.Rect):
         super().__init__(rect)
         self.rect = rect
+
+    #####################################################################################################
+    def draw(self, surface: pygame.Surface) -> None:
+        pygame.draw.rect(surface, "purple", self.click_area, width=1)
+
+
+# EOF
