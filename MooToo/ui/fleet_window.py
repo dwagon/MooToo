@@ -6,6 +6,7 @@ import pygame
 from MooToo.ship import Ship
 from MooToo.ui.base_graphics import BaseGraphics
 from MooToo.ui.gui_button import Button, InvisButton
+from MooToo.utils import get_distance_tuple
 
 if TYPE_CHECKING:
     from MooToo.ui.game import Game
@@ -47,6 +48,7 @@ class FleetWindow(BaseGraphics):
             return True
         if self.title_bar.clicked():
             self.selected = True
+            return False
         # Selecting a ship in the fleet window
         mouse = pygame.mouse.get_pos()
         for rect, ship in self.ship_rects:
@@ -64,18 +66,19 @@ class FleetWindow(BaseGraphics):
         return False
 
     #####################################################################################################
-    def select_destination(self, system: "System"):
+    def select_destination(self, dest_system: "System"):
         """Tell ships to move to selected system"""
         for ship in self.selected_ships:
-            ship.set_destination(system)
+            ship.set_destination(dest_system)
 
     #####################################################################################################
     def mouse_pos(self, event: pygame.event):
-        if self.selected:
-            self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
-            self.all_button.move(self.top_left + ALL_OFFSET)
-            self.close_button.move(self.top_left + CLOSE_OFFSET)
-            self.title_bar.move(self.top_left + TITLE_OFFSET)
+        if not self.selected:
+            return
+        self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
+        self.all_button.move(self.top_left + ALL_OFFSET)
+        self.close_button.move(self.top_left + CLOSE_OFFSET)
+        self.title_bar.move(self.top_left + TITLE_OFFSET)
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
@@ -123,6 +126,10 @@ class FleetWindow(BaseGraphics):
         v.y += self.images["middle_window"].get_size()[1]
         self.screen.blit(self.images["bottom_window"], v)
         v.y += self.images["bottom_window"].get_size()[1]
+        if dest := self.ships[0].destination:
+            turns = int(get_distance_tuple(dest.position, self.ships[0].location) / self.ships[0].speed())
+            distance_surface = self.text_font.render(f"{turns} turns", True, "white")
+            self.screen.blit(distance_surface, pygame.Vector2(v.x + 70, v.y - 28))
 
         for index, ship in enumerate(self.ships):
             v_idx = index // 3
@@ -140,3 +147,6 @@ class FleetWindow(BaseGraphics):
             self.screen.blit(self.images["blue_bg"], ship_top_left)
         rect = self.screen.blit(self.images[ship.icon], ship_top_left)
         self.ship_rects.append((rect, ship))
+
+
+# EOF

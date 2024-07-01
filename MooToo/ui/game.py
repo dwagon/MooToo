@@ -20,6 +20,7 @@ from MooToo.system import System
 from MooToo.utils import get_research
 from MooToo.planet import Planet
 from MooToo.food import empire_food
+from MooToo.constants import Technology
 
 MAX_NEBULAE = 5
 
@@ -232,7 +233,7 @@ class Game(BaseGraphics):
             case DisplayMode.FLEET:
                 if self.fleet_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
-                if system := self.click_system():
+                elif system := self.click_system():
                     self.fleet_window.select_destination(system)
             case DisplayMode.COLONY_SUM:
                 if self.colonies_window.button_left_down():
@@ -290,19 +291,37 @@ class Game(BaseGraphics):
             for ship in self.galaxy.empires[empire].ships:
                 ship_image = self.images["ship"]
                 if system := ship.orbit:
-                    sys_coord = system.position
-                    star_image = self.images[f"small_{system.colour.name.lower()}_star"]
-                    img_size = star_image.get_size()
-                    img_coord = pygame.Vector2(sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
-                    ship_coord = img_coord + pygame.Vector2(img_size[0] - 5, 0)
-                else:
-                    ship_coord = pygame.Vector2(ship.location[0], ship.location[1])
+                    star_img_size = self.images[f"small_{system.colour.name.lower()}_star"].get_size()
+
+                    if ship.destination:  # Ship is in orbit with a destination (top-left of star)
+                        delta = pygame.Vector2(
+                            -star_img_size[0] / 2 - ship_image.get_size()[0],
+                            -star_img_size[1] / 2 - ship_image.get_size()[1],
+                        )
+                    else:  # Ship is in orbit with no destination (top-right of star)
+                        delta = pygame.Vector2(
+                            star_img_size[0] / 2 - ship_image.get_size()[0] / 2,
+                            -star_img_size[1] / 2 - ship_image.get_size()[1],
+                        )
+                    ship_coord = system.position + delta
                     pygame.draw.line(
                         self.screen,
                         "purple",
-                        ship.location + pygame.Vector2(ship_image.get_size()[0] / 2, ship_image.get_size()[1] / 2),
+                        system.position,
+                        system.position + delta,
+                    )
+                else:  # Ship is in space with a destination
+                    ship_coord = ship.location
+
+                if ship.destination:
+                    mid_pos = ship_coord + pygame.Vector2(ship_image.get_size()[0] / 2, ship_image.get_size()[1] / 2)
+                    pygame.draw.line(
+                        self.screen,
+                        "purple",
+                        mid_pos,
                         ship.destination.position,
                     )
+
                 r = self.screen.blit(ship_image, ship_coord)
                 rect_tuple = (r.x, r.y, r.h, r.w)
                 if rect_tuple not in rects:
@@ -408,6 +427,11 @@ def main(load_file=""):
     else:
         galaxy.populate()
         save(galaxy, "initial")
+
+        # Jumpstart tech for debugging purposes
+        for empire in galaxy.empires.values():
+            empire.learnt(Technology.STANDARD_FUEL_CELLS)
+            empire.learnt(Technology.NUCLEAR_DRIVE)
 
     empire_name = random.choice(list(galaxy.empires.keys()))
 
