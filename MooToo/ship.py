@@ -75,13 +75,16 @@ class Ship:
     #################################################################################################
     def speed(self):
         """How fast the ship moves"""
-        return 2
+        return 10
 
     #################################################################################################
-    def set_destination(self, system: "System") -> None:
+    def set_destination(self, dest_system: "System") -> None:
         if self.orbit:
             self.location = self.orbit.position
-        self.destination = system
+            if dest_system == self.orbit:
+                self.destination = None
+                return
+        self.destination = dest_system
 
     #################################################################################################
     def arrived_at_destination(self):

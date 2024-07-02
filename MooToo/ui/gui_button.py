@@ -16,6 +16,7 @@ class BaseButton:
     #####################################################################################################
     def move(self, top_left: pygame.Vector2) -> None:
         self.rect = pygame.Rect(top_left.x, top_left.y, self.rect.width, self.rect.height)
+        self.click_area = pygame.Rect(top_left.x, top_left.y, self.click_area.width, self.click_area.height)
 
 
 #####################################################################################################

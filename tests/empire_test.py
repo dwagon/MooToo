@@ -13,6 +13,7 @@ class TestEmpire(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
         self.system = System(1, (0, 0), self.galaxy)
+        print(f"DBG {self.system.__dict__=}")
         self.empire = Empire("PlayerOne")
         self.galaxy.empires["PlayerOne"] = self.empire
 

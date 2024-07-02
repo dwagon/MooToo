@@ -91,13 +91,13 @@ def get_system_positions(num_systems: int) -> list[tuple[int, int]]:
 def save(galaxy: Galaxy, filename: str) -> None:
     fname = f"{filename}_{galaxy.turn_number % 10}.json"
     with open(fname, "w") as outfh:
-        outfh.write(jsonpickle.encode(galaxy, indent=2))
+        outfh.write(jsonpickle.encode(galaxy, keys=True, indent=2, warn=True))
 
 
 #####################################################################################################
 def load(filename: str) -> Galaxy:
     with open(filename) as infh:
-        galaxy = jsonpickle.loads(infh.read())
+        galaxy = jsonpickle.loads(infh.read(), keys=True)
     return galaxy
 
 
