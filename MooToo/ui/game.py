@@ -202,11 +202,11 @@ class Game(BaseGraphics):
                 self.fleet_window.reset(ships)
 
         if system := self.click_system():
-            if self.empire.is_known_system(system):
-                self.planet_window.loop(pick_planet(system))
-            else:
-                self.display_mode = DisplayMode.ORBIT
             self.system = system
+            if self.empire.has_interest_in(system):
+                self.planet_window.loop(pick_planet(system))
+            elif self.empire.is_known_system(system):
+                self.display_mode = DisplayMode.ORBIT
 
     #####################################################################################################
     def click_system(self) -> Optional[System]:
@@ -286,48 +286,47 @@ class Game(BaseGraphics):
     def draw_fleets(self):
         rects: dict[tuple[int, int, int, int], list[Ship]] = {}
         self.ship_rects = []
-        for empire in self.galaxy.empires:
-            for ship in self.galaxy.empires[empire].ships:
-                ship_image = self.images["ship"]
-                if system := ship.orbit:
-                    star_img_size = self.images[f"small_{system.colour.name.lower()}_star"].get_size()
+        for ship in self.empire.ships:
+            ship_image = self.images["ship"]
+            if system := ship.orbit:
+                star_img_size = self.images[f"small_{system.colour.name.lower()}_star"].get_size()
 
-                    if ship.destination:  # Ship is in orbit with a destination (top-left of star)
-                        delta = pygame.Vector2(
-                            -star_img_size[0] / 2 - ship_image.get_size()[0],
-                            -star_img_size[1] / 2 - ship_image.get_size()[1],
-                        )
-                    else:  # Ship is in orbit with no destination (top-right of star)
-                        delta = pygame.Vector2(
-                            star_img_size[0] / 2 - ship_image.get_size()[0] / 2,
-                            -star_img_size[1] / 2 - ship_image.get_size()[1],
-                        )
-                    ship_coord = system.position + delta
-                    pygame.draw.line(
-                        self.screen,
-                        "purple",
-                        system.position,
-                        system.position + delta,
+                if ship.destination:  # Ship is in orbit with a destination (top-left of star)
+                    delta = pygame.Vector2(
+                        -star_img_size[0] / 2 - ship_image.get_size()[0],
+                        -star_img_size[1] / 2 - ship_image.get_size()[1],
                     )
-                else:  # Ship is in space with a destination
-                    ship_coord = ship.location
-
-                if ship.destination:
-                    mid_pos = ship_coord + pygame.Vector2(ship_image.get_size()[0] / 2, ship_image.get_size()[1] / 2)
-                    pygame.draw.line(
-                        self.screen,
-                        "purple",
-                        mid_pos,
-                        ship.destination.position,
+                else:  # Ship is in orbit with no destination (top-right of star)
+                    delta = pygame.Vector2(
+                        star_img_size[0] / 2 - ship_image.get_size()[0] / 2,
+                        -star_img_size[1] / 2 - ship_image.get_size()[1],
                     )
+                ship_coord = system.position + delta
+                pygame.draw.line(
+                    self.screen,
+                    "purple",
+                    system.position,
+                    system.position + delta,
+                )
+            else:  # Ship is in space with a destination
+                ship_coord = ship.location
 
-                r = self.screen.blit(ship_image, ship_coord)
-                rect_tuple = (r.x, r.y, r.h, r.w)
-                if rect_tuple not in rects:
-                    rects[rect_tuple] = [ship]
-                else:
-                    rects[rect_tuple].append(ship)
-                pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
+            if ship.destination:
+                mid_pos = ship_coord + pygame.Vector2(ship_image.get_size()[0] / 2, ship_image.get_size()[1] / 2)
+                pygame.draw.line(
+                    self.screen,
+                    "purple",
+                    mid_pos,
+                    ship.destination.position,
+                )
+
+            r = self.screen.blit(ship_image, ship_coord)
+            rect_tuple = (r.x, r.y, r.h, r.w)
+            if rect_tuple not in rects:
+                rects[rect_tuple] = [ship]
+            else:
+                rects[rect_tuple].append(ship)
+            pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
         self.ship_rects.extend((pygame.Rect(k[0], k[1], k[2], k[3]), v) for k, v in rects.items())
 
     #####################################################################################################
