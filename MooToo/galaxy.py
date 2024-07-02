@@ -1,5 +1,6 @@
 """ Galaxy class"""
 
+import io
 import math
 import random
 import jsonpickle
@@ -7,6 +8,8 @@ from MooToo.utils import get_distance_tuple, get_distance
 from MooToo.names import empire_names
 from MooToo.empire import Empire, make_empire
 from MooToo.system import System
+from MooToo.constants import Technology
+from MooToo.ship import select_ship_type_by_name
 
 NUM_SYSTEMS = 40
 NUM_EMPIRES = 4
@@ -22,7 +25,7 @@ class Galaxy:
         self.turn_number = 0
 
     #################################################################################################
-    def populate(self):
+    def populate(self, tech: str = "avg"):
         """Fill the galaxy with things"""
         positions = get_system_positions(NUM_SYSTEMS)
         for _id in range(NUM_SYSTEMS):
@@ -34,6 +37,13 @@ class Galaxy:
             empire_names.remove(empire_name)
             empire = make_empire(empire_name, home_system)
             self.empires[empire_name] = empire
+            match tech:
+                case "pre":
+                    pre_start(empire, home_system)
+                case "avg":
+                    average_start(empire, home_system)
+                case "adv":
+                    advanced_start(empire, home_system)
         for system in self.systems.values():
             system.make_orbits()
 
@@ -89,16 +99,41 @@ def get_system_positions(num_systems: int) -> list[tuple[int, int]]:
 
 #####################################################################################################
 def save(galaxy: Galaxy, filename: str) -> None:
-    fname = f"{filename}_{galaxy.turn_number % 10}.json"
-    with open(fname, "w") as outfh:
-        outfh.write(jsonpickle.encode(galaxy, keys=True, indent=2, warn=True))
+    file_name = f"{filename}_{galaxy.turn_number % 10}.json"
+    with open(file_name, "w") as out_handle:
+        out_handle.write(jsonpickle.encode(galaxy, keys=True, indent=2, warn=True))
 
 
 #####################################################################################################
-def load(filename: str) -> Galaxy:
-    with open(filename) as infh:
-        galaxy = jsonpickle.loads(infh.read(), keys=True)
-    return galaxy
+def load(file_handle: io.TextIOWrapper) -> Galaxy:
+    return jsonpickle.loads(file_handle.read(), keys=True)
+
+
+#####################################################################################################
+def pre_start(empire: Empire, home_system: System) -> None:
+    """Start with pre-tech"""
+    pass
+
+
+#####################################################################################################
+def average_start(empire: Empire, home_system: System) -> None:
+    """Start with average tech"""
+    empire.learnt(Technology.STANDARD_FUEL_CELLS)
+    empire.learnt(Technology.NUCLEAR_DRIVE)
+    empire.learnt(Technology.COLONY_SHIP)
+    empire.learnt(Technology.OUTPOST_SHIP)
+    empire.learnt(Technology.TRANSPORT)
+
+    empire.add_ship(ship=select_ship_type_by_name("Frigate"), system=home_system)
+    empire.add_ship(ship=select_ship_type_by_name("Frigate"), system=home_system)
+    empire.add_ship(ship=select_ship_type_by_name("ColonyShip"), system=home_system)
+
+
+#####################################################################################################
+def advanced_start(empire: Empire, home_system: System) -> None:
+    """Start with advanced tech"""
+    average_start(empire, home_system)
+    # Do more stuff
 
 
 # EOF

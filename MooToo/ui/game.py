@@ -17,10 +17,9 @@ from MooToo.ui.planet_summary import PlanetSummaryWindow
 from MooToo.galaxy import Galaxy, save, load
 from MooToo.ship import Ship
 from MooToo.system import System
-from MooToo.utils import get_research
+from MooToo.utils import get_research, arg_parse
 from MooToo.planet import Planet
 from MooToo.food import empire_food
-from MooToo.constants import Technology
 
 MAX_NEBULAE = 5
 
@@ -420,18 +419,14 @@ def pick_planet(system: System) -> Planet:
 
 
 #####################################################################################################
-def main(load_file=""):
+def main():
+    args = arg_parse(sys.argv[1:])
     galaxy = Galaxy()
-    if load_file:
-        galaxy = load(load_file)
+    if args.load:
+        galaxy = load(args.load)
     else:
-        galaxy.populate()
+        galaxy.populate(args.tech)
         save(galaxy, "initial")
-
-        # Jumpstart tech for debugging purposes
-        for empire in galaxy.empires.values():
-            empire.learnt(Technology.STANDARD_FUEL_CELLS)
-            empire.learnt(Technology.NUCLEAR_DRIVE)
 
     empire_name = random.choice(list(galaxy.empires.keys()))
 
@@ -442,9 +437,6 @@ def main(load_file=""):
 
 #####################################################################################################
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        main(sys.argv[1])
-    else:
-        main()
+    main()
 
 # EOF
