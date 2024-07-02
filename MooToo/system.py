@@ -72,6 +72,12 @@ class System:
         return f"<System {self.position}>"
 
     #####################################################################################################
+    def turn(self):
+        for planet in self:
+            if planet:
+                planet.turn()
+
+    #####################################################################################################
     def ships_in_orbit(self) -> list["Ship"]:
         """Return the list of ships (of all players) in orbit"""
         ships: list["Ship"] = []

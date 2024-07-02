@@ -51,6 +51,8 @@ class Galaxy:
     def turn(self):
         """End of turn"""
         self.turn_number += 1
+        for system in self.systems.values():
+            system.turn()
         for empire in self.empires.values():
             empire.turn()
 
@@ -112,12 +114,15 @@ def load(file_handle: io.TextIOWrapper) -> Galaxy:
 #####################################################################################################
 def pre_start(empire: Empire, home_system: System) -> None:
     """Start with pre-tech"""
-    pass
+    empire.learnt(Technology.STAR_BASE)
+    empire.learnt(Technology.MARINE_BARRACKS)
+    empire.learnt(Technology.COLONY_BASE)
 
 
 #####################################################################################################
 def average_start(empire: Empire, home_system: System) -> None:
     """Start with average tech"""
+    pre_start(empire, home_system)
     empire.learnt(Technology.STANDARD_FUEL_CELLS)
     empire.learnt(Technology.NUCLEAR_DRIVE)
     empire.learnt(Technology.COLONY_SHIP)

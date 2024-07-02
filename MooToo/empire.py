@@ -41,11 +41,7 @@ class Empire:
             TechCategory.CONSTRUCTION: 0,
             TechCategory.CHEMISTRY: 0,
         }  # What category / price has been researched
-        self.known_techs: set[Technology] = {
-            Technology.STAR_BASE,
-            Technology.MARINE_BARRACKS,
-            Technology.COLONY_BASE,
-        }
+        self.known_techs: set[Technology] = set()
 
     #####################################################################################################
     def __repr__(self):
@@ -140,6 +136,13 @@ class Empire:
         for planet in self.owned_planets:
             rp += science_surplus(planet)
         return rp
+
+    #####################################################################################################
+    def has_interest_in(self, system: "System") -> bool:
+        for planet in system.orbits:
+            if planet and planet.owner == self:
+                return True
+        return False
 
     #####################################################################################################
     def know_system(self, system: "System") -> None:
