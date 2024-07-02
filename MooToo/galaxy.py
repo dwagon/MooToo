@@ -51,6 +51,8 @@ class Galaxy:
     def turn(self):
         """End of turn"""
         self.turn_number += 1
+        for system in self.systems.values():
+            system.turn()
         for empire in self.empires.values():
             empire.turn()
 
