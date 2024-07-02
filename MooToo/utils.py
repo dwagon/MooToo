@@ -1,13 +1,13 @@
+import argparse
 import math
 import random
 import glob
 import importlib
 import os
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from MooToo import Research, PlanetBuilding, Building, Technology
+from MooToo.constants import Building, Technology
+from MooToo.planet_building import PlanetBuilding
+from MooToo.research import Research
 
 _BUILDINGS: dict["Building", "PlanetBuilding"] = {}
 _RESEARCHES: dict["Technology", "Research"] = {}
@@ -91,6 +91,14 @@ def load_researches() -> dict["Technology", "Research"]:
                 klass = getattr(mod, kls)
                 mapping[klass().tag] = klass()
     return mapping
+
+
+#####################################################################################################
+def arg_parse(sys_args) -> argparse.Namespace:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--tech", choices=["pre", "avg", "adv"], default="avg")
+    parser.add_argument("--load", type=argparse.FileType(mode="r"))
+    return parser.parse_args(sys_args)
 
 
 # EOF
