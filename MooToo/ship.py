@@ -54,6 +54,7 @@ class Ship:
         self.owner: Optional["Empire"] = None
         self.command_points = 0
         self.maintenance = 0
+        self.coloniser = False
         self.name = name
         self.icon = ""
         self.destination: Optional[System] = None
@@ -141,14 +142,21 @@ class ColonyShip(Ship):
         self.space = 0
         self.command_points = 1
         self.maintenance = 10
+        self.coloniser = True
         self.type = ShipType.ColonyShip
         self.target_planet: Optional["Planet"] = None
         self.icon = "colony"
 
+    #################################################################################################
     def arrived_at_destination(self):
         super().arrived_at_destination()
         if self.target_planet:
             self.target_planet.colonize(self.owner.name)
+
+    #################################################################################################
+    def set_destination_planet(self, dest_planet: "Planet") -> None:
+        self.set_destination(dest_planet.system)
+        self.target_planet = dest_planet
 
 
 #####################################################################################################

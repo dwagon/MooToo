@@ -17,13 +17,14 @@ if TYPE_CHECKING:
 
 
 #####################################################################################################
-class SummaryColumns(StrEnum):
+class PlanetDataColumn(StrEnum):
     NAME = auto()
     CLIMATE = auto()
     GRAVITY = auto()
     MINERALS = auto()
     SIZE = auto()
     PLANET = auto()
+    COLONISER_EN_ROUTE = auto()
 
 
 #####################################################################################################
@@ -52,9 +53,10 @@ class PlanetSummaryWindow(BaseGraphics):
         self.empire = empire
         self.data = []
         self.images = self.load_images()
-        self.sorting = SummaryColumns.NAME
+        self.sorting = PlanetDataColumn.NAME
         self.planet_clicked: Optional[Planet] = None
         self.button_clicked: Optional[SummaryButtons] = None
+        self.planet_rects: dict[Planet, pygame.Rect] = {}
         self.buttons = {
             SummaryButtons.CLIMATE: Button(self.images["climate_button"], pygame.Vector2(441, 201)),
             SummaryButtons.RETURN: Button(self.images["return_button"], pygame.Vector2(454, 440)),
@@ -80,9 +82,9 @@ class PlanetSummaryWindow(BaseGraphics):
                 self.images["in_range_button"],
                 pygame.Vector2(440, 358),
             ),
-            SummaryButtons.SEND_COLONY: Button(self.images["send_colony_button"], pygame.Vector2(454, 385)),
+            # SummaryButtons.SEND_COLONY: Button(self.images["send_colony_button_disabled"], pygame.Vector2(454, 385)),
             SummaryButtons.SEND_OUTPOST: Button(
-                self.images["send_outpost_button"],
+                self.images["send_outpost_button_disabled"],
                 pygame.Vector2(454, 413),
             ),
             SummaryButtons.UP: Button(self.images["up_button"], pygame.Vector2(420, 15)),
@@ -102,11 +104,14 @@ class PlanetSummaryWindow(BaseGraphics):
         images["non_hostile_button"] = self.load_image("PLNTSUM.LBX", 6, palette_index=7)
         images["abundance_button"] = self.load_image("PLNTSUM.LBX", 7, palette_index=7)
         images["in_range_button"] = self.load_image("PLNTSUM.LBX", 8, palette_index=7)
-        images["send_colony_button"] = self.load_image("PLNTSUM.LBX", 9, palette_index=7)
-        images["send_outpost_button"] = self.load_image("PLNTSUM.LBX", 10, palette_index=7)
+        images["send_colony_button_disabled"] = self.load_image("PLNTSUM.LBX", 9, palette_index=7)
+        images["send_colony_button_enabled"] = self.load_image("PLNTSUM.LBX", 9, palette_index=7, frame=2)
+        images["send_outpost_button_disabled"] = self.load_image("PLNTSUM.LBX", 10, palette_index=7)
+        images["send_outpost_button_enabled"] = self.load_image("PLNTSUM.LBX", 10, palette_index=7, frame=2)
         images["up_button"] = self.load_image("PLNTSUM.LBX", 11, palette_index=7)
         images["down_button"] = self.load_image("PLNTSUM.LBX", 12, palette_index=7)
         images["return_button"] = self.load_image("PLNTSUM.LBX", 14, palette_index=7)
+        images["colony_ship"] = self.load_image("PLNTSUM.LBX", 76, palette_index=7)
 
         end = time.time()
         print(f"PlanetSummary: Loaded {len(images)} in {end-start} seconds")
@@ -123,54 +128,103 @@ class PlanetSummaryWindow(BaseGraphics):
 
         for planet_data in self.data:
             self.draw_planet(planet_data, top_left)
-            top_left += pygame.Vector2(0, 55)
+            rect = pygame.Rect(top_left.x, top_left.y, 400, 48)
+            pygame.draw.rect(self.screen, "purple", rect, width=1)
+            self.planet_rects[planet_data[PlanetDataColumn.PLANET]] = rect
+            top_left += pygame.Vector2(0, 54)
 
     #####################################################################################################
-    def draw_planet(self, planet_data: dict[SummaryColumns, Any], top_left: pygame.Vector2):
+    def draw_planet(self, planet_data: dict[PlanetDataColumn, Any], top_left: pygame.Vector2):
+        highlight = self.planet_clicked == planet_data[PlanetDataColumn.PLANET]
+
         tl = top_left.copy()
-        self.draw_text(planet_data[SummaryColumns.NAME], tl)
+        self.draw_text(planet_data[PlanetDataColumn.NAME], tl, highlight)
+
+        if planet_data[PlanetDataColumn.COLONISER_EN_ROUTE]:
+            self.screen.blit(self.images["colony_ship"], tl + pygame.Vector2(0, 10))
 
         tl += pygame.Vector2(92, 0)
-        food = FOOD_CLIMATE_MAP[planet_data[SummaryColumns.CLIMATE]]
-        self.draw_text(planet_data[SummaryColumns.CLIMATE], tl, f"{food} Food")
+        food = FOOD_CLIMATE_MAP[planet_data[PlanetDataColumn.CLIMATE]]
+        self.draw_text(planet_data[PlanetDataColumn.CLIMATE], tl, highlight, f"{food} Food")
 
         tl += pygame.Vector2(75, 0)
-        grav = GRAVITY_MAP[planet_data[SummaryColumns.GRAVITY]]
-        self.draw_text(planet_data[SummaryColumns.GRAVITY], tl, f"{display_percent(grav)} prod")
+        grav = GRAVITY_MAP[planet_data[PlanetDataColumn.GRAVITY]]
+        self.draw_text(planet_data[PlanetDataColumn.GRAVITY], tl, highlight, f"{display_percent(grav)} prod")
 
         tl += pygame.Vector2(90, 0)
-        prod = PROD_RICHNESS_MAP[planet_data[SummaryColumns.MINERALS]]
-        self.draw_text(planet_data[SummaryColumns.MINERALS], tl, f"{prod} prod/worker")
+        prod = PROD_RICHNESS_MAP[planet_data[PlanetDataColumn.MINERALS]]
+        self.draw_text(planet_data[PlanetDataColumn.MINERALS], tl, highlight, f"{prod} prod/worker")
 
         tl += pygame.Vector2(90, 0)
-        max_pop = planet_data[SummaryColumns.PLANET].max_population()
-        self.draw_text(planet_data[SummaryColumns.SIZE], tl, f"{max_pop} max pop")
+        max_pop = planet_data[PlanetDataColumn.PLANET].max_population()
+        self.draw_text(planet_data[PlanetDataColumn.SIZE], tl, highlight, f"{max_pop} max pop")
 
     #####################################################################################################
-    def draw_text(self, text: str, top_left: pygame.Vector2, subtext: str = "") -> None:
-        text_surface = self.text_font.render(text, True, "white", "black")
+    def draw_text(self, text: str, top_left: pygame.Vector2, highlight: bool = False, subtext: str = "") -> None:
+        if highlight:
+            big_font = self.text_font_bold
+            small_font = self.label_font_bold
+        else:
+            big_font = self.text_font
+            small_font = self.label_font
+
+        text_surface = big_font.render(text, True, "white", "black")
         self.screen.blit(text_surface, top_left)
-        text_surface = self.label_font.render(subtext, True, "white", "black")
-        self.screen.blit(text_surface, top_left + pygame.Vector2(0, 12))
+        if subtext:
+            text_surface = small_font.render(subtext, True, "white", "black")
+            self.screen.blit(text_surface, top_left + pygame.Vector2(0, text_surface.get_size()[1] + 1))
 
     #####################################################################################################
-    def collect_data(self) -> list[dict[SummaryColumns, Any]]:
+    def define_colony_button(self) -> None:
+        colony_button_location = pygame.Vector2(454, 385)
+        if self.has_colony_ship_available():
+            self.buttons[SummaryButtons.SEND_COLONY] = Button(
+                self.images["send_colony_button_enabled"], colony_button_location
+            )
+
+        else:
+            self.buttons[SummaryButtons.SEND_COLONY] = Button(
+                self.images["send_colony_button_disabled"], colony_button_location
+            )
+
+    #####################################################################################################
+    def collect_data(self) -> list[dict[PlanetDataColumn, Any]]:
         """Gather all the information required"""
+        self.define_colony_button()
         data = []
         for system in self.empire.known_systems:
             for planet in self.game.galaxy.systems[system].orbits:
                 if not planet:
                     continue
+                if planet.owner:
+                    continue
+
                 planet_data = {
-                    SummaryColumns.NAME: planet.name,
-                    SummaryColumns.CLIMATE: planet.climate,
-                    SummaryColumns.GRAVITY: planet.gravity,
-                    SummaryColumns.MINERALS: planet.richness,
-                    SummaryColumns.SIZE: planet.size,
-                    SummaryColumns.PLANET: planet,  # Not really a column but for access
+                    PlanetDataColumn.NAME: planet.name,
+                    PlanetDataColumn.CLIMATE: planet.climate,
+                    PlanetDataColumn.GRAVITY: planet.gravity,
+                    PlanetDataColumn.MINERALS: planet.richness,
+                    PlanetDataColumn.SIZE: planet.size,
+                    PlanetDataColumn.PLANET: planet,
+                    PlanetDataColumn.COLONISER_EN_ROUTE: self.has_coloniser_en_route(planet),
                 }
                 data.append(planet_data)
         return data
+
+    #####################################################################################################
+    def has_coloniser_en_route(self, planet: Planet) -> bool:
+        for ship in self.empire.ships:
+            if ship.coloniser and ship.target_planet == planet:
+                return True
+        return False
+
+    #####################################################################################################
+    def has_colony_ship_available(self) -> bool:
+        """Does the empire have a colony ship"""
+        for ship in self.empire.ships:
+            if ship.coloniser and not ship.destination:
+                return True
+        return False
 
     #####################################################################################################
     def loop(self) -> None:
@@ -198,15 +252,30 @@ class PlanetSummaryWindow(BaseGraphics):
     #####################################################################################################
     def button_left_down(self):
         if self.buttons[SummaryButtons.SIZE].clicked():
-            self.sorting = SummaryColumns.SIZE
+            self.sorting = PlanetDataColumn.SIZE
         elif self.buttons[SummaryButtons.GRAVITY].clicked():
-            self.sorting = SummaryColumns.GRAVITY
+            self.sorting = PlanetDataColumn.GRAVITY
         elif self.buttons[SummaryButtons.CLIMATE].clicked():
-            self.sorting = SummaryColumns.CLIMATE
+            self.sorting = PlanetDataColumn.CLIMATE
         elif self.buttons[SummaryButtons.MINERALS].clicked():
-            self.sorting = SummaryColumns.MINERALS
+            self.sorting = PlanetDataColumn.MINERALS
         elif self.buttons[SummaryButtons.SEND_COLONY].clicked():
             self.button_clicked = SummaryButtons.SEND_COLONY
+        else:
+            mouse = pygame.mouse.get_pos()
+            for planet, rect in self.planet_rects.items():
+                if rect.collidepoint(mouse):
+                    if self.planet_clicked == planet:
+                        self.planet_clicked = None
+                    else:
+                        self.planet_clicked = planet
+
+        if self.planet_clicked and self.button_clicked:
+            if self.button_clicked == SummaryButtons.SEND_COLONY:
+                self.empire.send_colony(self.planet_clicked)
+                self.planet_clicked = None
+                self.button_clicked = None
+                self.data = self.collect_data()
 
 
 #####################################################################################################

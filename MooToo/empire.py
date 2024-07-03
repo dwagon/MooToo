@@ -97,6 +97,17 @@ class Empire:
         self.money += self.income
 
     #####################################################################################################
+    def send_colony(self, dest_planet: "Planet") -> None:
+        """Send a colony ship to the planet"""
+        for ship in self.ships:
+            if not ship.coloniser:
+                continue
+            if not ship.destination:
+                ship.set_destination_planet(dest_planet)
+                return
+        # Make smarter - pick closest coloniser to dest_planet
+
+    #####################################################################################################
     def start_researching(self, to_research: Technology) -> None:
         self.researching = to_research
 
