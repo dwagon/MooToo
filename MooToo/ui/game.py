@@ -302,12 +302,6 @@ class Game(BaseGraphics):
                         -star_img_size[1] / 2 - ship_image.get_size()[1],
                     )
                 ship_coord = system.position + delta
-                pygame.draw.line(
-                    self.screen,
-                    "purple",
-                    system.position,
-                    system.position + delta,
-                )
             else:  # Ship is in space with a destination
                 ship_coord = ship.location
 

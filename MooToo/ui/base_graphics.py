@@ -16,7 +16,11 @@ class BaseGraphics:
         self.game = game
         pygame.init()
         self.label_font = pygame.font.SysFont("Ariel", 14)
+        self.label_font_bold = pygame.font.SysFont("Ariel", 14, bold=True)
+
         self.text_font = pygame.font.SysFont("Ariel", 18)
+        self.text_font_bold = pygame.font.SysFont("Ariel", 18, bold=True)
+
         self.title_font = pygame.font.SysFont("Ariel", 24)
         self.screen = pygame.display.set_mode((640, 480), flags=pygame.SCALED)
         self.size = self.screen.get_size()
