@@ -1,10 +1,12 @@
 """ Planet Summary Window"""
 
 import time
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Optional
 from enum import StrEnum, auto
 import pygame
 
+from MooToo.planet import Planet
+from MooToo.constants import FOOD_CLIMATE_MAP, PROD_RICHNESS_MAP, GRAVITY_MAP
 from MooToo.ui.base_graphics import BaseGraphics
 from MooToo.ui.gui_button import Button
 
@@ -21,6 +23,7 @@ class SummaryColumns(StrEnum):
     GRAVITY = auto()
     MINERALS = auto()
     SIZE = auto()
+    PLANET = auto()
 
 
 #####################################################################################################
@@ -50,6 +53,8 @@ class PlanetSummaryWindow(BaseGraphics):
         self.data = []
         self.images = self.load_images()
         self.sorting = SummaryColumns.NAME
+        self.planet_clicked: Optional[Planet] = None
+        self.button_clicked: Optional[SummaryButtons] = None
         self.buttons = {
             SummaryButtons.CLIMATE: Button(self.images["climate_button"], pygame.Vector2(441, 201)),
             SummaryButtons.RETURN: Button(self.images["return_button"], pygame.Vector2(454, 440)),
@@ -113,7 +118,7 @@ class PlanetSummaryWindow(BaseGraphics):
         self.screen.blit(self.images["window"], pygame.Vector2(0, 0))
         for button in self.buttons.values():
             button.draw(self.screen)
-        top_left = pygame.Vector2(20, 37)
+        top_left = pygame.Vector2(20, 39)
         self.data.sort(key=lambda x: x[self.sorting])
 
         for planet_data in self.data:
@@ -121,22 +126,32 @@ class PlanetSummaryWindow(BaseGraphics):
             top_left += pygame.Vector2(0, 55)
 
     #####################################################################################################
-    def draw_planet(self, planet_data: dict[str, Any], top_left: pygame.Vector2):
+    def draw_planet(self, planet_data: dict[SummaryColumns, Any], top_left: pygame.Vector2):
         tl = top_left.copy()
         self.draw_text(planet_data[SummaryColumns.NAME], tl)
-        tl += pygame.Vector2(91, 0)
-        self.draw_text(planet_data[SummaryColumns.CLIMATE], tl)
+
+        tl += pygame.Vector2(92, 0)
+        food = FOOD_CLIMATE_MAP[planet_data[SummaryColumns.CLIMATE]]
+        self.draw_text(planet_data[SummaryColumns.CLIMATE], tl, f"{food} Food")
+
         tl += pygame.Vector2(75, 0)
-        self.draw_text(planet_data[SummaryColumns.GRAVITY], tl)
+        grav = GRAVITY_MAP[planet_data[SummaryColumns.GRAVITY]]
+        self.draw_text(planet_data[SummaryColumns.GRAVITY], tl, f"{display_percent(grav)} prod")
+
         tl += pygame.Vector2(90, 0)
-        self.draw_text(planet_data[SummaryColumns.MINERALS], tl)
+        prod = PROD_RICHNESS_MAP[planet_data[SummaryColumns.MINERALS]]
+        self.draw_text(planet_data[SummaryColumns.MINERALS], tl, f"{prod} prod/worker")
+
         tl += pygame.Vector2(90, 0)
-        self.draw_text(planet_data[SummaryColumns.SIZE], tl)
+        max_pop = planet_data[SummaryColumns.PLANET].max_population()
+        self.draw_text(planet_data[SummaryColumns.SIZE], tl, f"{max_pop} max pop")
 
     #####################################################################################################
-    def draw_text(self, text: str, top_left: pygame.Vector2) -> None:
+    def draw_text(self, text: str, top_left: pygame.Vector2, subtext: str = "") -> None:
         text_surface = self.text_font.render(text, True, "white", "black")
         self.screen.blit(text_surface, top_left)
+        text_surface = self.label_font.render(subtext, True, "white", "black")
+        self.screen.blit(text_surface, top_left + pygame.Vector2(0, 12))
 
     #####################################################################################################
     def collect_data(self) -> list[dict[SummaryColumns, Any]]:
@@ -152,6 +167,7 @@ class PlanetSummaryWindow(BaseGraphics):
                     SummaryColumns.GRAVITY: planet.gravity,
                     SummaryColumns.MINERALS: planet.richness,
                     SummaryColumns.SIZE: planet.size,
+                    SummaryColumns.PLANET: planet,  # Not really a column but for access
                 }
                 data.append(planet_data)
         return data
@@ -189,6 +205,20 @@ class PlanetSummaryWindow(BaseGraphics):
             self.sorting = SummaryColumns.CLIMATE
         elif self.buttons[SummaryButtons.MINERALS].clicked():
             self.sorting = SummaryColumns.MINERALS
+        elif self.buttons[SummaryButtons.SEND_COLONY].clicked():
+            self.button_clicked = SummaryButtons.SEND_COLONY
+
+
+#####################################################################################################
+def display_percent(num: float) -> str:
+    if num < 1.0:
+        frac = int(100 - num * 100)
+        return f"-{frac} %"
+    elif num > 1.0:
+        frac = int(100 + num * 100)
+        return f"+{frac} %"
+    else:
+        return "100%"
 
 
 # EOF
