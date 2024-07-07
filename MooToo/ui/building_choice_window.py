@@ -7,6 +7,7 @@ from MooToo.planet import Planet
 from MooToo.ui.gui_button import Button
 from MooToo.ship import ShipType
 from MooToo.constants import Building
+from MooToo.construct import ConstructType
 from MooToo.utils import get_building
 
 if TYPE_CHECKING:
@@ -45,14 +46,10 @@ class BuildingChoiceWindow(BaseGraphics):
 
     #####################################################################################################
     def draw_available_ships(self) -> None:
-        """ """
-        # Colony Base
-        # Freighter Fleet
-        # Colony Ship
-        # Outpost Ship
-        # Transport Ship
-        # Ships
+        """Non-building construction"""
         top_left = pygame.Vector2(486, 14)
+        if self.planet.can_build(ConstructType.FREIGHTER):
+            top_left = self.build_freighter(top_left)
         for ship_type in list(ShipType):
             if self.planet.can_build_ship(ship_type):
                 text_surface = self.text_font.render(ship_type.name, True, "white")
@@ -60,6 +57,19 @@ class BuildingChoiceWindow(BaseGraphics):
                 top_left.y += text_surface.get_size()[1]
                 self.to_build_rects[ship_type] = rect
                 pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
+            else:
+                text_surface = self.text_font.render(ship_type.name, True, "grey")
+                self.screen.blit(text_surface, top_left)
+                top_left.y += text_surface.get_size()[1]
+
+    #####################################################################################################
+    def build_freighter(self, top_left: pygame.Vector2):
+        text_surface = self.text_font.render("Freighter", True, "white")
+        rect = self.screen.blit(text_surface, top_left)
+        top_left.y += text_surface.get_size()[1]
+        self.to_build_rects[ConstructType.FREIGHTER] = rect
+        pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
+        return top_left
 
     #####################################################################################################
     def draw_currently_building(self) -> None:
@@ -100,9 +110,9 @@ class BuildingChoiceWindow(BaseGraphics):
     #####################################################################################################
     def button_left_down(self) -> bool:
         mouse_x, mouse_y = pygame.mouse.get_pos()
-        for bld, rect in self.to_build_rects.items():
+        for con, rect in self.to_build_rects.items():
             if rect.collidepoint(mouse_x, mouse_y):
-                self.planet.build_queue.toggle(bld)
+                self.planet.build_queue.toggle(con)
         for num, rect in self.build_queue_rects.items():
             if rect.collidepoint(mouse_x, mouse_y):
                 self.planet.build_queue.pop(num)

@@ -185,6 +185,8 @@ class Planet:
                 self.owner.add_ship(construct.ship, self.system)
                 if not construct.ship.built():
                     self.owner.delete_ship(construct.ship)
+            case ConstructType.FREIGHTER:
+                self.owner.freighters += 5
 
     #####################################################################################################
     def grow_population(self) -> None:
@@ -233,13 +235,21 @@ class Planet:
         return int(self._population / 1e6)
 
     #####################################################################################################
+    def can_build(self, con: ConstructType) -> bool:
+        match con:
+            case ConstructType.SPY:
+                return True
+            case ConstructType.FREIGHTER:
+                return Technology.FREIGHTERS in self.owner.known_techs
+            case ConstructType.COLONY_BASE:
+                return self.system.unoccupied_planet()
+        return False
+
+    #####################################################################################################
     def can_build_ship(self, ship: ShipType) -> bool:
         """Can this empire build a type of ship"""
         if not self.owner:
             return False
-        # TODO - make sure there is a suitable planet in the system
-        if ship == ShipType.ColonyBase:
-            return True
 
         # Need basic tech to build anything but a colony base
         known_techs = self.owner.known_techs

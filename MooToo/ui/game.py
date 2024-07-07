@@ -272,6 +272,15 @@ class Game(BaseGraphics):
         self.draw_date()
         self.draw_food()
         self.draw_fleets()
+        self.draw_freighters()
+
+    #####################################################################################################
+    def draw_freighters(self):
+        """Draw freighters"""
+        freighter_str = f"{self.empire.freighters - self.empire.freighters_used()} ({self.empire.freighters})"
+        top_left = pygame.Vector2(570, 320)
+        rp_text_surface = self.text_font.render(freighter_str, True, "white", "black")
+        self.screen.blit(rp_text_surface, top_left)
 
     #####################################################################################################
     def draw_background(self):
