@@ -81,6 +81,12 @@ class BuildQueue:
         elif isinstance(construct, ShipType):
             ship = select_ship_type_by_name(construct.name)
             con = Construct(ConstructType.SHIP, ship=ship)
+        elif construct == ConstructType.FREIGHTER:
+            con = Construct(ConstructType.FREIGHTER)
+        elif construct == ConstructType.SPY:
+            con = Construct(ConstructType.SPY)
+        elif construct == ConstructType.COLONY_BASE:
+            con = Construct(ConstructType.COLONY_BASE)
         else:
             raise NotImplementedError(f"build_queue.toggle({construct=}) Unknown type {type(construct)}")
 

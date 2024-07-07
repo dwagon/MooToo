@@ -10,6 +10,7 @@ from MooToo.utils import all_research, get_research
 from MooToo.planet import make_home_planet
 from MooToo.planet_science import science_surplus
 from MooToo.planet_money import money_surplus
+from MooToo.food import food_surplus
 
 
 if TYPE_CHECKING:
@@ -31,6 +32,7 @@ class Empire:
         self.ships: list[Ship] = []
         self.researching: Technology | None = None
         self.research_spent = 0
+        self.freighters = 0
         self.researched: dict[TechCategory, int] = {
             TechCategory.FORCE_FIELDS: 0,
             TechCategory.BIOLOGY: 0,
@@ -42,10 +44,26 @@ class Empire:
             TechCategory.CHEMISTRY: 0,
         }  # What category / price has been researched
         self.known_techs: set[Technology] = set()
+        self.migrations = []
 
     #####################################################################################################
     def __repr__(self):
         return f"<Empire {self.name}>"
+
+    #####################################################################################################
+    def freighters_used(self) -> int:
+        need_food = 0
+        have_food = 0
+        for planet in self.owned_planets:
+            surplus = food_surplus(planet)
+            if surplus < 0:
+                need_food += surplus
+            elif surplus > 0:
+                have_food += surplus
+        freighters_needed = len(self.migrations) * 5
+        freighters_needed -= min(have_food, need_food)
+
+        return min(freighters_needed, self.freighters)
 
     #####################################################################################################
     def set_home_planet(self, planet: "Planet"):
@@ -93,6 +111,7 @@ class Empire:
             ship.turn()
             if ship.orbit:
                 self.know_system(ship.orbit)
+        income -= self.freighters_used() // 2
         self.income = income
         self.money += self.income
 

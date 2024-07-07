@@ -14,6 +14,9 @@ if TYPE_CHECKING:
 class ConstructType(Enum):
     BUILDING = auto()
     SHIP = auto()
+    COLONY_BASE = auto()
+    FREIGHTER = auto()
+    SPY = auto()
 
 
 #########################################################################################################
@@ -30,10 +33,17 @@ class Construct:
     #############################################################################################
     @property
     def name(self) -> str:
-        if self.category == ConstructType.SHIP:
-            return self.ship.name
-        else:
-            return self.tag.name.title()
+        match self.category:
+            case ConstructType.SHIP:
+                return self.ship.name
+            case ConstructType.FREIGHTER:
+                return "Freighter Fleet"
+            case ConstructType.SPY:
+                return "Spy"
+            case ConstructType.COLONY_BASE:
+                return "Colony Base"
+            case _:
+                return self.tag.name.title()
 
     #############################################################################################
     def __str__(self):
@@ -53,7 +63,14 @@ class Construct:
     #############################################################################################
     @property
     def cost(self) -> int:
-        if self.category == ConstructType.SHIP:
-            return self.ship.cost
-        else:
-            return get_building(self.tag).cost
+        match self.category:
+            case ConstructType.SHIP:
+                return self.ship.cost
+            case ConstructType.BUILDING:
+                return get_building(self.tag).cost
+            case ConstructType.FREIGHTER:
+                return 50
+            case ConstructType.SPY:
+                return 100
+            case ConstructType.COLONY_BASE:
+                return 200

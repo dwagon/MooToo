@@ -72,6 +72,14 @@ class System:
         return f"<System {self.position}>"
 
     #####################################################################################################
+    def unoccupied_planet(self) -> bool:
+        """Return True if there is an unoccupied planet in the system"""
+        for planet in self:
+            if planet and not planet.owner:
+                return True
+        return False
+
+    #####################################################################################################
     def turn(self):
         for planet in self:
             if planet:
