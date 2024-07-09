@@ -24,6 +24,7 @@ class ColonySummaryWindow(BaseGraphics):
         self.return_button = Button(self.images["return_button"], pygame.Vector2(530, 445))
         self.buy_now_rects: dict[Planet, pygame.Rect] = {}
         self.building_rect: dict[Planet, pygame.Rect] = {}
+        self.planet_rect: dict[Planet, pygame.Rect] = {}
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
@@ -47,14 +48,17 @@ class ColonySummaryWindow(BaseGraphics):
         self.return_button.draw(self.screen)
         self.buy_now_rects = {}
         self.building_rect = {}
-        top_left = pygame.Vector2(10, 39)
+        top_left = pygame.Vector2(10, 37)
         for planet in self.game.empire.owned_planets:
             self.draw_planet(planet, top_left)
-            top_left += pygame.Vector2(0, 32)
+            top_left += pygame.Vector2(0, 31)
 
     #####################################################################################################
     def draw_planet(self, planet: "Planet", top_left: pygame.Vector2) -> None:
         name_surface = self.text_font.render(planet.name, True, "white")
+        planet_name_rect = pygame.Rect(top_left.x, top_left.y, 86, 27)
+        pygame.draw.rect(self.screen, "purple", planet_name_rect, width=1)
+        self.planet_rect[planet] = planet_name_rect
         self.screen.blit(name_surface, top_left)
         self.draw_population_sequence(
             top_left + pygame.Vector2(90, 0), self.images["farmer"], planet.jobs[PopulationJobs.FARMERS], 130
@@ -65,7 +69,7 @@ class ColonySummaryWindow(BaseGraphics):
         self.draw_population_sequence(
             top_left + pygame.Vector2(370, 0), self.images["scientist"], planet.jobs[PopulationJobs.SCIENTISTS], 130
         )
-        self.building_rect[planet] = pygame.Rect(510, top_left.y, 90, 25)
+        self.building_rect[planet] = pygame.Rect(512, top_left.y, 87, 25)
         pygame.draw.rect(self.screen, "purple", self.building_rect[planet], width=1)  # DBG
         if planet.build_queue:
             self.draw_building(planet, top_left)
@@ -85,6 +89,7 @@ class ColonySummaryWindow(BaseGraphics):
 
     #####################################################################################################
     def button_left_down(self) -> bool:
+        """Return True if changing mode"""
         if self.return_button.clicked():
             return True
         mouse = pygame.mouse.get_pos()
@@ -94,5 +99,9 @@ class ColonySummaryWindow(BaseGraphics):
         for planet, rect in self.building_rect.items():
             if rect.collidepoint(mouse[0], mouse[1]):
                 print(f"DBG Change building on {planet}")
+        for planet, rect in self.planet_rect.items():
+            if rect.collidepoint(mouse[0], mouse[1]):
+                self.game.look_at_planet(planet)
+                return True
 
         return False

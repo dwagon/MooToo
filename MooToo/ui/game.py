@@ -12,7 +12,7 @@ from MooToo.ui.base_graphics import BaseGraphics
 from MooToo.ui.planet_window import PlanetWindow
 from MooToo.ui.science_window import ScienceWindow
 from MooToo.ui.fleet_window import FleetWindow
-from MooToo.ui.colony_window import ColonySummaryWindow
+from MooToo.ui.colony_summary import ColonySummaryWindow
 from MooToo.ui.planet_summary import PlanetSummaryWindow
 from MooToo.galaxy import Galaxy, save, load
 from MooToo.ship import Ship
@@ -123,8 +123,6 @@ class Game(BaseGraphics):
 
         while running:
             self.screen.fill("black")
-            # poll for events
-            # pygame.QUIT event means the user clicked X to close your window
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -217,6 +215,11 @@ class Game(BaseGraphics):
         return None
 
     #####################################################################################################
+    def look_at_planet(self, planet: Planet) -> None:
+        self.display_mode = DisplayMode.PLANET
+        self.planet = planet
+
+    #####################################################################################################
     def button_left_down(self):
         match self.display_mode:
             case DisplayMode.GALAXY:
@@ -224,8 +227,6 @@ class Game(BaseGraphics):
             case DisplayMode.ORBIT:
                 if self.orbit_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
-            case DisplayMode.PLANET:
-                pass  # Handled in the planet_window
             case DisplayMode.SCIENCE:
                 if self.science_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
@@ -236,9 +237,13 @@ class Game(BaseGraphics):
                     self.fleet_window.select_destination(system)
             case DisplayMode.COLONY_SUM:
                 if self.colonies_window.button_left_down():
-                    self.display_mode = DisplayMode.GALAXY
-            case DisplayMode.PLANET_SUM:
-                pass  # Handled in the planet summary window
+                    if self.display_mode == DisplayMode.COLONY_SUM:
+                        self.display_mode = DisplayMode.GALAXY
+                    else:
+                        self.planet_window.loop(self.planet)
+                        self.display_mode = DisplayMode.GALAXY
+            case DisplayMode.PLANET_SUM | DisplayMode.PLANET:
+                pass  # Handled in the window
 
     #####################################################################################################
     def draw_screen(self):

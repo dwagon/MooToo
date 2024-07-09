@@ -141,7 +141,7 @@ class PlanetSummaryWindow(BaseGraphics):
         self.draw_text(planet_data[PlanetDataColumn.NAME], tl, highlight)
 
         if planet_data[PlanetDataColumn.COLONISER_EN_ROUTE]:
-            self.screen.blit(self.images["colony_ship"], tl + pygame.Vector2(0, 10))
+            self.screen.blit(self.images["colony_ship"], tl + pygame.Vector2(71, 38))
 
         tl += pygame.Vector2(92, 0)
         food = FOOD_CLIMATE_MAP[planet_data[PlanetDataColumn.CLIMATE]]

@@ -541,7 +541,9 @@ class PlanetWindow(BaseGraphics):
                     if buttons[0]:
                         if self.buttons[PlanetButtons.RETURN].clicked():
                             return
-                        self.button_left_down()
+                        if self.button_left_down():
+                            print("Returning")
+                            return
                     elif buttons[2]:
                         return
                 if event.type == pygame.MOUSEMOTION:
@@ -555,6 +557,9 @@ class PlanetWindow(BaseGraphics):
 
     #####################################################################################################
     def button_left_down(self) -> bool:
+        """Someone pressed the left button
+        Return True if exit this display mode
+        """
         if self.display_mode == PlanetDisplayMode.BUILD:
             if self.building_choice_window.button_left_down():
                 self.display_mode = PlanetDisplayMode.NORMAL
@@ -570,6 +575,7 @@ class PlanetWindow(BaseGraphics):
             r = pygame.Rect(sys_rect[0], sys_rect[1], sys_rect[2], sys_rect[3])
             if r.collidepoint(pygame.mouse.get_pos()):
                 self.planet = planet
+                return True
         if self.detail_rect and self.detail_rect.collidepoint(pygame.mouse.get_pos()):
             self.display_mode = PlanetDisplayMode.DETAILS
 

@@ -6,7 +6,7 @@ from MooToo.constants import MOO_PATH
 
 
 #####################################################################################################
-IMAGE_CACHE: dict[tuple[str, int], pygame.Surface] = {}
+IMAGE_CACHE: dict[tuple[str, int, int], pygame.Surface] = {}
 
 
 #####################################################################################################
