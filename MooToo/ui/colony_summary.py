@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 import pygame
 
 from MooToo.constants import PopulationJobs
+from MooToo.ui.constants import DisplayMode
 from MooToo.ui.base_graphics import BaseGraphics
 from MooToo.ui.gui_button import Button
 
@@ -88,10 +89,10 @@ class ColonySummaryWindow(BaseGraphics):
             self.screen.blit(text_surface, top_left + pygame.Vector2(510, 12))
 
     #####################################################################################################
-    def button_left_down(self) -> bool:
+    def button_left_down(self) -> DisplayMode:
         """Return True if changing mode"""
         if self.return_button.clicked():
-            return True
+            return DisplayMode.GALAXY
         mouse = pygame.mouse.get_pos()
         for planet, rect in self.buy_now_rects.items():
             if rect.collidepoint(mouse[0], mouse[1]):
@@ -102,6 +103,6 @@ class ColonySummaryWindow(BaseGraphics):
         for planet, rect in self.planet_rect.items():
             if rect.collidepoint(mouse[0], mouse[1]):
                 self.game.look_at_planet(planet)
-                return True
+                return DisplayMode.PLANET
 
-        return False
+        return DisplayMode.COLONY_SUM

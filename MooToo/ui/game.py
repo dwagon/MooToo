@@ -6,6 +6,7 @@ from typing import Optional
 
 import pygame
 from enum import Enum, StrEnum, auto
+from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.ui.orbit_window import OrbitWindow
 from MooToo.ui.base_graphics import BaseGraphics
@@ -22,17 +23,6 @@ from MooToo.planet import Planet
 from MooToo.food import empire_food
 
 MAX_NEBULAE = 5
-
-
-#####################################################################################################
-class DisplayMode(Enum):
-    GALAXY = auto()
-    PLANET = auto()
-    ORBIT = auto()
-    SCIENCE = auto()
-    FLEET = auto()
-    COLONY_SUM = auto()
-    PLANET_SUM = auto()
 
 
 #####################################################################################################
@@ -137,6 +127,14 @@ class Game(BaseGraphics):
                 if event.type == pygame.MOUSEBUTTONUP:
                     self.button_up()
 
+            match self.display_mode:
+                case DisplayMode.PLANET:
+                    self.display_mode = self.planet_window.loop(self.planet)
+                case DisplayMode.PLANET_SUM:
+                    self.planet_summary_window.loop()
+                case _:
+                    pass
+
             self.draw_screen()
             pygame.display.flip()
 
@@ -191,7 +189,7 @@ class Game(BaseGraphics):
         elif self.buttons[MainButtons.COLONY_SUMMARY].clicked():
             self.display_mode = DisplayMode.COLONY_SUM
         elif self.buttons[MainButtons.PLANET_SUMMARY].clicked():
-            self.planet_summary_window.loop()
+            self.display_mode = DisplayMode.PLANET_SUM
         elif self.buttons[MainButtons.SCIENCE].clicked():
             self.display_mode = DisplayMode.SCIENCE
         for rect, ships in self.ship_rects:
@@ -202,7 +200,8 @@ class Game(BaseGraphics):
         if system := self.click_system():
             self.system = system
             if self.empire.has_interest_in(system):
-                self.planet_window.loop(pick_planet(system))
+                self.display_mode = DisplayMode.PLANET
+                self.planet = pick_planet(system)
             elif self.empire.is_known_system(system):
                 self.display_mode = DisplayMode.ORBIT
 
@@ -236,12 +235,7 @@ class Game(BaseGraphics):
                 elif system := self.click_system():
                     self.fleet_window.select_destination(system)
             case DisplayMode.COLONY_SUM:
-                if self.colonies_window.button_left_down():
-                    if self.display_mode == DisplayMode.COLONY_SUM:
-                        self.display_mode = DisplayMode.GALAXY
-                    else:
-                        self.planet_window.loop(self.planet)
-                        self.display_mode = DisplayMode.GALAXY
+                self.display_mode = self.colonies_window.button_left_down()
             case DisplayMode.PLANET_SUM | DisplayMode.PLANET:
                 pass  # Handled in the window
 

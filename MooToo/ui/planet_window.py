@@ -7,6 +7,7 @@ from typing import Optional, TYPE_CHECKING
 import pygame
 from MooToo.ui.base_graphics import BaseGraphics
 from MooToo.ui.textbox_window import TextBoxWindow
+from MooToo.ui.constants import DisplayMode
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
 from MooToo.system import System, MAX_ORBITS
 from MooToo.planet import Planet
@@ -527,7 +528,7 @@ class PlanetWindow(BaseGraphics):
         self.worker = None
 
     #####################################################################################################
-    def loop(self, planet: Planet) -> None:
+    def loop(self, planet: Planet) -> DisplayMode:
         self.planet = planet
         while True:
             self.screen.fill("black")
@@ -540,12 +541,12 @@ class PlanetWindow(BaseGraphics):
                     buttons = pygame.mouse.get_pressed()
                     if buttons[0]:
                         if self.buttons[PlanetButtons.RETURN].clicked():
-                            return
+                            return DisplayMode.GALAXY
                         if self.button_left_down():
                             print("Returning")
-                            return
+                            return DisplayMode.GALAXY
                     elif buttons[2]:
-                        return
+                        return DisplayMode.GALAXY
                 if event.type == pygame.MOUSEMOTION:
                     self.mouse_pos(event)
                 if event.type == pygame.MOUSEBUTTONUP:
