@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.planet import Planet
 from MooToo.ui.gui_button import Button
 from MooToo.ship import ShipType
@@ -30,9 +30,9 @@ class BuildingChoiceWindow(BaseGraphics):
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
         images = {}
-        images["window"] = self.load_image("COLBLDG.LBX", 0, palette_index=2)
-        images["ok_button"] = self.load_image("COLBLDG.LBX", 3)
-        images["cancel_button"] = self.load_image("COLBLDG.LBX", 1)
+        images["window"] = load_image("COLBLDG.LBX", 0, palette_index=2)
+        images["ok_button"] = load_image("COLBLDG.LBX", 3)
+        images["cancel_button"] = load_image("COLBLDG.LBX", 1)
         return images
 
     #####################################################################################################

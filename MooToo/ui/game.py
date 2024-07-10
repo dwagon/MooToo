@@ -9,7 +9,7 @@ from enum import Enum, StrEnum, auto
 from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.ui.orbit_window import OrbitWindow
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.planet_window import PlanetWindow
 from MooToo.ui.science_window import ScienceWindow
 from MooToo.ui.fleet_window import FleetWindow
@@ -83,24 +83,24 @@ class Game(BaseGraphics):
         """Load all the images from disk"""
         start = time.time()
         images = {}
-        images["base_window"] = self.load_image("BUFFER0.LBX", 0)
-        images["star_bg"] = self.load_image("STARBG.LBX", 0, palette_index=2)
+        images["base_window"] = load_image("BUFFER0.LBX", 0)
+        images["star_bg"] = load_image("STARBG.LBX", 0, palette_index=2)
         for neb in range(6, 52):
             try:
-                images[f"nebula_{neb}"] = self.load_image("STARBG.LBX", neb)
+                images[f"nebula_{neb}"] = load_image("STARBG.LBX", neb)
             except IndexError:
                 pass
 
-        images["small_blue_star"] = self.load_image("BUFFER0.LBX", 149)
-        images["small_white_star"] = self.load_image("BUFFER0.LBX", 155)
-        images["small_yellow_star"] = self.load_image("BUFFER0.LBX", 161)
-        images["small_orange_star"] = self.load_image("BUFFER0.LBX", 167)
-        images["small_red_star"] = self.load_image("BUFFER0.LBX", 173)
-        images["small_brown_star"] = self.load_image("BUFFER0.LBX", 179)
-        images["ship"] = self.load_image("BUFFER0.LBX", 205)
-        images["turn_button"] = self.load_image("BUFFER0.LBX", 2)
-        images["colonies_button"] = self.load_image("BUFFER0.LBX", 3)
-        images["planets_button"] = self.load_image("BUFFER0.LBX", 4)
+        images["small_blue_star"] = load_image("BUFFER0.LBX", 149)
+        images["small_white_star"] = load_image("BUFFER0.LBX", 155)
+        images["small_yellow_star"] = load_image("BUFFER0.LBX", 161)
+        images["small_orange_star"] = load_image("BUFFER0.LBX", 167)
+        images["small_red_star"] = load_image("BUFFER0.LBX", 173)
+        images["small_brown_star"] = load_image("BUFFER0.LBX", 179)
+        images["ship"] = load_image("BUFFER0.LBX", 205)
+        images["turn_button"] = load_image("BUFFER0.LBX", 2)
+        images["colonies_button"] = load_image("BUFFER0.LBX", 3)
+        images["planets_button"] = load_image("BUFFER0.LBX", 4)
 
         end = time.time()
         print(f"Main: Loaded {len(images)} in {end-start} seconds")

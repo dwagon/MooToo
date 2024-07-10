@@ -7,7 +7,7 @@ import pygame
 
 from MooToo.planet import Planet
 from MooToo.constants import FOOD_CLIMATE_MAP, PROD_RICHNESS_MAP, GRAVITY_MAP
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.gui_button import Button
 
 
@@ -95,23 +95,23 @@ class PlanetSummaryWindow(BaseGraphics):
     def load_images(self) -> dict[str, pygame.Surface]:
         images = {}
         start = time.time()
-        images["window"] = self.load_image("PLNTSUM.LBX", 0, palette_index=7)
-        images["climate_button"] = self.load_image("PLNTSUM.LBX", 1, palette_index=7)
-        images["minerals_button"] = self.load_image("PLNTSUM.LBX", 2, palette_index=7)
-        images["size_button"] = self.load_image("PLNTSUM.LBX", 3, palette_index=7)
-        images["no_enemy_button"] = self.load_image("PLNTSUM.LBX", 4, palette_index=7)
-        images["normal_gravity_button"] = self.load_image("PLNTSUM.LBX", 5, palette_index=7)
-        images["non_hostile_button"] = self.load_image("PLNTSUM.LBX", 6, palette_index=7)
-        images["abundance_button"] = self.load_image("PLNTSUM.LBX", 7, palette_index=7)
-        images["in_range_button"] = self.load_image("PLNTSUM.LBX", 8, palette_index=7)
-        images["send_colony_button_disabled"] = self.load_image("PLNTSUM.LBX", 9, palette_index=7)
-        images["send_colony_button_enabled"] = self.load_image("PLNTSUM.LBX", 9, palette_index=7, frame=2)
-        images["send_outpost_button_disabled"] = self.load_image("PLNTSUM.LBX", 10, palette_index=7)
-        images["send_outpost_button_enabled"] = self.load_image("PLNTSUM.LBX", 10, palette_index=7, frame=2)
-        images["up_button"] = self.load_image("PLNTSUM.LBX", 11, palette_index=7)
-        images["down_button"] = self.load_image("PLNTSUM.LBX", 12, palette_index=7)
-        images["return_button"] = self.load_image("PLNTSUM.LBX", 14, palette_index=7)
-        images["colony_ship"] = self.load_image("PLNTSUM.LBX", 76, palette_index=7)
+        images["window"] = load_image("PLNTSUM.LBX", 0, palette_index=7)
+        images["climate_button"] = load_image("PLNTSUM.LBX", 1, palette_index=7)
+        images["minerals_button"] = load_image("PLNTSUM.LBX", 2, palette_index=7)
+        images["size_button"] = load_image("PLNTSUM.LBX", 3, palette_index=7)
+        images["no_enemy_button"] = load_image("PLNTSUM.LBX", 4, palette_index=7)
+        images["normal_gravity_button"] = load_image("PLNTSUM.LBX", 5, palette_index=7)
+        images["non_hostile_button"] = load_image("PLNTSUM.LBX", 6, palette_index=7)
+        images["abundance_button"] = load_image("PLNTSUM.LBX", 7, palette_index=7)
+        images["in_range_button"] = load_image("PLNTSUM.LBX", 8, palette_index=7)
+        images["send_colony_button_disabled"] = load_image("PLNTSUM.LBX", 9, palette_index=7)
+        images["send_colony_button_enabled"] = load_image("PLNTSUM.LBX", 9, palette_index=7, frame=2)
+        images["send_outpost_button_disabled"] = load_image("PLNTSUM.LBX", 10, palette_index=7)
+        images["send_outpost_button_enabled"] = load_image("PLNTSUM.LBX", 10, palette_index=7, frame=2)
+        images["up_button"] = load_image("PLNTSUM.LBX", 11, palette_index=7)
+        images["down_button"] = load_image("PLNTSUM.LBX", 12, palette_index=7)
+        images["return_button"] = load_image("PLNTSUM.LBX", 14, palette_index=7)
+        images["colony_ship"] = load_image("PLNTSUM.LBX", 76, palette_index=7)
 
         end = time.time()
         print(f"PlanetSummary: Loaded {len(images)} in {end-start} seconds")

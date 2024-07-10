@@ -5,7 +5,7 @@ from enum import Enum, StrEnum, auto
 from typing import Optional, TYPE_CHECKING
 
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.textbox_window import TextBoxWindow
 from MooToo.ui.constants import DisplayMode
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
@@ -91,10 +91,10 @@ class PlanetWindow(BaseGraphics):
     def load_images(self) -> dict[ImageNames, pygame.Surface]:
         start = time.time()
         images = {}
-        images[ImageNames.WINDOW] = self.load_image("COLPUPS.LBX", 5, palette_index=2)
-        images[ImageNames.ORBIT_ARROW] = self.load_image("COLSYSDI.LBX", 64, palette_index=2)
-        images[ImageNames.RETURN_BUTTON] = self.load_image("COLPUPS.LBX", 4, palette_index=2)
-        images[ImageNames.BUILD_BUTTON] = self.load_image("COLPUPS.LBX", 1, palette_index=2)
+        images[ImageNames.WINDOW] = load_image("COLPUPS.LBX", 5, palette_index=2)
+        images[ImageNames.ORBIT_ARROW] = load_image("COLSYSDI.LBX", 64, palette_index=2)
+        images[ImageNames.RETURN_BUTTON] = load_image("COLPUPS.LBX", 4, palette_index=2)
+        images[ImageNames.BUILD_BUTTON] = load_image("COLPUPS.LBX", 1, palette_index=2)
         images |= self.load_climate_images()
         images |= self.load_orbit_images()
         images |= self.load_resource_images()
@@ -127,39 +127,39 @@ class PlanetWindow(BaseGraphics):
         # 11 Spy?
         # 12 Prisoner
         images = {}
-        images[ImageNames.FARMER] = self.load_image("RACEICON.LBX", 0, palette_index=2)
-        images[ImageNames.WORKER] = self.load_image("RACEICON.LBX", 3, palette_index=2)
-        images[ImageNames.SCIENTIST] = self.load_image("RACEICON.LBX", 5, palette_index=2)
+        images[ImageNames.FARMER] = load_image("RACEICON.LBX", 0, palette_index=2)
+        images[ImageNames.WORKER] = load_image("RACEICON.LBX", 3, palette_index=2)
+        images[ImageNames.SCIENTIST] = load_image("RACEICON.LBX", 5, palette_index=2)
 
         return images
 
     #####################################################################################################
     def load_government_images(self) -> dict[ImageNames, pygame.Surface]:
         images = {}
-        images["government_Feudal"] = self.load_image("COLONY2.LBX", 19, palette_index=2)
+        images["government_Feudal"] = load_image("COLONY2.LBX", 19, palette_index=2)
 
         return images
 
     #####################################################################################################
     def load_resource_images(self) -> dict[ImageNames, pygame.Surface]:
         images = {}
-        images[ImageNames.FOOD_1] = self.load_image("COLONY2.LBX", 0, palette_index=2)
-        images[ImageNames.WORK_1] = self.load_image("COLONY2.LBX", 1, palette_index=2)
-        images[ImageNames.SCIENCE_1] = self.load_image("COLONY2.LBX", 2, palette_index=2)
-        images[ImageNames.MONEY_1] = self.load_image("COLONY2.LBX", 3, palette_index=2)
-        images[ImageNames.FOOD_X] = self.load_image("COLONY2.LBX", 4, palette_index=2)
-        images[ImageNames.WORK_X] = self.load_image("COLONY2.LBX", 5, palette_index=2)
-        images[ImageNames.SCIENCE_X] = self.load_image("COLONY2.LBX", 6, palette_index=2)
-        images[ImageNames.MONEY_X] = self.load_image("COLONY2.LBX", 7, palette_index=2)
-        images[ImageNames.HUNGER_1] = self.load_image("COLONY2.LBX", 8, palette_index=2)
-        images[ImageNames.POLLUTION_1] = self.load_image("COLONY2.LBX", 9, palette_index=2)
-        images[ImageNames.IGNORANCE_1] = self.load_image("COLONY2.LBX", 10, palette_index=2)
-        images[ImageNames.DEBT_1] = self.load_image("COLONY2.LBX", 11, palette_index=2)
-        images[ImageNames.HUNGER_X] = self.load_image("COLONY2.LBX", 12, palette_index=2)
-        images[ImageNames.POLLUTION_X] = self.load_image("COLONY2.LBX", 13, palette_index=2)
-        images[ImageNames.IGNORANCE_X] = self.load_image("COLONY2.LBX", 14, palette_index=2)
-        images[ImageNames.DEBT_X] = self.load_image("COLONY2.LBX", 15, palette_index=2)
-        images[ImageNames.HAPPY] = self.load_image("COLONY2.LBX", 16, palette_index=2)
+        images[ImageNames.FOOD_1] = load_image("COLONY2.LBX", 0, palette_index=2)
+        images[ImageNames.WORK_1] = load_image("COLONY2.LBX", 1, palette_index=2)
+        images[ImageNames.SCIENCE_1] = load_image("COLONY2.LBX", 2, palette_index=2)
+        images[ImageNames.MONEY_1] = load_image("COLONY2.LBX", 3, palette_index=2)
+        images[ImageNames.FOOD_X] = load_image("COLONY2.LBX", 4, palette_index=2)
+        images[ImageNames.WORK_X] = load_image("COLONY2.LBX", 5, palette_index=2)
+        images[ImageNames.SCIENCE_X] = load_image("COLONY2.LBX", 6, palette_index=2)
+        images[ImageNames.MONEY_X] = load_image("COLONY2.LBX", 7, palette_index=2)
+        images[ImageNames.HUNGER_1] = load_image("COLONY2.LBX", 8, palette_index=2)
+        images[ImageNames.POLLUTION_1] = load_image("COLONY2.LBX", 9, palette_index=2)
+        images[ImageNames.IGNORANCE_1] = load_image("COLONY2.LBX", 10, palette_index=2)
+        images[ImageNames.DEBT_1] = load_image("COLONY2.LBX", 11, palette_index=2)
+        images[ImageNames.HUNGER_X] = load_image("COLONY2.LBX", 12, palette_index=2)
+        images[ImageNames.POLLUTION_X] = load_image("COLONY2.LBX", 13, palette_index=2)
+        images[ImageNames.IGNORANCE_X] = load_image("COLONY2.LBX", 14, palette_index=2)
+        images[ImageNames.DEBT_X] = load_image("COLONY2.LBX", 15, palette_index=2)
+        images[ImageNames.HAPPY] = load_image("COLONY2.LBX", 16, palette_index=2)
 
         return images
 
@@ -181,10 +181,10 @@ class PlanetWindow(BaseGraphics):
             PlanetClimate.GAIA,
         ]:
             for size in [PlanetSize.TINY, PlanetSize.SMALL, PlanetSize.MEDIUM, PlanetSize.LARGE, PlanetSize.HUGE]:
-                images[f"orbit_{climate}_{size}"] = self.load_image("COLSYSDI.LBX", index, palette_index=2)
+                images[f"orbit_{climate}_{size}"] = load_image("COLSYSDI.LBX", index, palette_index=2)
                 index += 1
-        images["orbit_gas_giant"] = self.load_image("COLSYSDI.LBX", 62, palette_index=2)
-        images["orbit_asteroid"] = self.load_image("COLSYSDI.LBX", 63, palette_index=2)
+        images["orbit_gas_giant"] = load_image("COLSYSDI.LBX", 62, palette_index=2)
+        images["orbit_asteroid"] = load_image("COLSYSDI.LBX", 63, palette_index=2)
         return images
 
     #####################################################################################################
@@ -204,7 +204,7 @@ class PlanetWindow(BaseGraphics):
             PlanetClimate.GAIA,
         ]:
             for number in range(3):
-                images[f"surface_{climate}_{number}"] = self.load_image("PLANETS.LBX", index, palette_index=2)
+                images[f"surface_{climate}_{number}"] = load_image("PLANETS.LBX", index, palette_index=2)
                 index += 1
         return images
 

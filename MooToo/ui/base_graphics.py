@@ -2,6 +2,7 @@
 
 import pygame
 from MooToo.ui.lbx_image import LBXImage
+from MooToo.ui.constants import DisplayMode
 from MooToo.constants import MOO_PATH
 
 
@@ -26,6 +27,7 @@ class BaseGraphics:
         self.size = self.screen.get_size()
         self.mid_point = pygame.Vector2(self.size[0] / 2, self.size[1] / 2)
         self.clock = pygame.time.Clock()
+        self.display_mode = DisplayMode.GALAXY
 
     #####################################################################################################
     def top_left(self, image: pygame.Surface, center: pygame.Vector2) -> pygame.Vector2:
@@ -34,16 +36,6 @@ class BaseGraphics:
         """
         img_size = image.get_size()
         return pygame.Vector2(center[0] - img_size[0] / 2, center[1] - img_size[1] / 2)
-
-    #####################################################################################################
-    def load_image(
-        self, lbx_file: str, lbx_index: int, frame: int = 0, palette_file="FONTS.LBX", palette_index=1
-    ) -> pygame.Surface:
-        img_key = (lbx_file, lbx_index, frame)
-        if img_key not in IMAGE_CACHE:
-            pil_image = LBXImage(lbx_file, lbx_index, MOO_PATH, frame, palette_file, palette_index).png_image()
-            IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "_.png")
-        return IMAGE_CACHE[img_key]
 
     #####################################################################################################
     def draw_centered_image(self, image: pygame.Surface) -> pygame.Rect:
@@ -72,3 +64,58 @@ class BaseGraphics:
             top_left.x += delta
             rects.append(rect)
         return rects
+
+    #####################################################################################################
+    def draw(self):
+        raise NotImplemented
+
+    #####################################################################################################
+    def button_left_down(self) -> None:
+        raise NotImplemented
+
+    #####################################################################################################
+    def button_right_down(self) -> None:
+        raise NotImplemented
+
+    #####################################################################################################
+    def button_up(self) -> None:
+        raise NotImplemented
+
+    #####################################################################################################
+    def mouse_pos(self, event: pygame.event):
+        raise NotImplemented
+
+    #####################################################################################################
+    def event_loop(self) -> None:
+        self.screen.fill("black")
+        self.draw()
+        pygame.display.flip()
+        self.clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit(1)
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                buttons = pygame.mouse.get_pressed()
+                if buttons[0]:
+                    self.button_left_down()
+                elif buttons[2]:
+                    self.button_right_down()
+            if event.type == pygame.MOUSEMOTION:
+                self.mouse_pos(event)
+            if event.type == pygame.MOUSEBUTTONUP:
+                self.button_up()
+
+
+#####################################################################################################
+def load_image(
+    lbx_file: str, lbx_index: int, frame: int = 0, palette_file="FONTS.LBX", palette_index=1
+) -> pygame.Surface:
+    img_key = (lbx_file, lbx_index, frame)
+    if img_key not in IMAGE_CACHE:
+        pil_image = LBXImage(lbx_file, lbx_index, MOO_PATH, frame, palette_file, palette_index).png_image()
+        IMAGE_CACHE[img_key] = pygame.image.load(pil_image, "_.png")
+    return IMAGE_CACHE[img_key]
+
+
+# EOF

@@ -1,6 +1,6 @@
 import time
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.constants import Technology
 from MooToo.research import TechCategory
 from MooToo.utils import get_research
@@ -17,7 +17,7 @@ class ScienceWindow(BaseGraphics):
         self.screen = screen
         self.images = self.load_images()
         self.research_rects: dict[tuple[float, float, float, float], Technology] = {}
-        self.cancel_button = Button(self.load_image("TECHSEL.LBX", 27), pygame.Vector2(274, 453))
+        self.cancel_button = Button(load_image("TECHSEL.LBX", 27), pygame.Vector2(274, 453))
 
     #####################################################################################################
     def draw_category(self, category: TechCategory, top_left: pygame.Vector2, rp_place: pygame.Vector2) -> None:
@@ -37,7 +37,7 @@ class ScienceWindow(BaseGraphics):
     def load_images(self) -> dict[str, pygame.surface.Surface]:
         start = time.time()
         images = {}
-        images["window"] = self.load_image("TECHSEL.LBX", 14)
+        images["window"] = load_image("TECHSEL.LBX", 14)
         end = time.time()
         print(f"Science: Loaded {len(images)} in {end-start} seconds")
         return images

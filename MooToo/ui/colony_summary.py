@@ -6,7 +6,7 @@ import pygame
 
 from MooToo.constants import PopulationJobs
 from MooToo.ui.constants import DisplayMode
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.gui_button import Button
 
 
@@ -31,13 +31,13 @@ class ColonySummaryWindow(BaseGraphics):
     def load_images(self) -> dict[str, pygame.Surface]:
         images = {}
         start = time.time()
-        images["window"] = self.load_image("COLSUM.LBX", 0, palette_index=2)
-        images["return_button"] = self.load_image("COLSUM.LBX", 1, palette_index=2)
-        images["purchase_button"] = self.load_image("COLSUM.LBX", 11, palette_index=2)
+        images["window"] = load_image("COLSUM.LBX", 0, palette_index=2)
+        images["return_button"] = load_image("COLSUM.LBX", 1, palette_index=2)
+        images["purchase_button"] = load_image("COLSUM.LBX", 11, palette_index=2)
 
-        images["farmer"] = self.load_image("RACEICON.LBX", 0, palette_index=2)
-        images["worker"] = self.load_image("RACEICON.LBX", 3, palette_index=2)
-        images["scientist"] = self.load_image("RACEICON.LBX", 5, palette_index=2)
+        images["farmer"] = load_image("RACEICON.LBX", 0, palette_index=2)
+        images["worker"] = load_image("RACEICON.LBX", 3, palette_index=2)
+        images["scientist"] = load_image("RACEICON.LBX", 5, palette_index=2)
         end = time.time()
         print(f"Colonies: Loaded {len(images)} in {end-start} seconds")
         return images
