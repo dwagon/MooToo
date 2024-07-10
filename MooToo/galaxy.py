@@ -15,6 +15,7 @@ NUM_SYSTEMS = 40
 NUM_EMPIRES = 4
 MAX_X = 530
 MAX_Y = 420
+MIN_DIST = 40  # Distance between systems
 
 
 #####################################################################################################
@@ -85,13 +86,12 @@ class Galaxy:
 def get_system_positions(num_systems: int) -> list[tuple[int, int]]:
     """Return suitable positions"""
     positions = []
-    min_dist = 30
     for _ in range(num_systems):
         while True:
-            x = random.randrange(min_dist, MAX_X - min_dist)
-            y = random.randrange(min_dist, MAX_Y - min_dist)
+            x = random.randrange(MIN_DIST, MAX_X - MIN_DIST)
+            y = random.randrange(MIN_DIST, MAX_Y - MIN_DIST)
             for a, b in positions:  # Find a spot not too close to existing positions
-                if get_distance(x, y, a, b) < min_dist:
+                if get_distance(x, y, a, b) < MIN_DIST:
                     break
             else:
                 positions.append((x, y))
