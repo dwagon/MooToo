@@ -8,6 +8,7 @@ import pygame
 from MooToo.planet import Planet
 from MooToo.constants import FOOD_CLIMATE_MAP, PROD_RICHNESS_MAP, GRAVITY_MAP
 from MooToo.ui.base_graphics import BaseGraphics, load_image
+from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button
 
 
@@ -227,27 +228,17 @@ class PlanetSummaryWindow(BaseGraphics):
         return False
 
     #####################################################################################################
-    def loop(self) -> None:
+    def loop(self) -> DisplayMode:
+        self.display_mode = DisplayMode.PLANET_SUM
         self.data = self.collect_data()
         while True:
-            self.screen.fill("black")
-            self.draw()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit(1)
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    buttons = pygame.mouse.get_pressed()
-                    if buttons[0]:
-                        if self.buttons[SummaryButtons.RETURN].clicked():
-                            return
-                        self.button_left_down()
-                    elif buttons[2]:
-                        return
+            self.event_loop()
 
-            pygame.display.flip()
-
-            self.clock.tick(60)
+            match self.display_mode:
+                case DisplayMode.PLANET_SUM:
+                    pass
+                case _:
+                    return self.display_mode
 
     #####################################################################################################
     def button_left_down(self):
@@ -261,6 +252,9 @@ class PlanetSummaryWindow(BaseGraphics):
             self.sorting = PlanetDataColumn.MINERALS
         elif self.buttons[SummaryButtons.SEND_COLONY].clicked():
             self.button_clicked = SummaryButtons.SEND_COLONY
+        elif self.buttons[SummaryButtons.RETURN].clicked():
+            self.display_mode = DisplayMode.GALAXY
+            return
         else:
             mouse = pygame.mouse.get_pos()
             for planet, rect in self.planet_rects.items():

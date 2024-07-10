@@ -10,3 +10,5 @@ class DisplayMode(Enum):
     FLEET = auto()
     COLONY_SUM = auto()
     PLANET_SUM = auto()
+    PLANET_BUILD = auto()
+    PLANET_DETAILS = auto()

@@ -5,7 +5,7 @@ import time
 from typing import Optional
 
 import pygame
-from enum import Enum, StrEnum, auto
+from enum import StrEnum, auto
 from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.ui.orbit_window import OrbitWindow
@@ -112,33 +112,19 @@ class Game(BaseGraphics):
         running = True
 
         while running:
-            self.screen.fill("black")
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    buttons = pygame.mouse.get_pressed()
-                    if buttons[0]:
-                        self.button_left_down()
-                    elif buttons[2]:
-                        self.button_right_down()
-                if event.type == pygame.MOUSEMOTION:
-                    self.mouse_pos(event)
-                if event.type == pygame.MOUSEBUTTONUP:
-                    self.button_up()
+            self.event_loop()
 
             match self.display_mode:
                 case DisplayMode.PLANET:
                     self.display_mode = self.planet_window.loop(self.planet)
                 case DisplayMode.PLANET_SUM:
-                    self.planet_summary_window.loop()
+                    self.display_mode = self.planet_summary_window.loop()
+                case DisplayMode.COLONY_SUM:
+                    self.display_mode = self.colonies_window.loop()
+                case DisplayMode.PLANET_BUILD:
+                    self.display_mode = self.planet_window.building_choice_window.loop(self.planet)
                 case _:
                     pass
-
-            self.draw_screen()
-            pygame.display.flip()
-
-            self.clock.tick(60)
 
     #####################################################################################################
     def button_up(self):
@@ -234,13 +220,11 @@ class Game(BaseGraphics):
                     self.display_mode = DisplayMode.GALAXY
                 elif system := self.click_system():
                     self.fleet_window.select_destination(system)
-            case DisplayMode.COLONY_SUM:
-                self.display_mode = self.colonies_window.button_left_down()
-            case DisplayMode.PLANET_SUM | DisplayMode.PLANET:
+            case DisplayMode.PLANET_SUM | DisplayMode.PLANET | DisplayMode.COLONY_SUM:
                 pass  # Handled in the window
 
     #####################################################################################################
-    def draw_screen(self):
+    def draw(self):
         match self.display_mode:
             case DisplayMode.GALAXY:
                 self.draw_galaxy_view()
@@ -253,9 +237,7 @@ class Game(BaseGraphics):
             case DisplayMode.FLEET:
                 self.draw_galaxy_view()
                 self.fleet_window.draw()
-            case DisplayMode.COLONY_SUM:
-                self.colonies_window.draw()
-            case DisplayMode.PLANET_SUM | DisplayMode.PLANET:
+            case DisplayMode.PLANET_SUM | DisplayMode.PLANET | DisplayMode.COLONY_SUM:
                 pass  # Handled in the window
 
     #####################################################################################################

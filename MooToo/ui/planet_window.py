@@ -29,13 +29,6 @@ class PlanetButtons(StrEnum):
 
 
 #####################################################################################################
-class PlanetDisplayMode(Enum):
-    NORMAL = auto()
-    BUILD = auto()
-    DETAILS = auto()
-
-
-#####################################################################################################
 class ImageNames(Enum):
     FOOD_1 = auto()
     FOOD_X = auto()
@@ -74,12 +67,12 @@ class PlanetWindow(BaseGraphics):
         self.screen = screen
         self.planet: Planet
         self.images = self.load_images()
-        self.planet_rects: dict[tuple[float, float, float, float], Planet] = {}
+        self.planet_rects: dict[Planet, pygame.Rect] = {}
         self.worker_rects: dict[tuple[PopulationJobs, int], pygame.Rect] = {}
         self.worker: Optional[tuple[PopulationJobs, int]] = None
         self.detail_rect: Optional[pygame.Rect] = None
         self.colony_font = pygame.font.SysFont("Ariel", 18, bold=True)
-        self.display_mode = PlanetDisplayMode.NORMAL
+        self.display_mode = DisplayMode.PLANET
         self.building_choice_window = BuildingChoiceWindow(screen, game)
         self.buttons = {
             PlanetButtons.RETURN: Button(self.images[ImageNames.RETURN_BUTTON], pygame.Vector2(555, 460)),
@@ -227,17 +220,17 @@ class PlanetWindow(BaseGraphics):
         ]
 
     #####################################################################################################
-    def draw(self, system: System):
+    def draw(self) -> None:
         self.draw_centered_image(self.images[self.planet.climate_image])
-        if self.display_mode == PlanetDisplayMode.BUILD:
-            self.building_choice_window.draw(self.planet)
+        if self.display_mode == DisplayMode.PLANET_BUILD:
+            self.building_choice_window.draw()
             return
-        if self.display_mode == PlanetDisplayMode.DETAILS:
+        if self.display_mode == DisplayMode.PLANET_DETAILS:
             self.details_textbox.draw(self.details_text(), self.title_font)
             return
 
         self.window = self.draw_centered_image(self.images[ImageNames.WINDOW])
-        self.draw_orbits(system)
+        self.draw_orbits(self.planet.system)
         self.draw_resources(self.planet)
         self.draw_pop_label(self.planet)
         self.draw_population(self.planet)
@@ -460,7 +453,9 @@ class PlanetWindow(BaseGraphics):
         )
         self.screen.blit(image, planet_dest)
         if planet.category == PlanetCategory.PLANET:
-            self.planet_rects[(planet_dest.left, planet_dest.top, planet_dest.width, planet_dest.height)] = planet
+            rect = pygame.Rect(planet_dest.left, planet_dest.top, planet_dest.width, planet_dest.height)
+            pygame.draw.rect(self.screen, "purple", rect, width=1)
+            self.planet_rects[planet] = rect
 
     #####################################################################################################
     def draw_orbit_text(self, planet: Planet, label_col: float, row_middle: float) -> None:
@@ -477,6 +472,7 @@ class PlanetWindow(BaseGraphics):
         self.screen.blit(label_surface, label_dest)
         if planet == self.planet and self.planet.owner:
             self.detail_rect = label_dest
+            pygame.draw.rect(self.screen, "purple", label_dest, width=1)
 
     #####################################################################################################
     def orbit_label(self, planet: Planet) -> str:
@@ -511,6 +507,10 @@ class PlanetWindow(BaseGraphics):
                 delta += image.get_size()[0]
 
     #####################################################################################################
+    def button_right_down(self):
+        self.display_mode = DisplayMode.GALAXY
+
+    #####################################################################################################
     def button_up(self):
         """Mouse button up - if we are moving workers then put them down"""
         if not self.worker:
@@ -530,60 +530,53 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def loop(self, planet: Planet) -> DisplayMode:
         self.planet = planet
+        self.display_mode = DisplayMode.PLANET
         while True:
-            self.screen.fill("black")
-            self.draw(self.planet.system)
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit(1)
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    buttons = pygame.mouse.get_pressed()
-                    if buttons[0]:
-                        if self.buttons[PlanetButtons.RETURN].clicked():
-                            return DisplayMode.GALAXY
-                        if self.button_left_down():
-                            print("Returning")
-                            return DisplayMode.GALAXY
-                    elif buttons[2]:
-                        return DisplayMode.GALAXY
-                if event.type == pygame.MOUSEMOTION:
-                    self.mouse_pos(event)
-                if event.type == pygame.MOUSEBUTTONUP:
-                    self.button_up()
+            self.event_loop()
 
-            pygame.display.flip()
-
-            self.clock.tick(60)
+            match self.display_mode:
+                case DisplayMode.PLANET_BUILD:
+                    self.building_choice_window.loop(self.planet)
+                    self.display_mode = DisplayMode.PLANET
+                case DisplayMode.PLANET_DETAILS:
+                    pass
+                case DisplayMode.PLANET:
+                    pass
+                case _:
+                    return self.display_mode
 
     #####################################################################################################
-    def button_left_down(self) -> bool:
-        """Someone pressed the left button
-        Return True if exit this display mode
-        """
-        if self.display_mode == PlanetDisplayMode.BUILD:
-            if self.building_choice_window.button_left_down():
-                self.display_mode = PlanetDisplayMode.NORMAL
-                return False
-        if self.display_mode == PlanetDisplayMode.DETAILS:
-            if self.details_textbox.button_left_down():
-                self.display_mode = PlanetDisplayMode.NORMAL
-                return False
-        if self.buttons[PlanetButtons.BUILD].clicked():
-            self.display_mode = PlanetDisplayMode.BUILD
+    def button_left_down(self) -> None:
+        """Someone pressed the left button"""
 
-        for sys_rect, planet in self.planet_rects.items():
-            r = pygame.Rect(sys_rect[0], sys_rect[1], sys_rect[2], sys_rect[3])
-            if r.collidepoint(pygame.mouse.get_pos()):
+        if self.buttons[PlanetButtons.BUILD].clicked():
+            self.display_mode = DisplayMode.PLANET_BUILD
+            return
+
+        if self.buttons[PlanetButtons.RETURN].clicked():
+            self.display_mode = DisplayMode.GALAXY
+            return
+
+        if self.display_mode == DisplayMode.PLANET_DETAILS and self.details_textbox.close_button.clicked():
+            self.display_mode = DisplayMode.PLANET
+            return
+
+        # Change to look at a different planet in the same system
+        for planet, rect in self.planet_rects.items():
+            if rect.collidepoint(pygame.mouse.get_pos()):
                 self.planet = planet
-                return True
+                self.display_mode = DisplayMode.PLANET
+                return
+
+        # Get planet details
         if self.detail_rect and self.detail_rect.collidepoint(pygame.mouse.get_pos()):
-            self.display_mode = PlanetDisplayMode.DETAILS
+            self.display_mode = DisplayMode.PLANET_DETAILS
+            return
 
         for job, rect in self.worker_rects.items():
             if rect.collidepoint(pygame.mouse.get_pos()):
                 self.worker = job
-        return False
+                return
 
 
 # EOF

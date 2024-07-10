@@ -89,20 +89,40 @@ class ColonySummaryWindow(BaseGraphics):
             self.screen.blit(text_surface, top_left + pygame.Vector2(510, 12))
 
     #####################################################################################################
-    def button_left_down(self) -> DisplayMode:
+    def button_left_down(self) -> None:
         """Return True if changing mode"""
         if self.return_button.clicked():
-            return DisplayMode.GALAXY
+            self.display_mode = DisplayMode.GALAXY
+            return
         mouse = pygame.mouse.get_pos()
+
+        # Buy the construction on planet
         for planet, rect in self.buy_now_rects.items():
             if rect.collidepoint(mouse[0], mouse[1]):
                 print(f"DBG Buy on {planet}")
+
+        # Change construction on planet
         for planet, rect in self.building_rect.items():
             if rect.collidepoint(mouse[0], mouse[1]):
-                print(f"DBG Change building on {planet}")
+                self.game.look_at_planet(planet)
+                self.display_mode = DisplayMode.PLANET_BUILD
+                return
+
+        # Look at the planet
         for planet, rect in self.planet_rect.items():
             if rect.collidepoint(mouse[0], mouse[1]):
                 self.game.look_at_planet(planet)
-                return DisplayMode.PLANET
+                self.display_mode = DisplayMode.PLANET
+                return
 
-        return DisplayMode.COLONY_SUM
+    #####################################################################################################
+    def loop(self) -> DisplayMode:
+        self.display_mode = DisplayMode.COLONY_SUM
+        while True:
+            self.event_loop()
+
+            match self.display_mode:
+                case DisplayMode.COLONY_SUM:
+                    pass
+                case _:
+                    return self.display_mode
