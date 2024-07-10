@@ -4,7 +4,7 @@ import time
 from typing import TYPE_CHECKING
 import pygame
 from MooToo.ship import Ship
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.utils import get_distance_tuple
 
@@ -84,29 +84,29 @@ class FleetWindow(BaseGraphics):
     def load_images(self) -> dict[str, pygame.Surface]:
         images = {}
         start = time.time()
-        images["top_window"] = self.load_image("BUFFER0.LBX", 52)
-        images["middle_window"] = self.load_image("BUFFER0.LBX", 54)
-        images["bottom_window"] = self.load_image("BUFFER0.LBX", 56)
+        images["top_window"] = load_image("BUFFER0.LBX", 52)
+        images["middle_window"] = load_image("BUFFER0.LBX", 54)
+        images["bottom_window"] = load_image("BUFFER0.LBX", 56)
         for num, idx in enumerate(range(8)):
-            images[f"frigate_{num}"] = self.load_image("SHIPS.LBX", idx, palette_index=2)
+            images[f"frigate_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
         for num, idx in enumerate(range(8, 16)):
-            images[f"destroyer_{num}"] = self.load_image("SHIPS.LBX", idx, palette_index=2)
+            images[f"destroyer_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
         for num, idx in enumerate(range(16, 24)):
-            images[f"cruiser_{num}"] = self.load_image("SHIPS.LBX", idx, palette_index=2)
+            images[f"cruiser_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
         for num, idx in enumerate(range(24, 32)):
-            images[f"battleship_{num}"] = self.load_image("SHIPS.LBX", idx, palette_index=2)
+            images[f"battleship_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
         for num, idx in enumerate(range(32, 40)):
-            images[f"titan_{num}"] = self.load_image("SHIPS.LBX", idx, palette_index=2)
+            images[f"titan_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
         for num, idx in enumerate(range(40, 44)):
-            images[f"doomstar_{num}"] = self.load_image("SHIPS.LBX", idx, palette_index=2)
-        images["guardian"] = self.load_image("SHIPS.LBX", 44, palette_index=2)
-        images["colony"] = self.load_image("SHIPS.LBX", 45, palette_index=2)
-        images["outpost"] = self.load_image("SHIPS.LBX", 46, palette_index=2)
-        images["transport"] = self.load_image("SHIPS.LBX", 47, palette_index=2)
-        images["freighter"] = self.load_image("SHIPS.LBX", 48, palette_index=2)
-        images["close_button"] = self.load_image("BUFFER0.LBX", 72)
-        images["blue_bg"] = self.load_image("BUFFER0.LBX", 11)
-        images["all_button"] = self.load_image("BUFFER0.LBX", 60)
+            images[f"doomstar_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
+        images["guardian"] = load_image("SHIPS.LBX", 44, palette_index=2)
+        images["colony"] = load_image("SHIPS.LBX", 45, palette_index=2)
+        images["outpost"] = load_image("SHIPS.LBX", 46, palette_index=2)
+        images["transport"] = load_image("SHIPS.LBX", 47, palette_index=2)
+        images["freighter"] = load_image("SHIPS.LBX", 48, palette_index=2)
+        images["close_button"] = load_image("BUFFER0.LBX", 72)
+        images["blue_bg"] = load_image("BUFFER0.LBX", 11)
+        images["all_button"] = load_image("BUFFER0.LBX", 60)
 
         end = time.time()
         print(f"Ships: Loaded {len(images)} in {end-start} seconds")

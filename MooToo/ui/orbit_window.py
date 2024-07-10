@@ -6,7 +6,7 @@ from typing import Optional, TYPE_CHECKING
 
 import pygame
 from MooToo.planet import Planet
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.system import System
 from MooToo.ui.gui_button import Button
 from MooToo.constants import PlanetCategory, PlanetClimate, PlanetSize
@@ -26,21 +26,21 @@ class OrbitWindow(BaseGraphics):
         self.system = None  # Which system we are looking at
         self.window: Optional[pygame.Rect] = None  # The window Rect
         self.images = self.load_images()
-        self.close_button = Button(self.load_image("BUFFER0.LBX", 82), self.mid_point + pygame.Vector2(90, 100))
+        self.close_button = Button(load_image("BUFFER0.LBX", 82), self.mid_point + pygame.Vector2(90, 100))
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
         start = time.time()
         images = {}
-        images["orbit_window"] = self.load_image("BUFFER0.LBX", 73)
-        images["gas_giant"] = self.load_image("BUFFER0.LBX", 142)
+        images["orbit_window"] = load_image("BUFFER0.LBX", 73)
+        images["gas_giant"] = load_image("BUFFER0.LBX", 142)
 
-        images["big_BLUE_star"] = self.load_image("BUFFER0.LBX", 83)
-        images["big_WHITE_star"] = self.load_image("BUFFER0.LBX", 154)
-        images["big_YELLOW_star"] = self.load_image("BUFFER0.LBX", 160)
-        images["big_ORANGE_star"] = self.load_image("BUFFER0.LBX", 166)
-        images["big_RED_star"] = self.load_image("BUFFER0.LBX", 172)
-        images["big_BROWN_star"] = self.load_image("BUFFER0.LBX", 178)
+        images["big_BLUE_star"] = load_image("BUFFER0.LBX", 83)
+        images["big_WHITE_star"] = load_image("BUFFER0.LBX", 154)
+        images["big_YELLOW_star"] = load_image("BUFFER0.LBX", 160)
+        images["big_ORANGE_star"] = load_image("BUFFER0.LBX", 166)
+        images["big_RED_star"] = load_image("BUFFER0.LBX", 172)
+        images["big_BROWN_star"] = load_image("BUFFER0.LBX", 178)
 
         index = 92
         for climate in [
@@ -56,12 +56,12 @@ class OrbitWindow(BaseGraphics):
             PlanetClimate.GAIA,
         ]:
             for size in [PlanetSize.TINY, PlanetSize.SMALL, PlanetSize.MEDIUM, PlanetSize.LARGE, PlanetSize.HUGE]:
-                images[f"planet_{climate.name}_{size.name}"] = self.load_image("BUFFER0.LBX", index, frame=0)
+                images[f"planet_{climate.name}_{size.name}"] = load_image("BUFFER0.LBX", index, frame=0)
                 index += 1
 
         for orbit in range(5):
-            images[f"orbit_{orbit}"] = self.load_image("BUFFER0.LBX", 90, frame=orbit)
-            images[f"asteroid_{orbit}"] = self.load_image("BUFFER0.LBX", 91, frame=orbit)
+            images[f"orbit_{orbit}"] = load_image("BUFFER0.LBX", 90, frame=orbit)
+            images[f"asteroid_{orbit}"] = load_image("BUFFER0.LBX", 91, frame=orbit)
 
         end = time.time()
         print(f"Orbit: Loaded {len(images)} in {end-start} seconds")

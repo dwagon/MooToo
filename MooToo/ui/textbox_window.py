@@ -3,7 +3,7 @@
 import time
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.gui_button import Button
 
 if TYPE_CHECKING:
@@ -24,10 +24,10 @@ class TextBoxWindow(BaseGraphics):
     def load_images(self) -> dict[str, pygame.Surface]:
         images = {}
         start = time.time()
-        images["top"] = self.load_image("TEXTBOX.LBX", 0)
-        images["sides"] = self.load_image("TEXTBOX.LBX", 1)
-        images["bottom"] = self.load_image("TEXTBOX.LBX", 2)
-        images["close_button"] = self.load_image("TEXTBOX.LBX", 3)
+        images["top"] = load_image("TEXTBOX.LBX", 0)
+        images["sides"] = load_image("TEXTBOX.LBX", 1)
+        images["bottom"] = load_image("TEXTBOX.LBX", 2)
+        images["close_button"] = load_image("TEXTBOX.LBX", 3)
         end = time.time()
         print(f"TextBox: Loaded {len(images)} in {end-start} seconds")
 

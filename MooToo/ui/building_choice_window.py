@@ -2,9 +2,10 @@
 
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.planet import Planet
 from MooToo.ui.gui_button import Button
+from MooToo.ui.constants import DisplayMode
 from MooToo.ship import ShipType
 from MooToo.constants import Building
 from MooToo.construct import ConstructType
@@ -24,20 +25,19 @@ class BuildingChoiceWindow(BaseGraphics):
         self.images = self.load_images()
         self.ok_button = Button(self.images["ok_button"], pygame.Vector2(564, 450))
         self.cancel_button = Button(self.images["cancel_button"], pygame.Vector2(495, 450))
-        self.to_build_rects: dict[Building | ShipType, pygame.Rect] = {}
+        self.to_build_rects: dict[Building | ShipType | ConstructType, pygame.Rect] = {}
         self.build_queue_rects: dict[int, pygame.Rect] = {}
 
     #####################################################################################################
     def load_images(self) -> dict[str, pygame.Surface]:
         images = {}
-        images["window"] = self.load_image("COLBLDG.LBX", 0, palette_index=2)
-        images["ok_button"] = self.load_image("COLBLDG.LBX", 3)
-        images["cancel_button"] = self.load_image("COLBLDG.LBX", 1)
+        images["window"] = load_image("COLBLDG.LBX", 0, palette_index=2)
+        images["ok_button"] = load_image("COLBLDG.LBX", 3)
+        images["cancel_button"] = load_image("COLBLDG.LBX", 1)
         return images
 
     #####################################################################################################
-    def draw(self, planet: Planet):
-        self.planet = planet
+    def draw(self):
         self.draw_centered_image(self.images["window"])
         self.draw_currently_building()
         self.draw_available_buildings()
@@ -50,7 +50,7 @@ class BuildingChoiceWindow(BaseGraphics):
         top_left = pygame.Vector2(486, 14)
         if self.planet.can_build(ConstructType.FREIGHTER):
             top_left = self.build_freighter(top_left)
-        for ship_type in list(ShipType):
+        for ship_type in ShipType:
             if self.planet.can_build_ship(ship_type):
                 text_surface = self.text_font.render(ship_type.name, True, "white")
                 rect = self.screen.blit(text_surface, top_left)
@@ -108,7 +108,20 @@ class BuildingChoiceWindow(BaseGraphics):
             top_left.y += 20
 
     #####################################################################################################
-    def button_left_down(self) -> bool:
+    def loop(self, planet: Planet) -> DisplayMode:
+        self.planet = planet
+        self.display_mode = DisplayMode.PLANET_BUILD
+        while True:
+            self.event_loop()
+
+            match self.display_mode:
+                case DisplayMode.PLANET_BUILD:
+                    pass
+                case _:
+                    return self.display_mode
+
+    #####################################################################################################
+    def button_left_down(self) -> None:
         mouse_x, mouse_y = pygame.mouse.get_pos()
         for con, rect in self.to_build_rects.items():
             if rect.collidepoint(mouse_x, mouse_y):
@@ -117,7 +130,6 @@ class BuildingChoiceWindow(BaseGraphics):
             if rect.collidepoint(mouse_x, mouse_y):
                 self.planet.build_queue.pop(num)
         if self.ok_button.clicked():
-            return True
+            self.display_mode = DisplayMode.PLANET
         if self.cancel_button.clicked():
-            return True
-        return False
+            self.display_mode = DisplayMode.PLANET

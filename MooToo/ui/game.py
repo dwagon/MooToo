@@ -5,14 +5,15 @@ import time
 from typing import Optional
 
 import pygame
-from enum import Enum, StrEnum, auto
+from enum import StrEnum, auto
+from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.ui.orbit_window import OrbitWindow
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.planet_window import PlanetWindow
 from MooToo.ui.science_window import ScienceWindow
 from MooToo.ui.fleet_window import FleetWindow
-from MooToo.ui.colony_window import ColonySummaryWindow
+from MooToo.ui.colony_summary import ColonySummaryWindow
 from MooToo.ui.planet_summary import PlanetSummaryWindow
 from MooToo.galaxy import Galaxy, save, load
 from MooToo.ship import Ship
@@ -22,17 +23,6 @@ from MooToo.planet import Planet
 from MooToo.food import empire_food
 
 MAX_NEBULAE = 5
-
-
-#####################################################################################################
-class DisplayMode(Enum):
-    GALAXY = auto()
-    PLANET = auto()
-    ORBIT = auto()
-    SCIENCE = auto()
-    FLEET = auto()
-    COLONY_SUM = auto()
-    PLANET_SUM = auto()
 
 
 #####################################################################################################
@@ -93,24 +83,24 @@ class Game(BaseGraphics):
         """Load all the images from disk"""
         start = time.time()
         images = {}
-        images["base_window"] = self.load_image("BUFFER0.LBX", 0)
-        images["star_bg"] = self.load_image("STARBG.LBX", 0, palette_index=2)
+        images["base_window"] = load_image("BUFFER0.LBX", 0)
+        images["star_bg"] = load_image("STARBG.LBX", 0, palette_index=2)
         for neb in range(6, 52):
             try:
-                images[f"nebula_{neb}"] = self.load_image("STARBG.LBX", neb)
+                images[f"nebula_{neb}"] = load_image("STARBG.LBX", neb)
             except IndexError:
                 pass
 
-        images["small_blue_star"] = self.load_image("BUFFER0.LBX", 149)
-        images["small_white_star"] = self.load_image("BUFFER0.LBX", 155)
-        images["small_yellow_star"] = self.load_image("BUFFER0.LBX", 161)
-        images["small_orange_star"] = self.load_image("BUFFER0.LBX", 167)
-        images["small_red_star"] = self.load_image("BUFFER0.LBX", 173)
-        images["small_brown_star"] = self.load_image("BUFFER0.LBX", 179)
-        images["ship"] = self.load_image("BUFFER0.LBX", 205)
-        images["turn_button"] = self.load_image("BUFFER0.LBX", 2)
-        images["colonies_button"] = self.load_image("BUFFER0.LBX", 3)
-        images["planets_button"] = self.load_image("BUFFER0.LBX", 4)
+        images["small_blue_star"] = load_image("BUFFER0.LBX", 149)
+        images["small_white_star"] = load_image("BUFFER0.LBX", 155)
+        images["small_yellow_star"] = load_image("BUFFER0.LBX", 161)
+        images["small_orange_star"] = load_image("BUFFER0.LBX", 167)
+        images["small_red_star"] = load_image("BUFFER0.LBX", 173)
+        images["small_brown_star"] = load_image("BUFFER0.LBX", 179)
+        images["ship"] = load_image("BUFFER0.LBX", 205)
+        images["turn_button"] = load_image("BUFFER0.LBX", 2)
+        images["colonies_button"] = load_image("BUFFER0.LBX", 3)
+        images["planets_button"] = load_image("BUFFER0.LBX", 4)
 
         end = time.time()
         print(f"Main: Loaded {len(images)} in {end-start} seconds")
@@ -122,27 +112,19 @@ class Game(BaseGraphics):
         running = True
 
         while running:
-            self.screen.fill("black")
-            # poll for events
-            # pygame.QUIT event means the user clicked X to close your window
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    running = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    buttons = pygame.mouse.get_pressed()
-                    if buttons[0]:
-                        self.button_left_down()
-                    elif buttons[2]:
-                        self.button_right_down()
-                if event.type == pygame.MOUSEMOTION:
-                    self.mouse_pos(event)
-                if event.type == pygame.MOUSEBUTTONUP:
-                    self.button_up()
+            self.event_loop()
 
-            self.draw_screen()
-            pygame.display.flip()
-
-            self.clock.tick(60)
+            match self.display_mode:
+                case DisplayMode.PLANET:
+                    self.display_mode = self.planet_window.loop(self.planet)
+                case DisplayMode.PLANET_SUM:
+                    self.display_mode = self.planet_summary_window.loop()
+                case DisplayMode.COLONY_SUM:
+                    self.display_mode = self.colonies_window.loop()
+                case DisplayMode.PLANET_BUILD:
+                    self.display_mode = self.planet_window.building_choice_window.loop(self.planet)
+                case _:
+                    pass
 
     #####################################################################################################
     def button_up(self):
@@ -193,7 +175,7 @@ class Game(BaseGraphics):
         elif self.buttons[MainButtons.COLONY_SUMMARY].clicked():
             self.display_mode = DisplayMode.COLONY_SUM
         elif self.buttons[MainButtons.PLANET_SUMMARY].clicked():
-            self.planet_summary_window.loop()
+            self.display_mode = DisplayMode.PLANET_SUM
         elif self.buttons[MainButtons.SCIENCE].clicked():
             self.display_mode = DisplayMode.SCIENCE
         for rect, ships in self.ship_rects:
@@ -204,7 +186,8 @@ class Game(BaseGraphics):
         if system := self.click_system():
             self.system = system
             if self.empire.has_interest_in(system):
-                self.planet_window.loop(pick_planet(system))
+                self.display_mode = DisplayMode.PLANET
+                self.planet = pick_planet(system)
             elif self.empire.is_known_system(system):
                 self.display_mode = DisplayMode.ORBIT
 
@@ -217,6 +200,11 @@ class Game(BaseGraphics):
         return None
 
     #####################################################################################################
+    def look_at_planet(self, planet: Planet) -> None:
+        self.display_mode = DisplayMode.PLANET
+        self.planet = planet
+
+    #####################################################################################################
     def button_left_down(self):
         match self.display_mode:
             case DisplayMode.GALAXY:
@@ -224,8 +212,6 @@ class Game(BaseGraphics):
             case DisplayMode.ORBIT:
                 if self.orbit_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
-            case DisplayMode.PLANET:
-                pass  # Handled in the planet_window
             case DisplayMode.SCIENCE:
                 if self.science_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
@@ -234,14 +220,11 @@ class Game(BaseGraphics):
                     self.display_mode = DisplayMode.GALAXY
                 elif system := self.click_system():
                     self.fleet_window.select_destination(system)
-            case DisplayMode.COLONY_SUM:
-                if self.colonies_window.button_left_down():
-                    self.display_mode = DisplayMode.GALAXY
-            case DisplayMode.PLANET_SUM:
-                pass  # Handled in the planet summary window
+            case DisplayMode.PLANET_SUM | DisplayMode.PLANET | DisplayMode.COLONY_SUM:
+                pass  # Handled in the window
 
     #####################################################################################################
-    def draw_screen(self):
+    def draw(self):
         match self.display_mode:
             case DisplayMode.GALAXY:
                 self.draw_galaxy_view()
@@ -254,9 +237,7 @@ class Game(BaseGraphics):
             case DisplayMode.FLEET:
                 self.draw_galaxy_view()
                 self.fleet_window.draw()
-            case DisplayMode.COLONY_SUM:
-                self.colonies_window.draw()
-            case DisplayMode.PLANET_SUM | DisplayMode.PLANET:
+            case DisplayMode.PLANET_SUM | DisplayMode.PLANET | DisplayMode.COLONY_SUM:
                 pass  # Handled in the window
 
     #####################################################################################################

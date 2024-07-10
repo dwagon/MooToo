@@ -7,7 +7,8 @@ import pygame
 
 from MooToo.planet import Planet
 from MooToo.constants import FOOD_CLIMATE_MAP, PROD_RICHNESS_MAP, GRAVITY_MAP
-from MooToo.ui.base_graphics import BaseGraphics
+from MooToo.ui.base_graphics import BaseGraphics, load_image
+from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button
 
 
@@ -95,23 +96,23 @@ class PlanetSummaryWindow(BaseGraphics):
     def load_images(self) -> dict[str, pygame.Surface]:
         images = {}
         start = time.time()
-        images["window"] = self.load_image("PLNTSUM.LBX", 0, palette_index=7)
-        images["climate_button"] = self.load_image("PLNTSUM.LBX", 1, palette_index=7)
-        images["minerals_button"] = self.load_image("PLNTSUM.LBX", 2, palette_index=7)
-        images["size_button"] = self.load_image("PLNTSUM.LBX", 3, palette_index=7)
-        images["no_enemy_button"] = self.load_image("PLNTSUM.LBX", 4, palette_index=7)
-        images["normal_gravity_button"] = self.load_image("PLNTSUM.LBX", 5, palette_index=7)
-        images["non_hostile_button"] = self.load_image("PLNTSUM.LBX", 6, palette_index=7)
-        images["abundance_button"] = self.load_image("PLNTSUM.LBX", 7, palette_index=7)
-        images["in_range_button"] = self.load_image("PLNTSUM.LBX", 8, palette_index=7)
-        images["send_colony_button_disabled"] = self.load_image("PLNTSUM.LBX", 9, palette_index=7)
-        images["send_colony_button_enabled"] = self.load_image("PLNTSUM.LBX", 9, palette_index=7, frame=2)
-        images["send_outpost_button_disabled"] = self.load_image("PLNTSUM.LBX", 10, palette_index=7)
-        images["send_outpost_button_enabled"] = self.load_image("PLNTSUM.LBX", 10, palette_index=7, frame=2)
-        images["up_button"] = self.load_image("PLNTSUM.LBX", 11, palette_index=7)
-        images["down_button"] = self.load_image("PLNTSUM.LBX", 12, palette_index=7)
-        images["return_button"] = self.load_image("PLNTSUM.LBX", 14, palette_index=7)
-        images["colony_ship"] = self.load_image("PLNTSUM.LBX", 76, palette_index=7)
+        images["window"] = load_image("PLNTSUM.LBX", 0, palette_index=7)
+        images["climate_button"] = load_image("PLNTSUM.LBX", 1, palette_index=7)
+        images["minerals_button"] = load_image("PLNTSUM.LBX", 2, palette_index=7)
+        images["size_button"] = load_image("PLNTSUM.LBX", 3, palette_index=7)
+        images["no_enemy_button"] = load_image("PLNTSUM.LBX", 4, palette_index=7)
+        images["normal_gravity_button"] = load_image("PLNTSUM.LBX", 5, palette_index=7)
+        images["non_hostile_button"] = load_image("PLNTSUM.LBX", 6, palette_index=7)
+        images["abundance_button"] = load_image("PLNTSUM.LBX", 7, palette_index=7)
+        images["in_range_button"] = load_image("PLNTSUM.LBX", 8, palette_index=7)
+        images["send_colony_button_disabled"] = load_image("PLNTSUM.LBX", 9, palette_index=7)
+        images["send_colony_button_enabled"] = load_image("PLNTSUM.LBX", 9, palette_index=7, frame=2)
+        images["send_outpost_button_disabled"] = load_image("PLNTSUM.LBX", 10, palette_index=7)
+        images["send_outpost_button_enabled"] = load_image("PLNTSUM.LBX", 10, palette_index=7, frame=2)
+        images["up_button"] = load_image("PLNTSUM.LBX", 11, palette_index=7)
+        images["down_button"] = load_image("PLNTSUM.LBX", 12, palette_index=7)
+        images["return_button"] = load_image("PLNTSUM.LBX", 14, palette_index=7)
+        images["colony_ship"] = load_image("PLNTSUM.LBX", 76, palette_index=7)
 
         end = time.time()
         print(f"PlanetSummary: Loaded {len(images)} in {end-start} seconds")
@@ -141,7 +142,7 @@ class PlanetSummaryWindow(BaseGraphics):
         self.draw_text(planet_data[PlanetDataColumn.NAME], tl, highlight)
 
         if planet_data[PlanetDataColumn.COLONISER_EN_ROUTE]:
-            self.screen.blit(self.images["colony_ship"], tl + pygame.Vector2(0, 10))
+            self.screen.blit(self.images["colony_ship"], tl + pygame.Vector2(71, 38))
 
         tl += pygame.Vector2(92, 0)
         food = FOOD_CLIMATE_MAP[planet_data[PlanetDataColumn.CLIMATE]]
@@ -227,27 +228,17 @@ class PlanetSummaryWindow(BaseGraphics):
         return False
 
     #####################################################################################################
-    def loop(self) -> None:
+    def loop(self) -> DisplayMode:
+        self.display_mode = DisplayMode.PLANET_SUM
         self.data = self.collect_data()
         while True:
-            self.screen.fill("black")
-            self.draw()
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit(1)
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    buttons = pygame.mouse.get_pressed()
-                    if buttons[0]:
-                        if self.buttons[SummaryButtons.RETURN].clicked():
-                            return
-                        self.button_left_down()
-                    elif buttons[2]:
-                        return
+            self.event_loop()
 
-            pygame.display.flip()
-
-            self.clock.tick(60)
+            match self.display_mode:
+                case DisplayMode.PLANET_SUM:
+                    pass
+                case _:
+                    return self.display_mode
 
     #####################################################################################################
     def button_left_down(self):
@@ -261,6 +252,9 @@ class PlanetSummaryWindow(BaseGraphics):
             self.sorting = PlanetDataColumn.MINERALS
         elif self.buttons[SummaryButtons.SEND_COLONY].clicked():
             self.button_clicked = SummaryButtons.SEND_COLONY
+        elif self.buttons[SummaryButtons.RETURN].clicked():
+            self.display_mode = DisplayMode.GALAXY
+            return
         else:
             mouse = pygame.mouse.get_pos()
             for planet, rect in self.planet_rects.items():
