@@ -5,7 +5,7 @@ import math
 import random
 import jsonpickle
 from MooToo.utils import get_distance_tuple, get_distance
-from MooToo.names import empire_names
+from MooToo.names import empire_names, empire_colours
 from MooToo.empire import Empire, make_empire
 from MooToo.system import System
 from MooToo.constants import Technology
@@ -36,7 +36,9 @@ class Galaxy:
         for home_system in self.find_home_systems(NUM_EMPIRES):
             empire_name = random.choice(empire_names)
             empire_names.remove(empire_name)
-            empire = make_empire(empire_name, home_system)
+            colour = random.choice(empire_colours)
+            empire_colours.remove(colour)
+            empire = make_empire(empire_name, colour, home_system)
             self.empires[empire_name] = empire
             match tech:
                 case "pre":

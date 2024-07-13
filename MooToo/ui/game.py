@@ -381,7 +381,12 @@ class Game(BaseGraphics):
         self.system_rects.append((planet_rect, system))
 
         if self.empire.is_known_system(system):
-            text_surface = self.label_font.render(system.name, True, "red")
+            colours = []
+            for planet in system:
+                if planet and planet.owner:
+                    colours.append(planet.owner.colour)
+            colour = colours[0] if colours else "grey"  # Need to do multi-colours if appropriate
+            text_surface = self.label_font.render(system.name, True, colour)
             text_size = text_surface.get_size()
             text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
             self.screen.blit(text_surface, text_coord)

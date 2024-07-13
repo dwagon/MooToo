@@ -823,3 +823,5 @@ empire_names = [
     "Psi",
     "Omega",
 ]
+
+empire_colours = ["red", "blue", "green", "orange", "tan", "light blue"]
