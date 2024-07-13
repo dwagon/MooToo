@@ -22,8 +22,9 @@ if TYPE_CHECKING:
 #####################################################################################################
 #####################################################################################################
 class Empire:
-    def __init__(self, name: str):
+    def __init__(self, name: str, colour: str):
         self.name = name
+        self.colour = colour
         self.government = "Feudal"  # Fix me
         self.money: int = 100
         self.income: int = 0
@@ -185,10 +186,10 @@ class Empire:
 
 
 #####################################################################################################
-def make_empire(empire_name: str, home_system: "System") -> Empire:
+def make_empire(empire_name: str, empire_colour: str, home_system: "System") -> Empire:
     """ """
     home_system.colour = StarColour.YELLOW
-    empire = Empire(empire_name)
+    empire = Empire(empire_name, empire_colour)
     home_planet = make_home_planet(home_system)
     empire.set_home_planet(home_planet)
     home_system.orbits.append(home_planet)
