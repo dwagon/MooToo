@@ -13,8 +13,7 @@ class TestEmpire(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
         self.system = System(1, (0, 0), self.galaxy)
-        print(f"DBG {self.system.__dict__=}")
-        self.empire = Empire("PlayerOne")
+        self.empire = Empire("PlayerOne", "purple", self.galaxy)
         self.galaxy.empires["PlayerOne"] = self.empire
 
     #################################################################################################
@@ -44,8 +43,12 @@ class TestEmpire(unittest.TestCase):
     #################################################################################################
     def test_make_empire(self):
         system = System(0, (0, 0), self.galaxy)
-        empire = make_empire("fred", system)
+        empire = make_empire("fred", "red", system, self.galaxy)
         self.assertEqual(empire.name, "fred")
+
+    #################################################################################################
+    def test_migration(self):
+        pass
 
 
 #####################################################################################################

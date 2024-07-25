@@ -71,11 +71,11 @@ class BaseGraphics:
 
     #####################################################################################################
     def button_left_down(self) -> None:
-        raise NotImplemented
+        pass
 
     #####################################################################################################
     def button_right_down(self) -> None:
-        raise NotImplemented
+        pass
 
     #####################################################################################################
     def button_up(self) -> None:
@@ -89,8 +89,7 @@ class BaseGraphics:
     def event_loop(self) -> None:
         self.screen.fill("black")
         self.draw()
-        pygame.display.flip()
-        self.clock.tick(60)
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -105,6 +104,9 @@ class BaseGraphics:
                 self.mouse_pos(event)
             if event.type == pygame.MOUSEBUTTONUP:
                 self.button_up()
+
+        pygame.display.flip()
+        self.clock.tick(60)
 
 
 #####################################################################################################

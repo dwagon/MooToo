@@ -11,21 +11,31 @@ from MooToo.constants import (
 from MooToo.ship import ShipType, select_ship_type_by_name
 from MooToo.galaxy import Galaxy
 from MooToo.system import System
-from MooToo.empire import Empire
+from MooToo.empire import Empire, make_empire
 from MooToo.construct import Construct, ConstructType
 from MooToo.planet import Planet
 from MooToo.planet_work import work_surplus
+from MooToo.utils import MooException
 
 
 #####################################################################################################
 class TestPlanet(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
+        self.galaxy.populate("pre", "PlayerOne", "purple")
+        self.empire = self.galaxy.empires["PlayerOne"]
         self.system = System(1, (0, 0), self.galaxy)
         self.planet = Planet(self.system)
-        self.empire = Empire("PlayerOne")
-        self.galaxy.empires["PlayerOne"] = self.empire
         self.planet.owner = "PlayerOne"
+
+    #################################################################################################
+    def test_ownership(self):
+        new_planet = Planet(self.system)
+        self.assertIsNone(new_planet.owner)
+        with self.assertRaises(MooException):
+            new_planet.owner = "Unknown Empire"
+        new_planet.owner = "PlayerOne"
+        self.assertEqual(new_planet.owner, self.empire)
 
     #################################################################################################
     def test_colonize(self):
@@ -67,6 +77,7 @@ class TestPlanet(unittest.TestCase):
 
     #################################################################################################
     def test_available_to_build(self):
+        print(f"DBG {self.planet.buildings=}")
         self.assertIn(Building.HOUSING, self.planet.available_to_build())
         self.assertIn(Building.MARINE_BARRACKS, self.planet.available_to_build())
         self.planet.buildings.add(Building.MARINE_BARRACKS)

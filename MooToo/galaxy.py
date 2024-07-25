@@ -26,7 +26,7 @@ class Galaxy:
         self.turn_number = 0
 
     #################################################################################################
-    def populate(self, tech: str = "avg"):
+    def populate(self, tech: str = "avg", empire_name: str = "", colour: str = ""):
         """Fill the galaxy with things"""
         positions = get_system_positions(NUM_SYSTEMS)
         for _id in range(NUM_SYSTEMS):
@@ -34,11 +34,10 @@ class Galaxy:
             positions.remove(position)
             self.systems[_id] = System(_id, position, self)
         for home_system in self.find_home_systems(NUM_EMPIRES):
-            empire_name = random.choice(empire_names)
-            empire_names.remove(empire_name)
-            colour = random.choice(empire_colours)
-            empire_colours.remove(colour)
-            empire = make_empire(empire_name, colour, home_system)
+            empire_name = pick_empire_name(empire_name)
+            colour = pick_colour(colour)
+            self.empires[empire_name] = None  # Need name in array
+            empire = make_empire(empire_name, colour, home_system, self)
             self.empires[empire_name] = empire
             match tech:
                 case "pre":
@@ -99,6 +98,22 @@ def get_system_positions(num_systems: int) -> list[tuple[int, int]]:
                 positions.append((x, y))
                 break
     return positions
+
+
+#####################################################################################################
+def pick_empire_name(name: str = ""):
+    if not name:
+        name = random.choice(empire_names)
+        empire_names.remove(name)
+    return name
+
+
+#####################################################################################################
+def pick_colour(colour: str = ""):
+    if not colour:
+        colour = random.choice(empire_colours)
+        empire_colours.remove(colour)
+    return colour
 
 
 #####################################################################################################

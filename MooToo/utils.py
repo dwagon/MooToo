@@ -14,6 +14,11 @@ _RESEARCHES: dict["Technology", "Research"] = {}
 
 
 #################################################################################################
+class MooException(Exception):
+    pass
+
+
+#################################################################################################
 def prob_map(d):
     """Given a dictionary of choice probabilities {'a': 10, 'b': 20, ...}
     return a random choice based on the probability"""
