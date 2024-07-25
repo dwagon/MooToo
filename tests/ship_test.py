@@ -13,7 +13,7 @@ class TestShip(unittest.TestCase):
         self.galaxy = Galaxy()
         self.system = System(1, (0, 0), self.galaxy)
         self.planet = Planet(self.system)
-        self.empire = Empire("PlayerOne")
+        self.empire = Empire("PlayerOne", "purple", self.galaxy)
         self.galaxy.empires["PlayerOne"] = self.empire
         self.planet.owner = "PlayerOne"
 

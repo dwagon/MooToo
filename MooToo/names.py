@@ -824,4 +824,4 @@ empire_names = [
     "Omega",
 ]
 
-empire_colours = ["red", "blue", "green", "orange", "tan", "light blue"]
+empire_colours = ["red", "blue", "green", "yellow", "orange", "tan", "light blue", "pink"]

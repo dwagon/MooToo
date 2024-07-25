@@ -16,7 +16,7 @@ class TestBuildQueue(unittest.TestCase):
         galaxy = Galaxy()
         system = System(1, (0, 0), galaxy)
         planet = Planet(system)
-        self.empire = Empire("Foo")
+        self.empire = Empire("Foo", "purple", galaxy)
         planet.owner = self.empire
         self.q = BuildQueue(planet)
 
@@ -33,9 +33,7 @@ class TestBuildQueue(unittest.TestCase):
     #############################################################################################
     def test_cost(self):
         ship = select_ship_type_by_name("Battleship")
-        print(f"DBG {ship=}")
         self.q.add(ship)
-        print(f"DBG {self.q=}")
         self.assertEqual(self.q.cost, 725)
 
     #############################################################################################

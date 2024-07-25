@@ -1,12 +1,12 @@
 """ Relating to player's empires"""
 
 import random
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 from typing import TYPE_CHECKING
 from MooToo.constants import Technology, PopulationJobs, StarColour
 from MooToo.research import TechCategory
 from MooToo.planet_building import Building
-from MooToo.utils import all_research, get_research
+from MooToo.utils import all_research, get_research, get_distance_tuple
 from MooToo.planet import make_home_planet
 from MooToo.planet_science import science_surplus
 from MooToo.planet_money import money_surplus
@@ -14,17 +14,22 @@ from MooToo.food import food_surplus
 
 
 if TYPE_CHECKING:
+    from MooToo.galaxy import Galaxy
     from MooToo.system import System
     from MooToo.planet import Planet
     from MooToo.ship import Ship
+
+#####################################################################################################
+Migration = namedtuple("Migration", "dst_planet dst_job arrival_time")
 
 
 #####################################################################################################
 #####################################################################################################
 class Empire:
-    def __init__(self, name: str, colour: str):
+    def __init__(self, name: str, colour: str, galaxy: "Galaxy"):
         self.name = name
         self.colour = colour
+        self.galaxy = galaxy
         self.government = "Feudal"  # Fix me
         self.money: int = 100
         self.income: int = 0
@@ -45,7 +50,7 @@ class Empire:
             TechCategory.CHEMISTRY: 0,
         }  # What category / price has been researched
         self.known_techs: set[Technology] = set()
-        self.migrations = []
+        self.migrations: list[Migration] = []
 
     #####################################################################################################
     def __repr__(self):
@@ -65,6 +70,25 @@ class Empire:
         freighters_needed -= min(have_food, need_food)
 
         return min(freighters_needed, self.freighters)
+
+    #####################################################################################################
+    def migrate(
+        self, num: int, src_planet: "Planet", src_job: PopulationJobs, dst_planet: "Planet", dst_job: PopulationJobs
+    ):
+        """Migrate population around the empire"""
+
+        # Same system is instantaneous
+        if src_planet.system == dst_planet.system:
+            src_planet.remove_workers(num, src_job)
+            dst_planet.add_workers(num, dst_job)
+            return
+
+        print(f"DBG Migrating {num} {src_job} from {src_planet} to {dst_job} at {dst_planet}")
+        distance = get_distance_tuple(src_planet.system.position, dst_planet.system.position)
+        arrival_time = self.galaxy.turn_number + distance // 5  # 5 = speed of freighter
+        for _ in range(num):
+            src_planet.remove_workers(num, src_job)
+            self.migrations.append(Migration(dst_job=dst_job, dst_planet=dst_planet, arrival_time=arrival_time))
 
     #####################################################################################################
     def set_home_planet(self, planet: "Planet"):
@@ -112,6 +136,10 @@ class Empire:
             ship.turn()
             if ship.orbit:
                 self.know_system(ship.orbit)
+        for migration in self.migrations[:]:
+            if migration.arrival_time >= self.galaxy.turn_number:
+                migration.dst_planet.add_workers(1, migration.dst_job)
+                self.migrations.remove(migration)
         income -= self.freighters_used() // 2
         self.income = income
         self.money += self.income
@@ -186,10 +214,11 @@ class Empire:
 
 
 #####################################################################################################
-def make_empire(empire_name: str, empire_colour: str, home_system: "System") -> Empire:
+def make_empire(empire_name: str, empire_colour: str, home_system: "System", galaxy: "Galaxy") -> Empire:
     """ """
     home_system.colour = StarColour.YELLOW
-    empire = Empire(empire_name, empire_colour)
+    empire = Empire(empire_name, empire_colour, galaxy)
+    galaxy.empires[empire_name] = empire
     home_planet = make_home_planet(home_system)
     empire.set_home_planet(home_planet)
     home_system.orbits.append(home_planet)

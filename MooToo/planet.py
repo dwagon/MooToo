@@ -2,9 +2,9 @@
 
 import math
 import random
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Union
 
-from MooToo.utils import prob_map, get_research, get_building
+from MooToo.utils import prob_map, get_research, get_building, MooException
 from MooToo.constants import PlanetGravity, PlanetSize, PlanetCategory, PlanetRichness, PlanetClimate, Technology
 from MooToo.constants import PopulationJobs, STAR_COLOURS, POP_SIZE_MAP, POP_CLIMATE_MAP, FOOD_CLIMATE_MAP
 from MooToo.planet_building import Building
@@ -47,8 +47,13 @@ class Planet:
         return self.system.galaxy.empires.get(self._owner)
 
     @owner.setter
-    def owner(self, value: str):
-        self._owner = value
+    def owner(self, empire: Union[str, "Empire"]):
+        if isinstance(empire, str):
+            if empire not in self.system.galaxy.empires:
+                raise MooException(f"{empire} not a known empire")
+            self._owner = empire
+        else:
+            self._owner = empire.name
 
     #####################################################################################################
     @property
