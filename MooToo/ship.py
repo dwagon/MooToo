@@ -11,7 +11,6 @@ from MooToo.constants import PlanetCategory
 
 if TYPE_CHECKING:
     from MooToo.system import System
-    from MooToo.empire import Empire
     from MooToo.planet import Planet
 
 
@@ -51,7 +50,7 @@ class Ship:
         self.space = 0
         self.cost = 0
         self.space = 0
-        self.owner: Optional["Empire"] = None
+        self.owner: int = 0
         self.command_points = 0
         self.maintenance = 0
         self.coloniser = False
@@ -129,7 +128,7 @@ class ColonyBase(Ship):
         """TODO: make the player choose"""
         for orbit in self.orbit:
             if orbit and not orbit.owner and orbit.category == PlanetCategory.PLANET:
-                orbit.colonize(self.owner.name)
+                orbit.colonize(self.owner)
                 break
         return False
 
@@ -151,7 +150,7 @@ class ColonyShip(Ship):
     def arrived_at_destination(self):
         super().arrived_at_destination()
         if self.target_planet:
-            self.target_planet.colonize(self.owner.name)
+            self.target_planet.colonize(self.owner)
 
     #################################################################################################
     def set_destination_planet(self, dest_planet: "Planet") -> None:

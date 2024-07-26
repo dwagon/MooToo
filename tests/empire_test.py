@@ -1,6 +1,6 @@
 import unittest
 from MooToo.galaxy import Galaxy
-from MooToo.empire import Empire, make_empire
+from MooToo.empire import make_empire
 from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.constants import Building, Technology
@@ -12,13 +12,13 @@ class TestEmpire(unittest.TestCase):
 
     def setUp(self):
         self.galaxy = Galaxy()
+        self.galaxy.populate("pre")
         self.system = System(1, (0, 0), self.galaxy)
-        self.empire = Empire("PlayerOne", "purple", self.galaxy)
-        self.galaxy.empires["PlayerOne"] = self.empire
+        self.empire = self.galaxy.empires[1]
 
     #################################################################################################
     def test_next_research(self):
-        avail = self.empire.next_research(TechCategory.SOCIOLOGY)
+        avail = self.galaxy.empires[1].next_research(TechCategory.SOCIOLOGY)
         self.assertEqual(avail, [Technology.MILITARY_TACTICS])
         self.empire.learnt(Technology.MILITARY_TACTICS)
         avail = self.empire.next_research(TechCategory.SOCIOLOGY)
@@ -35,8 +35,8 @@ class TestEmpire(unittest.TestCase):
     #################################################################################################
     def test_set_home_planet(self):
         """Set the home planet of the empire"""
-        planet = Planet(self.system)
-        self.empire.set_home_planet(planet)
+        planet = Planet(self.system, self.galaxy)
+        self.galaxy.empires[1].set_home_planet(planet)
         self.assertIn(Building.MARINE_BARRACKS, planet.buildings)
         self.assertIn(planet.system.id, self.empire.known_systems)
 

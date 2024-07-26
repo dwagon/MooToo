@@ -106,4 +106,12 @@ def arg_parse(sys_args) -> argparse.Namespace:
     return parser.parse_args(sys_args)
 
 
+#####################################################################################################
+def unique_planet_id() -> int:
+    counter = 0
+    while True:
+        yield counter
+        counter += 1
+
+
 # EOF

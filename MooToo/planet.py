@@ -2,9 +2,9 @@
 
 import math
 import random
-from typing import TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING
 
-from MooToo.utils import prob_map, get_research, get_building, MooException
+from MooToo.utils import prob_map, get_research, get_building, unique_planet_id
 from MooToo.constants import PlanetGravity, PlanetSize, PlanetCategory, PlanetRichness, PlanetClimate, Technology
 from MooToo.constants import PopulationJobs, STAR_COLOURS, POP_SIZE_MAP, POP_CLIMATE_MAP, FOOD_CLIMATE_MAP
 from MooToo.planet_building import Building
@@ -15,18 +15,20 @@ from MooToo.ship import ShipType
 
 if TYPE_CHECKING:
     from MooToo.system import System
-    from MooToo.empire import Empire
+    from MooToo.galaxy import Galaxy
 
 
 #####################################################################################################
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, system: "System", **kwargs):
+    def __init__(self, system: "System", galaxy: "Galaxy", **kwargs):
+        self.id = unique_planet_id()
         self.name = ""
         self.system = system
+        self.galaxy = galaxy
 
-        self._owner: str = ""
+        self.owner: int = 0
         self.jobs = {PopulationJobs.FARMERS: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.category = kwargs.get("category", pick_planet_category())
         self.size = kwargs.get("size", pick_planet_size())
@@ -40,20 +42,6 @@ class Planet:
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
         self.climate_image = self.gen_climate_image()
-
-    #####################################################################################################
-    @property
-    def owner(self) -> Optional["Empire"]:
-        return self.system.galaxy.empires.get(self._owner)
-
-    @owner.setter
-    def owner(self, empire: Union[str, "Empire"]):
-        if isinstance(empire, str):
-            if empire not in self.system.galaxy.empires:
-                raise MooException(f"{empire} not a known empire")
-            self._owner = empire
-        else:
-            self._owner = empire.name
 
     #####################################################################################################
     @property
@@ -101,7 +89,7 @@ class Planet:
         avail: set[Building] = {Building.TRADE_GOODS, Building.HOUSING}
         if not self.owner:
             return set()
-        for tech in self.owner.known_techs:
+        for tech in self.galaxy.empires[self.owner].known_techs:
             if building := get_research(tech).enabled_building:
                 if building.available_to_build(self):
                     avail.add(building.tag)
@@ -157,7 +145,7 @@ class Planet:
         self.add_workers(num, target_job)
 
     #####################################################################################################
-    def colonize(self, owner: str) -> None:
+    def colonize(self, owner: int) -> None:
         """Make the planet an active colony"""
         if FOOD_CLIMATE_MAP[self.climate]:
             self.jobs[PopulationJobs.FARMERS] = 1
@@ -165,7 +153,7 @@ class Planet:
             self.jobs[PopulationJobs.WORKERS] = 1
         self._population = 1e6
         self.owner = owner
-        self.owner.own_planet(self)
+        self.galaxy.empires[self.owner].own_planet(self)
 
     #####################################################################################################
     def building_production(self) -> None:
@@ -187,11 +175,11 @@ class Planet:
             case ConstructType.BUILDING:
                 self.buildings.add(construct.tag)
             case ConstructType.SHIP:
-                self.owner.add_ship(construct.ship, self.system)
+                self.galaxy.empires[self.owner].add_ship(construct.ship, self.system)
                 if not construct.ship.built():
-                    self.owner.delete_ship(construct.ship)
+                    self.galaxy.empires[self.owner].delete_ship(construct.ship)
             case ConstructType.FREIGHTER:
-                self.owner.freighters += 5
+                self.galaxy.empires[self.owner].freighters += 5
 
     #####################################################################################################
     def grow_population(self) -> None:
@@ -245,7 +233,7 @@ class Planet:
             case ConstructType.SPY:
                 return True
             case ConstructType.FREIGHTER:
-                return Technology.FREIGHTERS in self.owner.known_techs
+                return Technology.FREIGHTERS in self.galaxy.empires[self.owner].known_techs
             case ConstructType.COLONY_BASE:
                 return self.system.unoccupied_planet()
         return False
@@ -257,7 +245,7 @@ class Planet:
             return False
 
         # Need basic tech to build anything but a colony base
-        known_techs = self.owner.known_techs
+        known_techs = self.galaxy.empires[self.owner].known_techs
         if Technology.STANDARD_FUEL_CELLS not in known_techs or Technology.NUCLEAR_DRIVE not in known_techs:
             return False
 
@@ -375,9 +363,9 @@ def pick_planet_category() -> PlanetCategory:
 
 
 #####################################################################################################
-def make_home_planet(system: "System") -> Planet:
+def make_home_planet(system: "System", galaxy: "Galaxy") -> Planet:
     """Return a suitable home planet in {system}"""
-    p = Planet(system)
+    p = Planet(system, galaxy)
     p.climate = PlanetClimate.TERRAN
     p.size = PlanetSize.LARGE
     p.category = PlanetCategory.PLANET

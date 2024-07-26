@@ -15,7 +15,7 @@ class TestBuildQueue(unittest.TestCase):
     def setUp(self):
         galaxy = Galaxy()
         system = System(1, (0, 0), galaxy)
-        planet = Planet(system)
+        planet = Planet(system, galaxy)
         self.empire = Empire("Foo", "purple", galaxy)
         planet.owner = self.empire
         self.q = BuildQueue(planet)

@@ -19,18 +19,15 @@ class TestGalaxy(unittest.TestCase):
 
     def test_default_start(self):
         self.galaxy.populate("avg")
-        emp_name = list(self.galaxy.empires.keys())[0]
-        self.assertIn(Technology.COLONY_SHIP, self.galaxy.empires[emp_name].known_techs)
+        self.assertIn(Technology.COLONY_SHIP, self.galaxy.empires[1].known_techs)
 
     def test_pre_start(self):
         self.galaxy.populate("pre")
-        emp_name = list(self.galaxy.empires.keys())[0]
-        self.assertNotIn(Technology.COLONY_SHIP, self.galaxy.empires[emp_name].known_techs)
+        self.assertNotIn(Technology.COLONY_SHIP, self.galaxy.empires[1].known_techs)
 
     def test_advanced_start(self):
         self.galaxy.populate("adv")
-        emp_name = list(self.galaxy.empires.keys())[0]
-        self.assertIn(Technology.COLONY_SHIP, self.galaxy.empires[emp_name].known_techs)
+        self.assertIn(Technology.COLONY_SHIP, self.galaxy.empires[1].known_techs)
 
 
 #####################################################################################################

@@ -11,43 +11,32 @@ from MooToo.constants import (
 from MooToo.ship import ShipType, select_ship_type_by_name
 from MooToo.galaxy import Galaxy
 from MooToo.system import System
-from MooToo.empire import Empire, make_empire
 from MooToo.construct import Construct, ConstructType
 from MooToo.planet import Planet
 from MooToo.planet_work import work_surplus
-from MooToo.utils import MooException
 
 
 #####################################################################################################
 class TestPlanet(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
-        self.galaxy.populate("pre", "PlayerOne", "purple")
-        self.empire = self.galaxy.empires["PlayerOne"]
+        self.galaxy.populate("pre")
+        self.empire = self.galaxy.empires[1]
         self.system = System(1, (0, 0), self.galaxy)
-        self.planet = Planet(self.system)
-        self.planet.owner = "PlayerOne"
-
-    #################################################################################################
-    def test_ownership(self):
-        new_planet = Planet(self.system)
-        self.assertIsNone(new_planet.owner)
-        with self.assertRaises(MooException):
-            new_planet.owner = "Unknown Empire"
-        new_planet.owner = "PlayerOne"
-        self.assertEqual(new_planet.owner, self.empire)
+        self.planet = Planet(self.system, self.galaxy)
+        self.planet.owner = 1
 
     #################################################################################################
     def test_colonize(self):
-        new_planet = Planet(self.system, climate=PlanetClimate.TERRAN)
-        new_planet.colonize("PlayerOne")
+        new_planet = Planet(self.system, self.galaxy, climate=PlanetClimate.TERRAN)
+        new_planet.colonize(1)
         self.assertEqual(new_planet.current_population(), 1)
         self.assertEqual(new_planet.jobs[PopulationJobs.FARMERS], 1)
         self.assertEqual(new_planet.jobs[PopulationJobs.WORKERS], 0)
         self.assertIn(new_planet, self.empire.owned_planets)
 
-        new_planet = Planet(self.system, climate=PlanetClimate.BARREN)
-        new_planet.colonize("PlayerOne")
+        new_planet = Planet(self.system, self.galaxy, climate=PlanetClimate.BARREN)
+        new_planet.colonize(1)
         self.assertEqual(new_planet.jobs[PopulationJobs.FARMERS], 0)
         self.assertEqual(new_planet.jobs[PopulationJobs.WORKERS], 1)
 
@@ -77,7 +66,6 @@ class TestPlanet(unittest.TestCase):
 
     #################################################################################################
     def test_available_to_build(self):
-        print(f"DBG {self.planet.buildings=}")
         self.assertIn(Building.HOUSING, self.planet.available_to_build())
         self.assertIn(Building.MARINE_BARRACKS, self.planet.available_to_build())
         self.planet.buildings.add(Building.MARINE_BARRACKS)
@@ -85,8 +73,8 @@ class TestPlanet(unittest.TestCase):
 
     #################################################################################################
     def test_can_build_ship(self):
-        planet = Planet(self.system)
-        planet.owner = self.empire.name
+        planet = Planet(self.system, self.galaxy)
+        planet.owner = 1
         self.assertFalse(planet.can_build_ship(ShipType.Frigate))
         self.empire.learnt(Technology.NUCLEAR_DRIVE)
         self.assertFalse(planet.can_build_ship(ShipType.Frigate))
@@ -99,7 +87,11 @@ class TestPlanet(unittest.TestCase):
     #################################################################################################
     def test_turns_to_build(self):
         planet = Planet(
-            self.system, size=PlanetSize.MEDIUM, gravity=PlanetGravity.NORMAL, richness=PlanetRichness.ABUNDANT
+            self.system,
+            self.galaxy,
+            size=PlanetSize.MEDIUM,
+            gravity=PlanetGravity.NORMAL,
+            richness=PlanetRichness.ABUNDANT,
         )
         ship = select_ship_type_by_name("Battleship")
         planet.build_queue.add(ship)
@@ -114,7 +106,7 @@ class TestPlanet(unittest.TestCase):
 
     #################################################################################################
     def test_buy_cost(self):
-        planet = Planet(self.system)
+        planet = Planet(self.system, self.galaxy)
         ship = select_ship_type_by_name("Battleship")  # Cost 725
         planet.build_queue.add(ship)
         self.assertEqual(planet.buy_cost(), 2900)

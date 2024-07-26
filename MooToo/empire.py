@@ -218,8 +218,7 @@ def make_empire(empire_name: str, empire_colour: str, home_system: "System", gal
     """ """
     home_system.colour = StarColour.YELLOW
     empire = Empire(empire_name, empire_colour, galaxy)
-    galaxy.empires[empire_name] = empire
-    home_planet = make_home_planet(home_system)
+    home_planet = make_home_planet(home_system, galaxy)
     empire.set_home_planet(home_planet)
     home_system.orbits.append(home_planet)
     random.shuffle(home_system.orbits)

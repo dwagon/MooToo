@@ -13,7 +13,11 @@ class TestPlanetScience(unittest.TestCase):
         self.galaxy = Galaxy()
         self.system = System(1, (0, 0), self.galaxy)
         self.planet = Planet(
-            self.system, size=PlanetSize.MEDIUM, richness=PlanetRichness.ABUNDANT, gravity=PlanetGravity.NORMAL
+            self.system,
+            self.galaxy,
+            size=PlanetSize.MEDIUM,
+            richness=PlanetRichness.ABUNDANT,
+            gravity=PlanetGravity.NORMAL,
         )
 
     #################################################################################################

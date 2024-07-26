@@ -2,7 +2,7 @@ import unittest
 
 from MooToo.construct import Construct, ConstructType
 from MooToo.constants import Building
-from MooToo.ship import Ship, select_ship_type_by_name
+from MooToo.ship import select_ship_type_by_name
 
 
 #################################################################################################

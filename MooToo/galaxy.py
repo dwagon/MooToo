@@ -4,12 +4,18 @@ import io
 import math
 import random
 import jsonpickle
+from typing import TYPE_CHECKING, Optional
 from MooToo.utils import get_distance_tuple, get_distance
 from MooToo.names import empire_names, empire_colours
 from MooToo.empire import Empire, make_empire
 from MooToo.system import System
 from MooToo.constants import Technology
 from MooToo.ship import select_ship_type_by_name
+
+if TYPE_CHECKING:
+    from MooToo.system import System
+    from MooToo.empire import Empire
+    from MooToo.planet import Planet
 
 NUM_SYSTEMS = 40
 NUM_EMPIRES = 4
@@ -21,24 +27,27 @@ MIN_DIST = 40  # Distance between systems
 #####################################################################################################
 class Galaxy:
     def __init__(self):
-        self.systems: dict[int, "System"] = {}
-        self.empires: dict[str, "Empire"] = {}
+        self.systems: list["System"] = []
+        self.empires: list[Optional["Empire"]] = [None]  # Player 0 is unowned
+        self.planets: list["Planet"] = []
         self.turn_number = 0
+        self.planet_num = 0
 
     #################################################################################################
-    def populate(self, tech: str = "avg", empire_name: str = "", colour: str = ""):
+    def populate(self, tech: str = "avg"):
         """Fill the galaxy with things"""
+        names = empire_names[:]
+        colours = empire_colours[:]
         positions = get_system_positions(NUM_SYSTEMS)
         for _id in range(NUM_SYSTEMS):
             position = random.choice(positions)
             positions.remove(position)
-            self.systems[_id] = System(_id, position, self)
+            self.systems.append(System(_id, position, self))
         for home_system in self.find_home_systems(NUM_EMPIRES):
-            empire_name = pick_empire_name(empire_name)
-            colour = pick_colour(colour)
-            self.empires[empire_name] = None  # Need name in array
+            empire_name = pick_empire_name(names)
+            colour = pick_colour(colours)
             empire = make_empire(empire_name, colour, home_system, self)
-            self.empires[empire_name] = empire
+            self.empires.append(empire)
             match tech:
                 case "pre":
                     pre_start(empire, home_system)
@@ -46,16 +55,16 @@ class Galaxy:
                     average_start(empire, home_system)
                 case "adv":
                     advanced_start(empire, home_system)
-        for system in self.systems.values():
+        for system in self.systems:
             system.make_orbits()
 
     #####################################################################################################
     def turn(self):
         """End of turn"""
         self.turn_number += 1
-        for system in self.systems.values():
+        for system in self.systems:
             system.turn()
-        for empire in self.empires.values():
+        for empire in self.empires:
             empire.turn()
 
     #####################################################################################################
@@ -74,7 +83,7 @@ class Galaxy:
             # Find the system closest to this point
             min_dist = 999999
             min_system = None
-            for system in self.systems.values():
+            for system in self.systems:
                 distance = get_distance_tuple(position, system.position)
                 if distance < min_dist:
                     min_dist = distance
@@ -101,18 +110,17 @@ def get_system_positions(num_systems: int) -> list[tuple[int, int]]:
 
 
 #####################################################################################################
-def pick_empire_name(name: str = ""):
-    if not name:
-        name = random.choice(empire_names)
-        empire_names.remove(name)
+def pick_empire_name(names: list[str]):
+    name = random.choice(names)
+    names.remove(name)
     return name
 
 
 #####################################################################################################
-def pick_colour(colour: str = ""):
-    if not colour:
-        colour = random.choice(empire_colours)
-        empire_colours.remove(colour)
+def pick_colour(colours: list[str]):
+    colour = random.choice(colours)
+    colours.remove(colour)
+
     return colour
 
 
