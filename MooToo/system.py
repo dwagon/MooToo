@@ -45,8 +45,8 @@ STAR_COLOURS = {
 
 #####################################################################################################
 class System:
-    def __init__(self, _id, position: tuple[int, int], galaxy: "Galaxy"):
-        self.id = _id
+    def __init__(self, position: tuple[int, int], galaxy: "Galaxy"):
+        self.id = next(galaxy.unique["system"])
         self.position = position
         self.name = pick_name()
         self.colour = pick_star_colour()

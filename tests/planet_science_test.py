@@ -11,7 +11,7 @@ class TestPlanetScience(unittest.TestCase):
     #################################################################################################
     def setUp(self):
         self.galaxy = Galaxy()
-        self.system = System(1, (0, 0), self.galaxy)
+        self.system = System((0, 0), self.galaxy)
         self.planet = Planet(
             self.system,
             self.galaxy,

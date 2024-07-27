@@ -4,7 +4,7 @@ from MooToo.planet import Planet
 from MooToo.system import System
 from MooToo.galaxy import Galaxy
 from MooToo.constants import PlanetSize, PlanetClimate, PlanetGravity, PopulationJobs, Building
-from MooToo.food import food_cost, food_production, food_surplus, food_per
+from MooToo.planet_food import food_cost, food_production, food_surplus, food_per
 
 
 #####################################################################################################
@@ -12,7 +12,7 @@ class TestPlanetFood(unittest.TestCase):
     #################################################################################################
     def setUp(self):
         self.galaxy = Galaxy()
-        self.system = System(1, (0, 0), self.galaxy)
+        self.system = System((0, 0), self.galaxy)
 
     #################################################################################################
     def test_consumption(self):

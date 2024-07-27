@@ -4,7 +4,7 @@ import math
 import random
 from typing import TYPE_CHECKING
 
-from MooToo.utils import prob_map, get_research, get_building, unique_planet_id
+from MooToo.utils import prob_map, get_research, get_building, unique_planet_id, EmpireId
 from MooToo.constants import PlanetGravity, PlanetSize, PlanetCategory, PlanetRichness, PlanetClimate, Technology
 from MooToo.constants import PopulationJobs, STAR_COLOURS, POP_SIZE_MAP, POP_CLIMATE_MAP, FOOD_CLIMATE_MAP
 from MooToo.planet_building import Building
@@ -28,7 +28,7 @@ class Planet:
         self.system = system
         self.galaxy = galaxy
 
-        self.owner: int = 0
+        self.owner: EmpireId = 0
         self.jobs = {PopulationJobs.FARMERS: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
         self.category = kwargs.get("category", pick_planet_category())
         self.size = kwargs.get("size", pick_planet_size())
@@ -58,13 +58,13 @@ class Planet:
     def buy_cost(self) -> int:
         """How much to buy production"""
         pct_complete = self.construction_spent / self.build_queue.cost
+        if self.construction_spent == 0:
+            return self.build_queue.cost * 4
         if pct_complete > 0.5:
             return int(2 * self.build_queue.cost - self.construction_spent * 2)
         if pct_complete > 0.1:
             return int(3.5 * self.build_queue.cost - self.construction_spent * 5)
-        if pct_complete > 0:
-            return int(4 * self.build_queue.cost - self.construction_spent * 10)
-        return self.build_queue.cost * 4
+        return int(4 * self.build_queue.cost - self.construction_spent * 10)
 
     #####################################################################################################
     def turns_to_build(self) -> int:
@@ -145,7 +145,7 @@ class Planet:
         self.add_workers(num, target_job)
 
     #####################################################################################################
-    def colonize(self, owner: int) -> None:
+    def colonize(self, owner: EmpireId) -> None:
         """Make the planet an active colony"""
         if FOOD_CLIMATE_MAP[self.climate]:
             self.jobs[PopulationJobs.FARMERS] = 1
@@ -183,7 +183,7 @@ class Planet:
 
     #####################################################################################################
     def grow_population(self) -> None:
-        from MooToo.food import food_surplus
+        from MooToo.planet_food import food_surplus
 
         old_pop = int(self._population / 1e6)
         self._population += self.population_increment()
@@ -199,7 +199,7 @@ class Planet:
         """How much population will grow this turn
         See https://strategywiki.org/wiki/Master_of_Orion_II:_Battle_at_Antares/Calculations
         """
-        from MooToo.food import food_surplus
+        from MooToo.planet_food import food_surplus
 
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus

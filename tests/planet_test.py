@@ -22,7 +22,7 @@ class TestPlanet(unittest.TestCase):
         self.galaxy = Galaxy()
         self.galaxy.populate("pre")
         self.empire = self.galaxy.empires[1]
-        self.system = System(1, (0, 0), self.galaxy)
+        self.system = System((0, 0), self.galaxy)
         self.planet = Planet(self.system, self.galaxy)
         self.planet.owner = 1
 
@@ -93,7 +93,7 @@ class TestPlanet(unittest.TestCase):
             gravity=PlanetGravity.NORMAL,
             richness=PlanetRichness.ABUNDANT,
         )
-        ship = select_ship_type_by_name("Battleship")
+        ship = select_ship_type_by_name("Battleship", self.galaxy)
         planet.build_queue.add(ship)
         planet.jobs[PopulationJobs.WORKERS] = 5  # Work Prod = 11 (15 prod -4 poll)
         planet.construction_spent = 200
@@ -107,7 +107,7 @@ class TestPlanet(unittest.TestCase):
     #################################################################################################
     def test_buy_cost(self):
         planet = Planet(self.system, self.galaxy)
-        ship = select_ship_type_by_name("Battleship")  # Cost 725
+        ship = select_ship_type_by_name("Battleship", self.galaxy)  # Cost 725
         planet.build_queue.add(ship)
         self.assertEqual(planet.buy_cost(), 2900)
         planet.construction_spent = 725

@@ -10,7 +10,7 @@ from MooToo.utils import all_research, get_research, get_distance_tuple
 from MooToo.planet import make_home_planet
 from MooToo.planet_science import science_surplus
 from MooToo.planet_money import money_surplus
-from MooToo.food import food_surplus
+from MooToo.planet_food import food_surplus
 
 
 if TYPE_CHECKING:
@@ -27,6 +27,7 @@ Migration = namedtuple("Migration", "dst_planet dst_job arrival_time")
 #####################################################################################################
 class Empire:
     def __init__(self, name: str, colour: str, galaxy: "Galaxy"):
+        self.id = next(galaxy.unique["empire"])
         self.name = name
         self.colour = colour
         self.galaxy = galaxy
@@ -113,12 +114,13 @@ class Empire:
         self.ships.append(ship)
         ship.orbit = system
         ship.location = system.position
+        self.galaxy.ships[ship.id] = ship
         ship.owner = self
 
     #####################################################################################################
     def delete_ship(self, ship: "Ship"):
-        print(f"DBG delete_ship({ship=}")
         self.ships.remove(ship)
+        del self.galaxy.ships[ship.id]
 
     #####################################################################################################
     def turn(self):
@@ -197,8 +199,8 @@ class Empire:
         return rp
 
     #####################################################################################################
-    def has_interest_in(self, system: "System") -> bool:
-        for planet in system.orbits:
+    def has_interest_in(self, system_id: int) -> bool:
+        for planet in self.galaxy.systems[system_id].orbits:
             if planet and planet.owner == self:
                 return True
         return False

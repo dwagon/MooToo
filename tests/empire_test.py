@@ -13,7 +13,7 @@ class TestEmpire(unittest.TestCase):
     def setUp(self):
         self.galaxy = Galaxy()
         self.galaxy.populate("pre")
-        self.system = System(1, (0, 0), self.galaxy)
+        self.system = System((0, 0), self.galaxy)
         self.empire = self.galaxy.empires[1]
 
     #################################################################################################
@@ -42,7 +42,7 @@ class TestEmpire(unittest.TestCase):
 
     #################################################################################################
     def test_make_empire(self):
-        system = System(0, (0, 0), self.galaxy)
+        system = System((0, 0), self.galaxy)
         empire = make_empire("fred", "red", system, self.galaxy)
         self.assertEqual(empire.name, "fred")
 

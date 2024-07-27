@@ -12,10 +12,12 @@ from MooToo.constants import PlanetCategory
 if TYPE_CHECKING:
     from MooToo.system import System
     from MooToo.planet import Planet
+    from MooToo.galaxy import Galaxy
 
 
 #####################################################################################################
 class ShipType(StrEnum):
+    Unknown = auto()
     ColonyBase = auto()
     ColonyShip = auto()
     OutpostShip = auto()
@@ -46,7 +48,9 @@ counts: dict[ShipType, int] = {
 class Ship:
     """Things that move"""
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        self.galaxy = galaxy
+        self.id = next(galaxy.unique["ship"])
         self.space = 0
         self.cost = 0
         self.space = 0
@@ -59,6 +63,7 @@ class Ship:
         self.destination: Optional[System] = None
         self.location: tuple[int, int] = (-1, -1)
         self.orbit: Optional[System] = None
+        self.type = ShipType.Unknown
 
     #################################################################################################
     def built(self) -> bool:
@@ -116,8 +121,8 @@ class Ship:
 
 #####################################################################################################
 class ColonyBase(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 200
         self.space = 0
         self.command_points = 0
@@ -135,8 +140,8 @@ class ColonyBase(Ship):
 
 #####################################################################################################
 class ColonyShip(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 25  # ?
         self.space = 0
         self.command_points = 1
@@ -160,8 +165,8 @@ class ColonyShip(Ship):
 
 #####################################################################################################
 class Transport(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 25  # ?
         self.space = 0
         self.command_points = 1
@@ -172,8 +177,8 @@ class Transport(Ship):
 
 #####################################################################################################
 class Frigate(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 25
         self.space = 25
         self.type = ShipType.Frigate
@@ -182,8 +187,8 @@ class Frigate(Ship):
 
 #####################################################################################################
 class Destroyer(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 85
         self.space = 60
         self.type = ShipType.Destroyer
@@ -192,8 +197,8 @@ class Destroyer(Ship):
 
 #####################################################################################################
 class Cruiser(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 300
         self.space = 120
         self.type = ShipType.Cruiser
@@ -202,8 +207,8 @@ class Cruiser(Ship):
 
 #####################################################################################################
 class Battleship(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 725
         self.space = 250
         self.type = ShipType.Battleship
@@ -212,8 +217,8 @@ class Battleship(Ship):
 
 #####################################################################################################
 class Titan(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 1800
         self.space = 500
         self.type = ShipType.Titan
@@ -222,8 +227,8 @@ class Titan(Ship):
 
 #####################################################################################################
 class DoomStar(Ship):
-    def __init__(self, name: str):
-        super().__init__(name)
+    def __init__(self, name: str, galaxy: "Galaxy"):
+        super().__init__(name, galaxy)
         self.cost = 4800
         self.space = 1200
         self.type = ShipType.DoomStar
@@ -231,32 +236,56 @@ class DoomStar(Ship):
 
 
 #####################################################################################################
-def select_ship_type_by_name(name: str) -> Ship:
-    match name:
-        case "ColonyBase":
-            return ColonyBase("ColonyBase")
-        case "ColonyShip":
-            return ColonyShip(f"Colony {counts[ShipType.ColonyShip]}")
-        case "Transport":
+def select_ship_type_by_name(name: str, galaxy: "Galaxy") -> Ship:
+    ship_type = str_to_ship_type(name)
+    match ship_type:
+        case ShipType.ColonyBase:
+            return ColonyBase("ColonyBase", galaxy)
+        case ShipType.ColonyShip:
+            return ColonyShip(f"Colony {counts[ShipType.ColonyShip]}", galaxy)
+        case ShipType.Transport:
             counts[ShipType.Transport] += 1
-            return Transport(f"Transport {counts[ShipType.Transport]}")
-        case "Frigate":
+            return Transport(f"Transport {counts[ShipType.Transport]}", galaxy)
+        case ShipType.Frigate:
             counts[ShipType.Frigate] += 1
-            return Frigate(f"Frigate {counts[ShipType.Frigate]}")
-        case "Destroyer":
+            return Frigate(f"Frigate {counts[ShipType.Frigate]}", galaxy)
+        case ShipType.Destroyer:
             counts[ShipType.Destroyer] += 1
-            return Destroyer(f"Destroyer {counts[ShipType.Destroyer]}")
-        case "Cruiser":
+            return Destroyer(f"Destroyer {counts[ShipType.Destroyer]}", galaxy)
+        case ShipType.Cruiser:
             counts[ShipType.Cruiser] += 1
-            return Cruiser(f"Cruiser {counts[ShipType.Cruiser]}")
-        case "Battleship":
+            return Cruiser(f"Cruiser {counts[ShipType.Cruiser]}", galaxy)
+        case ShipType.Battleship:
             counts[ShipType.Battleship] += 1
-            return Battleship(f"Battleship {counts[ShipType.Battleship]}")
-        case "Titan":
+            return Battleship(f"Battleship {counts[ShipType.Battleship]}", galaxy)
+        case ShipType.Titan:
             counts[ShipType.Titan] += 1
-            return Titan(f"Titan {counts[ShipType.Titan]}")
-        case "DoomStar":
+            return Titan(f"Titan {counts[ShipType.Titan]}", galaxy)
+        case ShipType.DoomStar:
             counts[ShipType.DoomStar] += 1
-            return DoomStar(f"DoomStar {counts[ShipType.DoomStar]}")
+            return DoomStar(f"DoomStar {counts[ShipType.DoomStar]}", galaxy)
+
+
+#####################################################################################################
+def str_to_ship_type(type_str: str) -> ShipType:
+    match type_str:
+        case "ColonyBase":
+            return ShipType.ColonyBase
+        case "ColonyShip":
+            return ShipType.ColonyShip
+        case "Transport":
+            return ShipType.Transport
+        case "Frigate":
+            return ShipType.Frigate
+        case "Destroyer":
+            return ShipType.Destroyer
+        case "Cruiser":
+            return ShipType.Cruiser
+        case "Battleship":
+            return ShipType.Battleship
+        case "Titan":
+            return ShipType.Titan
+        case "DoomStar":
+            return ShipType.DoomStar
         case _:
-            raise NotImplementedError(f"Unhandled ship type {name=}")
+            raise NotImplementedError(f"Unhandled ship type {type_str=}")

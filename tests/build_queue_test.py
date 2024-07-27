@@ -13,10 +13,10 @@ from MooToo.empire import Empire
 #################################################################################################
 class TestBuildQueue(unittest.TestCase):
     def setUp(self):
-        galaxy = Galaxy()
-        system = System(1, (0, 0), galaxy)
-        planet = Planet(system, galaxy)
-        self.empire = Empire("Foo", "purple", galaxy)
+        self.galaxy = Galaxy()
+        system = System((0, 0), self.galaxy)
+        planet = Planet(system, self.galaxy)
+        self.empire = Empire("Foo", "purple", self.galaxy)
         planet.owner = self.empire
         self.q = BuildQueue(planet)
 
@@ -25,14 +25,14 @@ class TestBuildQueue(unittest.TestCase):
         self.q.add(Building.MARINE_BARRACKS)
         self.assertEqual(type(self.q._queue[0]), Construct)
         self.assertEqual(self.q._queue[0].tag, Building.MARINE_BARRACKS)
-        self.q.add(select_ship_type_by_name("Cruiser"))
+        self.q.add(select_ship_type_by_name("Cruiser", self.galaxy))
         self.assertEqual(type(self.q._queue[1]), Construct)
         self.assertEqual(self.q._queue[1].ship.name, "Cruiser 1")
         self.assertEqual(len(self.q), 2)
 
     #############################################################################################
     def test_cost(self):
-        ship = select_ship_type_by_name("Battleship")
+        ship = select_ship_type_by_name("Battleship", self.galaxy)
         self.q.add(ship)
         self.assertEqual(self.q.cost, 725)
 
