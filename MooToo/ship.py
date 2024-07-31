@@ -6,7 +6,7 @@ import random
 from typing import TYPE_CHECKING, Optional
 from enum import StrEnum, auto
 
-from MooToo.utils import get_distance_tuple, ShipId
+from MooToo.utils import get_distance_tuple, ShipId, EmpireId
 from MooToo.constants import PlanetCategory
 
 if TYPE_CHECKING:
@@ -54,7 +54,7 @@ class Ship:
         self.space = 0
         self.cost = 0
         self.space = 0
-        self.owner: int = 0
+        self.owner: EmpireId = 0
         self.command_points = 0
         self.maintenance = 0
         self.coloniser = False

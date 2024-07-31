@@ -3,6 +3,7 @@
 from typing import TYPE_CHECKING
 from MooToo.planet import Planet
 from MooToo.utils import SystemId
+from MooToo.constants import StarColour
 
 if TYPE_CHECKING:
     from MooToo.ship import Ship
@@ -11,7 +12,7 @@ if TYPE_CHECKING:
 
 #####################################################################################################
 class System:
-    def __init__(self, system_id: SystemId, name: str, colour: str, position: tuple[int, int], galaxy: "Galaxy"):
+    def __init__(self, system_id: SystemId, name: str, colour: StarColour, position: tuple[int, int], galaxy: "Galaxy"):
         self.id = system_id
         self.position = position
         self.name = name
@@ -55,7 +56,7 @@ class System:
     def ships_in_orbit(self) -> list["Ship"]:
         """Return the list of ships (of all players) in orbit"""
         ships: list["Ship"] = []
-        for emp in self.galaxy.empires:
+        for emp in self.galaxy.empires.values():
             ships.extend([_ for _ in emp.ships if _.location == self])
         return ships
 

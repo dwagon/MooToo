@@ -26,7 +26,6 @@ class Galaxy:
         self.planets: dict[PlanetId, "Planet"] = {}
         self.ships: dict[ShipId, "Ship"] = {}
         self.turn_number = 0
-        self.planet_num = 0
         self.ship_id_generator = unique_ship_id()
 
     #####################################################################################################

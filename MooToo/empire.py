@@ -31,7 +31,7 @@ class Empire:
         self.government = "Feudal"  # Fix me
         self.money: int = 100
         self.income: int = 0
-        self.known_systems: set[int] = set()
+        self.known_systems: set[System] = set()
         self.owned_planets: set[Planet] = set()
         self.ships: list[Ship] = []
         self.researching: Technology | None = None
@@ -190,9 +190,9 @@ class Empire:
 
     #####################################################################################################
     def know_system(self, system: "System") -> None:
-        self.known_systems.add(system.id)
+        self.known_systems.add(system)
 
     #####################################################################################################
     def is_known_system(self, system: "System") -> bool:
         """Is the system known to this empire"""
-        return system.id in self.known_systems
+        return system in self.known_systems

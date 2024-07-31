@@ -271,7 +271,7 @@ def pre_start(empire: Empire, galaxy: Galaxy) -> None:
 #####################################################################################################
 def average_start(empire: Empire, galaxy: Galaxy) -> None:
     """Start with average tech"""
-    home_system = empire.galaxy.systems[list(empire.known_systems)[0]]
+    home_system = list(empire.known_systems)[0]
     pre_start(empire, galaxy)
     empire.learnt(Technology.STANDARD_FUEL_CELLS)
     empire.learnt(Technology.NUCLEAR_DRIVE)
