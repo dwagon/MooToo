@@ -11,12 +11,13 @@ class TestPlanetWork(unittest.TestCase):
     #################################################################################################
     def setUp(self):
         self.galaxy = Galaxy()
-        self.system = System((0, 0), self.galaxy)
+        self.system = System(99, "test", "white", (0, 0), self.galaxy)
 
     #################################################################################################
     def test_pollution(self):
         """Test Pollution"""
         planet = Planet(
+            99,
             self.system,
             self.galaxy,
             size=PlanetSize.MEDIUM,
@@ -27,8 +28,10 @@ class TestPlanetWork(unittest.TestCase):
         planet.buildings.add(Building.AUTOMATED_FACTORY)
         self.assertEqual(work_cost(planet), 5)
 
+    #################################################################################################
     def test_work(self):
         planet = Planet(
+            99,
             self.system,
             self.galaxy,
             size=PlanetSize.MEDIUM,
@@ -42,5 +45,6 @@ class TestPlanetWork(unittest.TestCase):
         self.assertEqual(work_surplus(planet), 11)
 
 
+#################################################################################################
 if __name__ == "__main__":
     unittest.main()

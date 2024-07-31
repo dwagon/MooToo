@@ -9,7 +9,7 @@ from MooToo.constants import (
     PlanetGravity,
 )
 from MooToo.ship import ShipType, select_ship_type_by_name
-from MooToo.galaxy import Galaxy
+from MooToo.bigbang import create_galaxy
 from MooToo.system import System
 from MooToo.construct import Construct, ConstructType
 from MooToo.planet import Planet
@@ -19,62 +19,64 @@ from MooToo.planet_work import work_surplus
 #####################################################################################################
 class TestPlanet(unittest.TestCase):
     def setUp(self):
-        self.galaxy = Galaxy()
-        self.galaxy.populate("pre")
+        self.galaxy = create_galaxy("pre")
         self.empire = self.galaxy.empires[1]
-        self.system = System((0, 0), self.galaxy)
-        self.planet = Planet(self.system, self.galaxy)
-        self.planet.owner = 1
+        self.system = System(99, "test", "purple", (0, 0), self.galaxy)
 
     #################################################################################################
     def test_colonize(self):
-        new_planet = Planet(self.system, self.galaxy, climate=PlanetClimate.TERRAN)
+        new_planet = Planet(99, self.system, self.galaxy, climate=PlanetClimate.TERRAN)
         new_planet.colonize(1)
         self.assertEqual(new_planet.current_population(), 1)
         self.assertEqual(new_planet.jobs[PopulationJobs.FARMERS], 1)
         self.assertEqual(new_planet.jobs[PopulationJobs.WORKERS], 0)
         self.assertIn(new_planet, self.empire.owned_planets)
 
-        new_planet = Planet(self.system, self.galaxy, climate=PlanetClimate.BARREN)
+        new_planet = Planet(100, self.system, self.galaxy, climate=PlanetClimate.BARREN)
         new_planet.colonize(1)
         self.assertEqual(new_planet.jobs[PopulationJobs.FARMERS], 0)
         self.assertEqual(new_planet.jobs[PopulationJobs.WORKERS], 1)
 
     #################################################################################################
     def test_max_population(self):
-        self.planet.size = PlanetSize.MEDIUM
-        self.planet.climate = PlanetClimate.TERRAN
-        self.assertEqual(self.planet.max_population(), 16)
+        planet = Planet(99, self.system, self.galaxy)
+        planet.size = PlanetSize.MEDIUM
+        planet.climate = PlanetClimate.TERRAN
+        self.assertEqual(planet.max_population(), 16)
 
     #################################################################################################
     def test_finish_construction(self):
+        planet = Planet(99, self.system, self.galaxy)
         con = Construct(ConstructType.BUILDING, building_tag=Building.MARINE_BARRACKS)
-        self.assertNotIn(Building.MARINE_BARRACKS, self.planet.buildings)
-        self.planet.finish_construction(con)
-        self.assertIn(Building.MARINE_BARRACKS, self.planet.buildings)
+        self.assertNotIn(Building.MARINE_BARRACKS, planet.buildings)
+        planet.finish_construction(con)
+        self.assertIn(Building.MARINE_BARRACKS, planet.buildings)
 
     #################################################################################################
     def test_building_production(self):
         """Test finishing a building"""
-        self.planet.build_queue.add(Building.MARINE_BARRACKS)
-        self.planet.construction_spent = 59
-        self.planet.jobs[PopulationJobs.WORKERS] = 5
-        self.planet.building_production()
-        self.assertIn(Building.MARINE_BARRACKS, self.planet.buildings)
-        self.assertLess(self.planet.construction_spent, 59)
-        self.assertNotIn(Building.MARINE_BARRACKS, self.planet.build_queue)
+        planet = Planet(99, self.system, self.galaxy)
+        planet.build_queue.add(Building.MARINE_BARRACKS)
+        planet.construction_spent = 59
+        planet.jobs[PopulationJobs.WORKERS] = 5
+        planet.building_production()
+        self.assertIn(Building.MARINE_BARRACKS, planet.buildings)
+        self.assertLess(planet.construction_spent, 59)
+        self.assertNotIn(Building.MARINE_BARRACKS, planet.build_queue)
 
     #################################################################################################
     def test_available_to_build(self):
-        self.assertIn(Building.HOUSING, self.planet.available_to_build())
-        self.assertIn(Building.MARINE_BARRACKS, self.planet.available_to_build())
-        self.planet.buildings.add(Building.MARINE_BARRACKS)
-        self.assertNotIn(Building.MARINE_BARRACKS, self.planet.available_to_build())
+        planet = Planet(99, self.system, self.galaxy)
+        planet.owner = self.empire.id
+        self.assertIn(Building.HOUSING, planet.available_to_build())
+        self.assertIn(Building.MARINE_BARRACKS, planet.available_to_build())
+        planet.buildings.add(Building.MARINE_BARRACKS)
+        self.assertNotIn(Building.MARINE_BARRACKS, planet.available_to_build())
 
     #################################################################################################
     def test_can_build_ship(self):
-        planet = Planet(self.system, self.galaxy)
-        planet.owner = 1
+        planet = Planet(101, self.system, self.galaxy)
+        planet.owner = self.empire.id
         self.assertFalse(planet.can_build_ship(ShipType.Frigate))
         self.empire.learnt(Technology.NUCLEAR_DRIVE)
         self.assertFalse(planet.can_build_ship(ShipType.Frigate))
@@ -87,6 +89,7 @@ class TestPlanet(unittest.TestCase):
     #################################################################################################
     def test_turns_to_build(self):
         planet = Planet(
+            102,
             self.system,
             self.galaxy,
             size=PlanetSize.MEDIUM,
@@ -106,7 +109,7 @@ class TestPlanet(unittest.TestCase):
 
     #################################################################################################
     def test_buy_cost(self):
-        planet = Planet(self.system, self.galaxy)
+        planet = Planet(103, self.system, self.galaxy)
         ship = select_ship_type_by_name("Battleship", self.galaxy)  # Cost 725
         planet.build_queue.add(ship)
         self.assertEqual(planet.buy_cost(), 2900)

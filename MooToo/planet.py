@@ -4,9 +4,19 @@ import math
 import random
 from typing import TYPE_CHECKING
 
-from MooToo.utils import prob_map, get_research, get_building, unique_planet_id, EmpireId
-from MooToo.constants import PlanetGravity, PlanetSize, PlanetCategory, PlanetRichness, PlanetClimate, Technology
-from MooToo.constants import PopulationJobs, STAR_COLOURS, POP_SIZE_MAP, POP_CLIMATE_MAP, FOOD_CLIMATE_MAP
+from MooToo.utils import get_research, get_building, EmpireId, PlanetId
+from MooToo.constants import Technology
+from MooToo.constants import (
+    PopulationJobs,
+    POP_SIZE_MAP,
+    POP_CLIMATE_MAP,
+    FOOD_CLIMATE_MAP,
+    PlanetSize,
+    PlanetRichness,
+    PlanetGravity,
+    PlanetCategory,
+    PlanetClimate,
+)
 from MooToo.planet_building import Building
 from MooToo.planet_work import work_surplus
 from MooToo.build_queue import BuildQueue
@@ -22,19 +32,19 @@ if TYPE_CHECKING:
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, system: "System", galaxy: "Galaxy", **kwargs):
-        self.id = unique_planet_id()
+    def __init__(self, planet_id: PlanetId, system: "System", galaxy: "Galaxy", **kwargs):
+        self.id = planet_id
         self.name = ""
         self.system = system
         self.galaxy = galaxy
 
         self.owner: EmpireId = 0
         self.jobs = {PopulationJobs.FARMERS: 0, PopulationJobs.WORKERS: 0, PopulationJobs.SCIENTISTS: 0}
-        self.category = kwargs.get("category", pick_planet_category())
-        self.size = kwargs.get("size", pick_planet_size())
-        self.richness = kwargs.get("richness", pick_planet_richness(STAR_COLOURS[self.system.colour]["richness"]))
-        self.climate = kwargs.get("climate", pick_planet_climate(STAR_COLOURS[self.system.colour]["climate"]))
-        self.gravity = kwargs.get("gravity", pick_planet_gravity(self.size, self.richness))
+        self.category = kwargs.get("category", PlanetCategory.PLANET)
+        self.size = kwargs.get("size", PlanetSize.MEDIUM)
+        self.richness = kwargs.get("richness", PlanetRichness.ABUNDANT)
+        self.climate = kwargs.get("climate", PlanetClimate.TERRAN)
+        self.gravity = kwargs.get("gravity", PlanetGravity.NORMAL)
         self._population = 0.0
         self.buildings: set[Building] = set()  # Built buildings
         self._buildings_available: set[Building] = set()
@@ -278,98 +288,4 @@ class Planet:
         richness = self.richness.name
         climate = self.climate.name
 
-        return f"<Planet {self.name}: {category} {self.size.name} {richness} {climate} {self.gravity.name}>"
-
-
-#####################################################################################################
-def pick_planet_climate(config: dict[str, int]) -> PlanetClimate:
-    """Climate of the planet depends on the star colour"""
-    climate = prob_map(config)
-    return PlanetClimate(climate)
-
-
-#####################################################################################################
-def pick_planet_richness(config: dict[str, int]) -> PlanetRichness:
-    richness = prob_map(config)
-    return PlanetRichness(richness)
-
-
-#####################################################################################################
-def pick_planet_gravity(size: PlanetSize, richness: PlanetRichness) -> PlanetGravity:
-    """The bigger and richer the planet the higher the gravity"""
-    grav_map = {
-        PlanetSize.TINY: {
-            PlanetRichness.ULTRA_POOR: PlanetGravity.LOW,
-            PlanetRichness.POOR: PlanetGravity.LOW,
-            PlanetRichness.ABUNDANT: PlanetGravity.LOW,
-            PlanetRichness.RICH: PlanetGravity.NORMAL,
-            PlanetRichness.ULTRA_RICH: PlanetGravity.NORMAL,
-        },
-        PlanetSize.SMALL: {
-            PlanetRichness.ULTRA_POOR: PlanetGravity.LOW,
-            PlanetRichness.POOR: PlanetGravity.LOW,
-            PlanetRichness.ABUNDANT: PlanetGravity.NORMAL,
-            PlanetRichness.RICH: PlanetGravity.NORMAL,
-            PlanetRichness.ULTRA_RICH: PlanetGravity.NORMAL,
-        },
-        PlanetSize.MEDIUM: {
-            PlanetRichness.ULTRA_POOR: PlanetGravity.LOW,
-            PlanetRichness.POOR: PlanetGravity.NORMAL,
-            PlanetRichness.ABUNDANT: PlanetGravity.NORMAL,
-            PlanetRichness.RICH: PlanetGravity.NORMAL,
-            PlanetRichness.ULTRA_RICH: PlanetGravity.HIGH,
-        },
-        PlanetSize.LARGE: {
-            PlanetRichness.ULTRA_POOR: PlanetGravity.NORMAL,
-            PlanetRichness.POOR: PlanetGravity.NORMAL,
-            PlanetRichness.ABUNDANT: PlanetGravity.NORMAL,
-            PlanetRichness.RICH: PlanetGravity.HIGH,
-            PlanetRichness.ULTRA_RICH: PlanetGravity.HIGH,
-        },
-        PlanetSize.HUGE: {
-            PlanetRichness.ULTRA_POOR: PlanetGravity.NORMAL,
-            PlanetRichness.POOR: PlanetGravity.NORMAL,
-            PlanetRichness.ABUNDANT: PlanetGravity.HIGH,
-            PlanetRichness.RICH: PlanetGravity.HIGH,
-            PlanetRichness.ULTRA_RICH: PlanetGravity.HIGH,
-        },
-    }
-    return grav_map[size][richness]
-
-
-#####################################################################################################
-def pick_planet_size() -> PlanetSize:
-    pct = random.randrange(1, 100)
-    if pct < 10:
-        return PlanetSize.TINY
-    if pct < 30:
-        return PlanetSize.SMALL
-    if pct < 70:
-        return PlanetSize.MEDIUM
-    if pct < 90:
-        return PlanetSize.LARGE
-    return PlanetSize.HUGE
-
-
-#####################################################################################################
-def pick_planet_category() -> PlanetCategory:
-    """What sort of planet is this?"""
-    pct = random.randrange(1, 100)
-    if pct < 20:
-        return PlanetCategory.ASTEROID
-    if pct < 40:
-        return PlanetCategory.GAS_GIANT
-    return PlanetCategory.PLANET
-
-
-#####################################################################################################
-def make_home_planet(system: "System", galaxy: "Galaxy") -> Planet:
-    """Return a suitable home planet in {system}"""
-    p = Planet(system, galaxy)
-    p.climate = PlanetClimate.TERRAN
-    p.size = PlanetSize.LARGE
-    p.category = PlanetCategory.PLANET
-    p.richness = PlanetRichness.ABUNDANT
-    p.gravity = PlanetGravity.NORMAL
-    p.climate_image = p.gen_climate_image()
-    return p
+        return f"<Planet {self.id} {self.name}: {category} {self.size.name} {richness} {climate} {self.gravity.name}>"
