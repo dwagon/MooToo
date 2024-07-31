@@ -20,7 +20,7 @@ from MooToo.ship import Ship
 from MooToo.system import System
 from MooToo.utils import get_research, arg_parse
 from MooToo.planet import Planet
-from MooToo.food import empire_food
+from MooToo.planet_food import empire_food
 
 MAX_NEBULAE = 5
 
