@@ -6,7 +6,7 @@ import random
 from typing import TYPE_CHECKING, Optional
 from enum import StrEnum, auto
 
-from MooToo.utils import get_distance_tuple
+from MooToo.utils import get_distance_tuple, ShipId
 from MooToo.constants import PlanetCategory
 
 if TYPE_CHECKING:
@@ -50,7 +50,7 @@ class Ship:
 
     def __init__(self, name: str, galaxy: "Galaxy"):
         self.galaxy = galaxy
-        self.id = next(galaxy.unique["ship"])
+        self.id: ShipId = next(galaxy.ship_id_generator)
         self.space = 0
         self.cost = 0
         self.space = 0
@@ -73,9 +73,9 @@ class Ship:
     #################################################################################################
     def __repr__(self):
         if self.orbit:
-            return f"<Ship {self.name} {self.orbit}>"
+            return f"<Ship {self.id} {self.name} {self.orbit}>"
         else:
-            return f"<Ship {self.name} {self.location}>"
+            return f"<Ship {self.id} {self.name} {self.location}>"
 
     #################################################################################################
     def speed(self):

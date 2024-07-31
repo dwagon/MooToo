@@ -112,32 +112,8 @@ def arg_parse(sys_args) -> argparse.Namespace:
 
 
 #####################################################################################################
-def unique_planet_id() -> int:
+def unique_ship_id() -> ShipId:
     counter = 0
-    while True:
-        yield counter
-        counter += 1
-
-
-#####################################################################################################
-def unique_system_id() -> int:
-    counter = 0
-    while True:
-        yield counter
-        counter += 1
-
-
-#####################################################################################################
-def unique_ship_id() -> int:
-    counter = 0
-    while True:
-        yield counter
-        counter += 1
-
-
-#####################################################################################################
-def unique_empire_id() -> int:
-    counter = 1  # Empire 0 is no empire
     while True:
         yield counter
         counter += 1
