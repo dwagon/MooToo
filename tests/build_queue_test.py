@@ -1,10 +1,10 @@
 import unittest
 
 from MooToo.build_queue import BuildQueue
+from MooToo.bigbang import create_galaxy
 from MooToo.constants import Building
 from MooToo.construct import Construct, ConstructType
 from MooToo.ship import select_ship_type_by_name
-from MooToo.galaxy import Galaxy
 from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.empire import Empire
@@ -13,10 +13,10 @@ from MooToo.empire import Empire
 #################################################################################################
 class TestBuildQueue(unittest.TestCase):
     def setUp(self):
-        self.galaxy = Galaxy()
-        system = System((0, 0), self.galaxy)
-        planet = Planet(system, self.galaxy)
-        self.empire = Empire("Foo", "purple", self.galaxy)
+        self.galaxy = create_galaxy()
+        system = System(99, "test", "white", (0, 0), self.galaxy)
+        planet = Planet(99, system, self.galaxy)
+        self.empire = Empire(99, "Foo", "purple", self.galaxy)
         planet.owner = self.empire
         self.q = BuildQueue(planet)
 
