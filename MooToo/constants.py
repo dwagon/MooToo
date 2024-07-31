@@ -327,6 +327,8 @@ STAR_COLOURS = {
             "Gaia": 0,
         },
         "richness": {"Ultra Poor": 0, "Poor": 0, "Abundant": 40, "Rich": 20, "Ultra Rich": 20},
+        "probability": 2,
+        "prob_orbit": 40,
     },
     StarColour.WHITE: {
         "climate": {
@@ -342,6 +344,8 @@ STAR_COLOURS = {
             "Gaia": 1,
         },
         "richness": {"Ultra Poor": 0, "Poor": 20, "Abundant": 40, "Rich": 30, "Ultra Rich": 10},
+        "probability": 3,
+        "prob_orbit": 35,
     },
     StarColour.YELLOW: {
         "climate": {
@@ -357,6 +361,8 @@ STAR_COLOURS = {
             "Gaia": 1,
         },
         "richness": {"Ultra Poor": 0, "Poor": 30, "Abundant": 40, "Rich": 20, "Ultra Rich": 10},
+        "probability": 10,
+        "prob_orbit": 45,
     },
     StarColour.ORANGE: {
         "climate": {
@@ -372,6 +378,8 @@ STAR_COLOURS = {
             "Gaia": 1,
         },
         "richness": {"Ultra Poor": 10, "Poor": 40, "Abundant": 40, "Rich": 10, "Ultra Rich": 0},
+        "probability": 12,
+        "prob_orbit": 45,
     },
     StarColour.RED: {
         "climate": {
@@ -387,6 +395,8 @@ STAR_COLOURS = {
             "Gaia": 1,
         },
         "richness": {"Ultra Poor": 20, "Poor": 40, "Abundant": 40, "Rich": 0, "Ultra Rich": 0},
+        "probability": 68,
+        "prob_orbit": 35,
     },
     StarColour.BROWN: {
         "climate": {
@@ -402,6 +412,8 @@ STAR_COLOURS = {
             "Gaia": 1,
         },
         "richness": {"Ultra Poor": 5, "Poor": 10, "Abundant": 60, "Rich": 20, "Ultra Rich": 5},
+        "probability": 5,
+        "prob_orbit": 25,
     },
 }
 GRAVITY_MAP: dict[PlanetGravity, float] = {
@@ -450,3 +462,10 @@ PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
     PlanetRichness.RICH: 5,
     PlanetRichness.ULTRA_RICH: 8,
 }
+
+MAX_ORBITS = 5
+NUM_SYSTEMS = 40
+NUM_EMPIRES = 4
+MAX_X = 530
+MAX_Y = 420
+MIN_DIST = 40  # Distance between systems

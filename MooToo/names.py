@@ -1,6 +1,6 @@
 """ Names of stuff"""
 
-system_names = [
+SYSTEM_NAMES = [
     "Abbith",
     "Abeen",
     "Acamar",
@@ -797,7 +797,7 @@ system_names = [
     "Zweig",
 ]
 
-empire_names = [
+EMPIRE_NAMES = [
     "Alpha",
     "Beta",
     "Gamma",
@@ -824,4 +824,6 @@ empire_names = [
     "Omega",
 ]
 
-empire_colours = ["red", "blue", "green", "yellow", "orange", "tan", "light blue", "pink"]
+EMPIRE_COLOURS = ["red", "blue", "green", "yellow", "orange", "tan", "light blue", "pink"]
+
+ORBIT_NAMES = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII")

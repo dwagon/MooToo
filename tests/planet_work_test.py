@@ -11,13 +11,17 @@ class TestPlanetWork(unittest.TestCase):
     #################################################################################################
     def setUp(self):
         self.galaxy = Galaxy()
-        self.system = System(1, (0, 0), self.galaxy)
+        self.system = System((0, 0), self.galaxy)
 
     #################################################################################################
     def test_pollution(self):
         """Test Pollution"""
         planet = Planet(
-            self.system, size=PlanetSize.MEDIUM, richness=PlanetRichness.ABUNDANT, gravity=PlanetGravity.NORMAL
+            self.system,
+            self.galaxy,
+            size=PlanetSize.MEDIUM,
+            richness=PlanetRichness.ABUNDANT,
+            gravity=PlanetGravity.NORMAL,
         )
         planet.jobs[PopulationJobs.WORKERS] = 4
         planet.buildings.add(Building.AUTOMATED_FACTORY)
@@ -25,7 +29,11 @@ class TestPlanetWork(unittest.TestCase):
 
     def test_work(self):
         planet = Planet(
-            self.system, size=PlanetSize.MEDIUM, gravity=PlanetGravity.NORMAL, richness=PlanetRichness.ABUNDANT
+            self.system,
+            self.galaxy,
+            size=PlanetSize.MEDIUM,
+            gravity=PlanetGravity.NORMAL,
+            richness=PlanetRichness.ABUNDANT,
         )
         planet.jobs[PopulationJobs.WORKERS] = 5
 

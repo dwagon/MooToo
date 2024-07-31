@@ -1,16 +1,13 @@
 """ Relating to player's empires"""
 
-import random
 from collections import defaultdict, namedtuple
 from typing import TYPE_CHECKING
-from MooToo.constants import Technology, PopulationJobs, StarColour
+from MooToo.constants import Technology, PopulationJobs
 from MooToo.research import TechCategory
-from MooToo.planet_building import Building
-from MooToo.utils import all_research, get_research, get_distance_tuple
-from MooToo.planet import make_home_planet
+from MooToo.utils import all_research, get_research, get_distance_tuple, EmpireId
 from MooToo.planet_science import science_surplus
 from MooToo.planet_money import money_surplus
-from MooToo.food import food_surplus
+from MooToo.planet_food import food_surplus
 
 
 if TYPE_CHECKING:
@@ -26,7 +23,8 @@ Migration = namedtuple("Migration", "dst_planet dst_job arrival_time")
 #####################################################################################################
 #####################################################################################################
 class Empire:
-    def __init__(self, name: str, colour: str, galaxy: "Galaxy"):
+    def __init__(self, empire_id: EmpireId, name: str, colour: str, galaxy: "Galaxy"):
+        self.id = empire_id
         self.name = name
         self.colour = colour
         self.galaxy = galaxy
@@ -54,7 +52,7 @@ class Empire:
 
     #####################################################################################################
     def __repr__(self):
-        return f"<Empire {self.name}>"
+        return f"<Empire {self.id} {self.name}>"
 
     #####################################################################################################
     def freighters_used(self) -> int:
@@ -91,20 +89,6 @@ class Empire:
             self.migrations.append(Migration(dst_job=dst_job, dst_planet=dst_planet, arrival_time=arrival_time))
 
     #####################################################################################################
-    def set_home_planet(self, planet: "Planet"):
-        """Make planet the home planet of the empire"""
-        planet.name = f"{self.name} Home"
-        planet.owner = self.name
-        planet._population = 8e6
-        planet.jobs[PopulationJobs.FARMERS] = 4
-        planet.jobs[PopulationJobs.WORKERS] = 2
-        planet.jobs[PopulationJobs.SCIENTISTS] = 2
-        planet.buildings.add(Building.MARINE_BARRACKS)
-        planet.buildings.add(Building.STAR_BASE)
-        self.owned_planets.add(planet)
-        self.know_system(planet.system)
-
-    #####################################################################################################
     def own_planet(self, planet: "Planet"):
         self.owned_planets.add(planet)
 
@@ -113,12 +97,13 @@ class Empire:
         self.ships.append(ship)
         ship.orbit = system
         ship.location = system.position
-        ship.owner = self
+        self.galaxy.ships[ship.id] = ship
+        ship.owner = self.id
 
     #####################################################################################################
     def delete_ship(self, ship: "Ship"):
-        print(f"DBG delete_ship({ship=}")
         self.ships.remove(ship)
+        del self.galaxy.ships[ship.id]
 
     #####################################################################################################
     def turn(self):
@@ -197,8 +182,8 @@ class Empire:
         return rp
 
     #####################################################################################################
-    def has_interest_in(self, system: "System") -> bool:
-        for planet in system.orbits:
+    def has_interest_in(self, system_id: int) -> bool:
+        for planet in self.galaxy.systems[system_id].orbits:
             if planet and planet.owner == self:
                 return True
         return False
@@ -211,16 +196,3 @@ class Empire:
     def is_known_system(self, system: "System") -> bool:
         """Is the system known to this empire"""
         return system.id in self.known_systems
-
-
-#####################################################################################################
-def make_empire(empire_name: str, empire_colour: str, home_system: "System", galaxy: "Galaxy") -> Empire:
-    """ """
-    home_system.colour = StarColour.YELLOW
-    empire = Empire(empire_name, empire_colour, galaxy)
-    galaxy.empires[empire_name] = empire
-    home_planet = make_home_planet(home_system)
-    empire.set_home_planet(home_planet)
-    home_system.orbits.append(home_planet)
-    random.shuffle(home_system.orbits)
-    return empire

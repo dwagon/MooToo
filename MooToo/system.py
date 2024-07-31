@@ -45,8 +45,8 @@ STAR_COLOURS = {
 
 #####################################################################################################
 class System:
-    def __init__(self, _id, position: tuple[int, int], galaxy: "Galaxy"):
-        self.id = _id
+    def __init__(self, position: tuple[int, int], galaxy: "Galaxy"):
+        self.id = next(galaxy.unique["system"])
         self.position = position
         self.name = pick_name()
         self.colour = pick_star_colour()
@@ -89,7 +89,7 @@ class System:
     def ships_in_orbit(self) -> list["Ship"]:
         """Return the list of ships (of all players) in orbit"""
         ships: list["Ship"] = []
-        for emp in self.galaxy.empires.values():
+        for emp in self.galaxy.empires:
             ships.extend([_ for _ in emp.ships if _.location == self])
         return ships
 
@@ -98,7 +98,7 @@ class System:
         for _ in range(MAX_ORBITS):
             pct = random.randint(0, 100)
             if pct <= STAR_COLOURS[self.colour]["prob_orbit"]:
-                self.orbits.append(Planet(self))
+                self.orbits.append(Planet(self, self.galaxy))
             else:
                 self.orbits.append(None)
 
