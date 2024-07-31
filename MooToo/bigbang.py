@@ -40,10 +40,23 @@ from MooToo.utils import (
 def create_galaxy(tech: str = "avg") -> Galaxy:
     """Fill the galaxy with things"""
     galaxy = Galaxy()
+    create_systems(galaxy)
+    create_empires(galaxy, tech)
+    create_planets(galaxy)
+    return galaxy
+
+
+#####################################################################################################
+def create_planets(galaxy: Galaxy):
+    for system in galaxy.systems.values():
+        make_orbits(galaxy, system)
+
+
+#####################################################################################################
+def create_empires(galaxy: Galaxy, tech: str):
     names = EMPIRE_NAMES[:]
     colours = EMPIRE_COLOURS[:]
     emp_id_generator = unique_empire_id()
-    create_systems(galaxy)
     for home_system in find_home_systems(galaxy, NUM_EMPIRES):
         empire_name = pick_empire_name(names)
         colour = pick_colour(colours)
@@ -57,10 +70,6 @@ def create_galaxy(tech: str = "avg") -> Galaxy:
                 average_start(empire, galaxy)
             case "adv":
                 advanced_start(empire, galaxy)
-    for system in galaxy.systems.values():
-        make_orbits(galaxy, system)
-
-    return galaxy
 
 
 #####################################################################################################
@@ -137,18 +146,19 @@ def make_orbits(galaxy: Galaxy, system: "System"):
             planet_id = next(UNIQUE_PLANET_ID)
             size = pick_planet_size()
             richness = pick_planet_richness(STAR_COLOURS[system.colour]["richness"])
-            system.orbits.append(
-                Planet(
-                    planet_id,
-                    system,
-                    galaxy,
-                    category=pick_planet_category(),
-                    size=size,
-                    richness=richness,
-                    climate=pick_planet_climate(STAR_COLOURS[system.colour]["climate"]),
-                    gravity=pick_planet_gravity(size, richness),
-                )
+            planet = Planet(
+                planet_id,
+                system,
+                galaxy,
+                category=pick_planet_category(),
+                size=size,
+                richness=richness,
+                climate=pick_planet_climate(STAR_COLOURS[system.colour]["climate"]),
+                gravity=pick_planet_gravity(size, richness),
             )
+
+            system.orbits.append(planet)
+            galaxy.planets[planet.id] = planet
         else:
             system.orbits.append(None)
 
@@ -194,6 +204,7 @@ def make_home_planet(system: "System", galaxy: "Galaxy") -> Planet:
         richness=PlanetRichness.ABUNDANT,
         gravity=PlanetGravity.NORMAL,
     )
+    galaxy.planets[p.id] = p
     p.climate_image = p.gen_climate_image()
     return p
 
