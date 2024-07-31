@@ -11,8 +11,9 @@ class TestPlanetScience(unittest.TestCase):
     #################################################################################################
     def setUp(self):
         self.galaxy = Galaxy()
-        self.system = System((0, 0), self.galaxy)
+        self.system = System(99, "test", "white", (0, 0), self.galaxy)
         self.planet = Planet(
+            99,
             self.system,
             self.galaxy,
             size=PlanetSize.MEDIUM,

@@ -12,13 +12,18 @@ class TestPlanetFood(unittest.TestCase):
     #################################################################################################
     def setUp(self):
         self.galaxy = Galaxy()
-        self.system = System((0, 0), self.galaxy)
+        self.system = System(99, "Test", "white", (0, 0), self.galaxy)
 
     #################################################################################################
     def test_consumption(self):
         """Test Consumption"""
         planet = Planet(
-            self.system, self.galaxy, size=PlanetSize.MEDIUM, gravity=PlanetGravity.NORMAL, climate=PlanetClimate.TERRAN
+            99,
+            self.system,
+            self.galaxy,
+            size=PlanetSize.MEDIUM,
+            gravity=PlanetGravity.NORMAL,
+            climate=PlanetClimate.TERRAN,
         )
         planet.jobs[PopulationJobs.FARMERS] = 4
         planet.jobs[PopulationJobs.WORKERS] = 1
@@ -28,7 +33,12 @@ class TestPlanetFood(unittest.TestCase):
 
     def test_production(self):
         planet = Planet(
-            self.system, self.galaxy, size=PlanetSize.MEDIUM, gravity=PlanetGravity.NORMAL, climate=PlanetClimate.TERRAN
+            99,
+            self.system,
+            self.galaxy,
+            size=PlanetSize.MEDIUM,
+            gravity=PlanetGravity.NORMAL,
+            climate=PlanetClimate.TERRAN,
         )
         planet.jobs[PopulationJobs.FARMERS] = 5
         planet.jobs[PopulationJobs.WORKERS] = 2
@@ -42,7 +52,12 @@ class TestPlanetFood(unittest.TestCase):
 
     def test_per(self):
         planet = Planet(
-            self.system, self.galaxy, size=PlanetSize.MEDIUM, gravity=PlanetGravity.NORMAL, climate=PlanetClimate.TERRAN
+            99,
+            self.system,
+            self.galaxy,
+            size=PlanetSize.MEDIUM,
+            gravity=PlanetGravity.NORMAL,
+            climate=PlanetClimate.TERRAN,
         )
         self.assertEqual(food_per(planet), 2)
 

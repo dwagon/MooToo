@@ -1,7 +1,6 @@
 import unittest
-from MooToo.galaxy import Galaxy
+from MooToo.bigbang import create_galaxy
 from MooToo.system import System
-from MooToo.planet import Planet
 from MooToo.ship import select_ship_type_by_name
 from MooToo.utils import get_distance_tuple
 
@@ -9,12 +8,9 @@ from MooToo.utils import get_distance_tuple
 #####################################################################################################
 class TestShip(unittest.TestCase):
     def setUp(self):
-        self.galaxy = Galaxy()
-        self.galaxy.populate()
-        self.system = System((0, 0), self.galaxy)
-        self.planet = Planet(self.system, self.galaxy)
+        self.galaxy = create_galaxy()
         self.empire = self.galaxy.empires[1]
-        self.planet.owner = 1
+        self.system = self.galaxy.systems[1]
 
     def test_select_ship(self):
         ship = select_ship_type_by_name("Frigate", self.galaxy)
@@ -23,9 +19,10 @@ class TestShip(unittest.TestCase):
         self.assertIn("Frigate", ship.name)
 
     def test_move_ship(self):
-        destination = System((20, 0), self.galaxy)
+        source = System(98, "Source", "Purple", (0, 0), self.galaxy)
+        destination = System(99, "Target", "Purple", (20, 0), self.galaxy)
         ship = select_ship_type_by_name("Cruiser", self.galaxy)
-        self.empire.add_ship(ship, self.system)
+        self.empire.add_ship(ship, source)
         ship.set_destination(destination)
         self.assertEqual(ship.destination, destination)
         distance = get_distance_tuple(ship.location, destination.position)
@@ -45,7 +42,7 @@ class TestShip(unittest.TestCase):
         self.assertIsNone(ship.destination)
 
     def test_set_destination(self):
-        system2 = System((4, 0), self.galaxy)
+        system2 = System(99, "test", "white", (4, 0), self.galaxy)
 
         ship = select_ship_type_by_name("DoomStar", self.galaxy)
         ship.orbit = self.system

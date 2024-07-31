@@ -28,15 +28,12 @@ from MooToo.constants import (
 )
 from MooToo.utils import (
     get_distance_tuple,
-    unique_planet_id,
     PlanetId,
     EmpireId,
     SystemId,
     get_distance,
     prob_map,
 )
-
-UNIQUE_PLANET_ID = unique_planet_id()
 
 
 #################################################################################################
@@ -72,6 +69,17 @@ def unique_empire_id() -> EmpireId:
     while True:
         yield counter
         counter += 1
+
+
+#####################################################################################################
+def unique_planet_id() -> PlanetId:
+    counter = 0
+    while True:
+        yield counter
+        counter += 1
+
+
+UNIQUE_PLANET_ID = unique_planet_id()
 
 
 #####################################################################################################
