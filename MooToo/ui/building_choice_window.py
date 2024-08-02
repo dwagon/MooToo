@@ -2,14 +2,11 @@
 
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics, load_image
-from MooToo.planet import Planet
-from MooToo.ui.gui_button import Button
-from MooToo.ui.constants import DisplayMode
-from MooToo.ship import ShipType
-from MooToo.constants import Building
-from MooToo.construct import ConstructType
-from MooToo.utils import get_building
+from MooToo.ui.planetui import PlanetUI as Planet
+from .base_graphics import BaseGraphics, load_image
+from .gui_button import Button
+from .constants import DisplayMode
+
 
 if TYPE_CHECKING:
     from MooToo.ui.game import Game

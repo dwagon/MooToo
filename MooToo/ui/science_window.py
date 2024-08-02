@@ -1,10 +1,9 @@
 import time
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics, load_image
+from .base_graphics import BaseGraphics, load_image
+from .gui_button import Button
 from MooToo.constants import Technology
 from MooToo.research import TechCategory
-from MooToo.utils import get_research
-from MooToo.ui.gui_button import Button
 
 
 #####################################################################################################

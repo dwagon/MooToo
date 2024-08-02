@@ -1,5 +1,7 @@
 from enum import Enum, auto
 
+URL = "http://localhost:8000"
+
 
 #####################################################################################################
 class DisplayMode(Enum):

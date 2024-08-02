@@ -2,24 +2,17 @@
 
 import time
 from enum import Enum, StrEnum, auto
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics, load_image
-from MooToo.ui.textbox_window import TextBoxWindow
-from MooToo.ui.constants import DisplayMode
-from MooToo.constants import PlanetClimate, PlanetCategory, PlanetSize, PopulationJobs
-from MooToo.system import System, MAX_ORBITS
-from MooToo.planet import Planet
-from MooToo.ui.gui_button import Button
-from MooToo.ui.building_choice_window import BuildingChoiceWindow
-from MooToo.planet_money import money_production, money_cost
-from MooToo.planet_work import work_cost, work_per, work_surplus
-from MooToo.planet_food import food_per, food_surplus, food_cost
-from MooToo.planet_science import science_production, science_per
-
-if TYPE_CHECKING:
-    from MooToo.ui.game import Game
+from MooToo.constants import PopulationJobs, PlanetClimate, PlanetSize, PlanetCategory, MAX_ORBITS
+from MooToo.ui.planetui import PlanetUI as Planet
+from .base_graphics import BaseGraphics, load_image
+from .systemui import SystemUI as System
+from .textbox_window import TextBoxWindow
+from .constants import DisplayMode
+from .gui_button import Button
+from .building_choice_window import BuildingChoiceWindow
 
 
 #####################################################################################################

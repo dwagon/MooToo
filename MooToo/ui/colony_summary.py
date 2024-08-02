@@ -6,14 +6,14 @@ from typing import TYPE_CHECKING, Optional
 import pygame
 
 from MooToo.constants import PopulationJobs
-from MooToo.ui.constants import DisplayMode
-from MooToo.ui.base_graphics import BaseGraphics, load_image
-from MooToo.ui.gui_button import Button
+from MooToo.ui.planetui import PlanetUI
+from .constants import DisplayMode
+from .base_graphics import BaseGraphics, load_image
+from .gui_button import Button
 
 
 if TYPE_CHECKING:
-    from MooToo.ui.game import Game
-    from MooToo.planet import Planet
+    from .game import Game
 
 
 #####################################################################################################
@@ -34,12 +34,12 @@ class ColonySummaryWindow(BaseGraphics):
         self.screen = screen
         self.images: dict[ImageNames, pygame.Surface] = self.load_images()
         self.return_button = Button(self.images[ImageNames.RETURN_BUTTON], pygame.Vector2(530, 445))
-        self.buy_now_rects: dict[Planet, pygame.Rect] = {}
-        self.building_rect: dict[Planet, pygame.Rect] = {}
-        self.planet_rect: dict[Planet, pygame.Rect] = {}
-        self.population_rects: dict[tuple[Planet, PopulationJobs], list[pygame.Rect]] = {}
-        self.destination_rects: dict[tuple[Planet, PopulationJobs], pygame.Rect] = {}
-        self.pop_selected: Optional[tuple[Planet, PopulationJobs, int]] = None
+        self.buy_now_rects: dict[PlanetUI, pygame.Rect] = {}
+        self.building_rect: dict[PlanetUI, pygame.Rect] = {}
+        self.planet_rect: dict[PlanetUI, pygame.Rect] = {}
+        self.population_rects: dict[tuple[PlanetUI, PopulationJobs], list[pygame.Rect]] = {}
+        self.destination_rects: dict[tuple[PlanetUI, PopulationJobs], pygame.Rect] = {}
+        self.pop_selected: Optional[tuple[PlanetUI, PopulationJobs, int]] = None
 
     #####################################################################################################
     def load_images(self) -> dict[ImageNames, pygame.Surface]:
@@ -71,7 +71,7 @@ class ColonySummaryWindow(BaseGraphics):
             top_left += pygame.Vector2(0, 31)
 
     #####################################################################################################
-    def draw_planet(self, planet: "Planet", top_left: pygame.Vector2) -> None:
+    def draw_planet(self, planet: "PlanetUI", top_left: pygame.Vector2) -> None:
         name_surface = self.text_font.render(planet.name, True, "white")
         planet_name_rect = pygame.Rect(top_left.x, top_left.y, 86, 27)
         pygame.draw.rect(self.screen, "purple", planet_name_rect, width=1)
@@ -107,7 +107,7 @@ class ColonySummaryWindow(BaseGraphics):
                 pygame.draw.rect(self.screen, "purple", self.buy_now_rects[planet], width=1)  # DBG
 
     #####################################################################################################
-    def draw_building(self, planet: "Planet", top_left: pygame.Vector2) -> None:
+    def draw_building(self, planet: "PlanetUI", top_left: pygame.Vector2) -> None:
         building = planet.build_queue[0]
         text_surface = self.label_font.render(building.name, True, "white")
         self.screen.blit(text_surface, top_left + pygame.Vector2(510, 0))
@@ -156,7 +156,7 @@ class ColonySummaryWindow(BaseGraphics):
                         self.pop_selected = (planet, job, len(rects) - num)
 
     #####################################################################################################
-    def move_population(self, dest_planet: "Planet", dest_job: PopulationJobs) -> None:
+    def move_population(self, dest_planet: "PlanetUI", dest_job: PopulationJobs) -> None:
         """Move population in {self.pop_selected} to new planet/job"""
         planet, job, num = self.pop_selected
         if dest_planet == planet:

@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Any
 
 from fastapi import APIRouter, HTTPException, status
-from MooToo.server.util import GALAXY
-from ..util import URL_PREFIX_SYSTEMS
+from MooToo.server.server_utils import GALAXY
+from ..server_utils import URL_PREFIX_SYSTEMS
 from ..serializers import system_reference_serializer
 from ..serializers.system import system_serializer
 

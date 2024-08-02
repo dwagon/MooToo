@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 import random
-import sys
 import time
 from typing import Optional
 
 import pygame
+
 from enum import StrEnum, auto
+
+from MooToo.utils import get_research
+
+from MooToo.ui.planetui import PlanetUI as Planet
+from MooToo.ui.shipui import ShipUI as Ship
+from MooToo.ui.systemui import SystemUI as System
 from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.ui.orbit_window import OrbitWindow
@@ -15,12 +21,8 @@ from MooToo.ui.science_window import ScienceWindow
 from MooToo.ui.fleet_window import FleetWindow
 from MooToo.ui.colony_summary import ColonySummaryWindow
 from MooToo.ui.planet_summary import PlanetSummaryWindow
-from MooToo.galaxy import Galaxy, save, load
-from MooToo.ship import Ship
-from MooToo.system import System
-from MooToo.utils import get_research, arg_parse
-from MooToo.planet import Planet
-from MooToo.planet_food import empire_food
+from MooToo.ui.galaxyui import GalaxyUI as Galaxy
+
 
 MAX_NEBULAE = 5
 
@@ -35,11 +37,11 @@ class MainButtons(StrEnum):
 
 #####################################################################################################
 class Game(BaseGraphics):
-    def __init__(self, galaxy: Galaxy, empire_name: str):
+    def __init__(self):
         super().__init__(self)
-        self.galaxy = galaxy
+        self.galaxy = Galaxy()
         self.display_mode = DisplayMode.GALAXY
-        self.empire = galaxy.empires[empire_name]
+        self.empire = self.galaxy.empires[1]  # Change to select empire
         self.system = None  # System we are looking at
         self.planet = None  # Planet we are looking at
         self.orbit_window = OrbitWindow(self.screen, self)
@@ -171,7 +173,7 @@ class Game(BaseGraphics):
         mouse = pygame.mouse.get_pos()
         if self.buttons[MainButtons.TURN].clicked():
             self.galaxy.turn()
-            save(self.galaxy, "save")
+            # save(self.galaxy, "save")
         elif self.buttons[MainButtons.COLONY_SUMMARY].clicked():
             self.display_mode = DisplayMode.COLONY_SUM
         elif self.buttons[MainButtons.PLANET_SUMMARY].clicked():
@@ -324,7 +326,7 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_food(self) -> None:
-        food = empire_food(self.empire)
+        food = self.empire.food()
         top_left = pygame.Vector2(580, 250)
         rp_text_surface = self.text_font.render(f"{food}", True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
@@ -408,17 +410,7 @@ def pick_planet(system: System) -> Planet:
 
 #####################################################################################################
 def main():
-    args = arg_parse(sys.argv[1:])
-    galaxy = Galaxy()
-    if args.load:
-        galaxy = load(args.load)
-    else:
-        galaxy.populate(args.tech)
-        save(galaxy, "initial")
-
-    empire_name = random.choice(list(galaxy.empires.keys()))
-
-    g = Game(galaxy, empire_name)
+    g = Game()
     g.loop()
     pygame.quit()
 

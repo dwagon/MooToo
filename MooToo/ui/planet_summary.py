@@ -1,20 +1,20 @@
-""" Planet Summary Window"""
+""" PlanetUI Summary Window"""
 
 import time
 from typing import TYPE_CHECKING, Any, Optional
 from enum import StrEnum, auto
 import pygame
 
-from MooToo.planet import Planet
-from MooToo.constants import FOOD_CLIMATE_MAP, PROD_RICHNESS_MAP, GRAVITY_MAP
-from MooToo.ui.base_graphics import BaseGraphics, load_image
-from MooToo.ui.constants import DisplayMode
-from MooToo.ui.gui_button import Button
+from MooToo.constants import FOOD_CLIMATE_MAP, GRAVITY_MAP, PROD_RICHNESS_MAP
+from .empireui import EmpireUI
+from .planetui import PlanetUI
+from .base_graphics import BaseGraphics, load_image
+from .constants import DisplayMode
+from .gui_button import Button
 
 
 if TYPE_CHECKING:
-    from MooToo.ui.game import Game
-    from MooToo.empire import Empire
+    from .game import Game
 
 
 #####################################################################################################
@@ -48,16 +48,16 @@ class SummaryButtons(StrEnum):
 #####################################################################################################
 #####################################################################################################
 class PlanetSummaryWindow(BaseGraphics):
-    def __init__(self, screen: pygame.Surface, game: "Game", empire: "Empire"):
+    def __init__(self, screen: pygame.Surface, game: "Game", empire: "EmpireUI"):
         super().__init__(game)
         self.screen = screen
         self.empire = empire
         self.data = []
         self.images = self.load_images()
         self.sorting = PlanetDataColumn.NAME
-        self.planet_clicked: Optional[Planet] = None
+        self.planet_clicked: Optional[PlanetUI] = None
         self.button_clicked: Optional[SummaryButtons] = None
-        self.planet_rects: dict[Planet, pygame.Rect] = {}
+        self.planet_rects: dict[PlanetUI, pygame.Rect] = {}
         self.buttons = {
             SummaryButtons.CLIMATE: Button(self.images["climate_button"], pygame.Vector2(441, 201)),
             SummaryButtons.RETURN: Button(self.images["return_button"], pygame.Vector2(454, 440)),
@@ -213,7 +213,7 @@ class PlanetSummaryWindow(BaseGraphics):
         return data
 
     #####################################################################################################
-    def has_coloniser_en_route(self, planet: Planet) -> bool:
+    def has_coloniser_en_route(self, planet: PlanetUI) -> bool:
         for ship in self.empire.ships:
             if ship.coloniser and ship.target_planet == planet:
                 return True

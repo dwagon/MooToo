@@ -3,14 +3,14 @@
 import time
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.ship import Ship
-from MooToo.ui.base_graphics import BaseGraphics, load_image
-from MooToo.ui.gui_button import Button, InvisButton
-from MooToo.utils import get_distance_tuple
+from MooToo.ui.shipui import ShipUI
+from MooToo.ui.systemui import SystemUI
+from MooToo.ui.ui_util import get_distance_tuple
+from .base_graphics import BaseGraphics, load_image
+from .gui_button import Button, InvisButton
 
 if TYPE_CHECKING:
     from MooToo.ui.game import Game
-    from MooToo.system import System
 
 ALL_OFFSET = pygame.Vector2(18, 206)
 CLOSE_OFFSET = pygame.Vector2(0, 238)
@@ -23,12 +23,12 @@ class FleetWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
         super().__init__(game)
         self.screen = screen
-        self.ships: list[Ship] = []
+        self.ships: list[ShipUI] = []
         self.images = self.load_images()
         self.reset([])
 
     #####################################################################################################
-    def reset(self, ships: list[Ship]):
+    def reset(self, ships: list[ShipUI]):
         self.top_left = pygame.Vector2(640 / 2 - self.images["top_window"].get_size()[0] / 2, 100)
         self.all_button = Button(self.images["all_button"], self.top_left + ALL_OFFSET)
         self.close_button = Button(self.images["close_button"], self.top_left + CLOSE_OFFSET)
@@ -66,7 +66,7 @@ class FleetWindow(BaseGraphics):
         return False
 
     #####################################################################################################
-    def select_destination(self, dest_system: "System"):
+    def select_destination(self, dest_system: "SystemUI"):
         """Tell ships to move to selected system"""
         for ship in self.selected_ships:
             ship.set_destination(dest_system)
@@ -109,7 +109,7 @@ class FleetWindow(BaseGraphics):
         images["all_button"] = load_image("BUFFER0.LBX", 60)
 
         end = time.time()
-        print(f"Ships: Loaded {len(images)} in {end-start} seconds")
+        print(f"ShipUIs: Loaded {len(images)} in {end-start} seconds")
 
         return images
 
@@ -141,7 +141,7 @@ class FleetWindow(BaseGraphics):
         self.close_button.draw(self.screen)
 
     #####################################################################################################
-    def draw_ship(self, ship: Ship, h_idx: int, v_idx: int, top_left: pygame.Vector2):
+    def draw_ship(self, ship: ShipUI, h_idx: int, v_idx: int, top_left: pygame.Vector2):
         ship_top_left = top_left + pygame.Vector2(16 + h_idx * 58, 3 + v_idx * 56)
         if ship in self.selected_ships:
             self.screen.blit(self.images["blue_bg"], ship_top_left)

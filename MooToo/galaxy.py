@@ -29,13 +29,14 @@ class Galaxy:
         self.ship_id_generator = unique_ship_id()
 
     #####################################################################################################
-    def turn(self):
+    def turn(self) -> int:
         """End of turn"""
         self.turn_number += 1
         for system in self.systems.values():
             system.turn()
         for empire in self.empires.values():
             empire.turn()
+        return self.turn_number
 
 
 #####################################################################################################

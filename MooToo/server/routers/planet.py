@@ -1,6 +1,6 @@
 from typing import Any, TYPE_CHECKING
 from fastapi import APIRouter, status, HTTPException
-from ..util import GALAXY, URL_PREFIX_PLANETS
+from ..server_utils import GALAXY, URL_PREFIX_PLANETS
 from MooToo.ship import str_to_ship_type
 from ..serializers.planet import planet_serializer
 from ..serializers import planet_reference_serializer

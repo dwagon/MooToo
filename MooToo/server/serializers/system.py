@@ -1,5 +1,5 @@
 from typing import Any, TYPE_CHECKING
-from ..util import URL_PREFIX_PLANETS
+from ..server_utils import URL_PREFIX_PLANETS
 from .location import location_serializer
 
 if TYPE_CHECKING:

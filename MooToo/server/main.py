@@ -3,7 +3,7 @@
 import time
 import uvicorn
 from fastapi import FastAPI, Request
-from .util import GALAXY
+from .server_utils import GALAXY
 from MooToo.galaxy import save
 from .routers import system, ship, planet, empire, galaxy
 

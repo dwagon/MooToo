@@ -5,12 +5,12 @@ import time
 from typing import Optional, TYPE_CHECKING
 
 import pygame
-from MooToo.planet import Planet
+from MooToo.constants import PlanetClimate, PlanetSize, PlanetCategory
+from MooToo.ui.ui_util import get_distance_tuple
+from MooToo.ui.planetui import PlanetUI
+from MooToo.ui.systemui import SystemUI
 from MooToo.ui.base_graphics import BaseGraphics, load_image
-from MooToo.system import System
 from MooToo.ui.gui_button import Button
-from MooToo.constants import PlanetCategory, PlanetClimate, PlanetSize
-from MooToo.utils import get_distance_tuple
 
 if TYPE_CHECKING:
     from MooToo.ui.game import Game
@@ -69,7 +69,7 @@ class OrbitWindow(BaseGraphics):
         return images
 
     #####################################################################################################
-    def draw_planet_details(self, planet: Planet):
+    def draw_planet_details(self, planet: PlanetUI):
         """Describe details of planet in text format"""
         text_list = (
             planet.name,
@@ -103,7 +103,7 @@ class OrbitWindow(BaseGraphics):
         return False
 
     #####################################################################################################
-    def pick_planet(self, coords: tuple[int, int]) -> Optional[Planet]:
+    def pick_planet(self, coords: tuple[int, int]) -> Optional[PlanetUI]:
         """Return which planet the mouse coords are close to"""
         if not self.system.orbits:
             return None
@@ -124,7 +124,7 @@ class OrbitWindow(BaseGraphics):
         self.draw_centered_image(image)
 
     #####################################################################################################
-    def draw(self, system: System) -> None:
+    def draw(self, system: SystemUI) -> None:
         """Draw a solar system"""
         image = self.images["orbit_window"]
         self.window = self.draw_centered_image(image)
@@ -143,7 +143,7 @@ class OrbitWindow(BaseGraphics):
         self.close_button.draw(self.screen)
 
     #####################################################################################################
-    def draw_planet_in_orbit(self, orbit: int, planet: Planet) -> None:
+    def draw_planet_in_orbit(self, orbit: int, planet: PlanetUI) -> None:
         position = get_planet_position(planet.arc, orbit)
         orbit_image = self.images[f"orbit_{orbit}"]
 
@@ -165,7 +165,7 @@ class OrbitWindow(BaseGraphics):
         self.screen.blit(image, image_position)
 
     #####################################################################################################
-    def draw_planet(self, planet: Planet, position: pygame.Vector2) -> None:
+    def draw_planet(self, planet: PlanetUI, position: pygame.Vector2) -> None:
         """Draw a specific planet"""
         image = self.images[f"planet_{planet.climate.name}_{planet.size.name}"]
         image_position = self.top_left(image, position) + self.mid_point
@@ -177,3 +177,6 @@ def get_planet_position(arc: float, orbit: int) -> pygame.Vector2:
     x = (91 / 2 + orbit * 47 / 2) * math.cos(math.radians(arc))
     y = (46 / 2 + orbit * 27 / 2) * math.sin(math.radians(arc))
     return pygame.Vector2(x, y)
+
+
+# EOF

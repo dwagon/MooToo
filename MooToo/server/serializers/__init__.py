@@ -1,6 +1,6 @@
 from typing import Any, TYPE_CHECKING
 
-from ..util import URL_PREFIX_SHIPS, URL_PREFIX_EMPIRES, URL_PREFIX_PLANETS, URL_PREFIX_SYSTEMS
+from ..server_utils import URL_PREFIX_SHIPS, URL_PREFIX_EMPIRES, URL_PREFIX_PLANETS, URL_PREFIX_SYSTEMS
 
 if TYPE_CHECKING:
     from MooToo.empire import Empire
@@ -12,6 +12,11 @@ if TYPE_CHECKING:
 #####################################################################################################
 def empire_reference_serializer(empire: "Empire") -> dict[str, Any]:
     return {"id": empire.id, "url": f"{URL_PREFIX_EMPIRES}/{empire.id}"}
+
+
+#####################################################################################################
+def empire_id_serializer(empire_id: int) -> dict[str, Any]:
+    return {"id": empire_id, "url": f"{URL_PREFIX_EMPIRES}/{empire_id}"}
 
 
 #####################################################################################################
