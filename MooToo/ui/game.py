@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import random
 import time
-from typing import Optional
+from typing import Optional, Any
 
 import pygame
 
@@ -36,6 +36,14 @@ class MainButtons(StrEnum):
 
 
 #####################################################################################################
+class CacheKeys(StrEnum):
+    KNOWN_SYSTEMS = auto()
+    RESEARCHING = auto()
+    FOOD = auto()
+    SHIPS = auto()
+
+
+#####################################################################################################
 class Game(BaseGraphics):
     def __init__(self):
         super().__init__(self)
@@ -66,6 +74,8 @@ class Game(BaseGraphics):
         }
         self.ship_rects: list[tuple[pygame.Rect, list[Ship]]] = []
         self.system_rects: list[tuple[pygame.Rect, System]] = []
+        self.dirty = True  # Cache needs refreshing
+        self.cache: dict[CacheKeys:Any] = {}
 
     #####################################################################################################
     def calculate_nebulae(self) -> list[tuple[str, pygame.Vector2]]:
@@ -110,10 +120,28 @@ class Game(BaseGraphics):
         return images
 
     #####################################################################################################
+    def if_new_turn(self):
+        """Stuff to do at the start of a turn to stop hammering the server"""
+        self.cache = {
+            CacheKeys.KNOWN_SYSTEMS: set(),
+            CacheKeys.RESEARCHING: self.empire.researching,
+            CacheKeys.FOOD: self.empire.food(),
+            CacheKeys.SHIPS: self.empire.ships,
+        }
+        for system in self.galaxy.systems.values():
+            if self.empire.is_known_system(system):
+                self.cache[CacheKeys.KNOWN_SYSTEMS].add(system)
+        for ship in self.empire.ships:
+            ship.load_cache()
+
+    #####################################################################################################
     def loop(self):
         running = True
 
         while running:
+            if self.dirty:
+                self.if_new_turn()
+                self.dirty = False
             self.event_loop()
 
             match self.display_mode:
@@ -173,6 +201,7 @@ class Game(BaseGraphics):
         mouse = pygame.mouse.get_pos()
         if self.buttons[MainButtons.TURN].clicked():
             self.galaxy.turn()
+            self.dirty = True
             # save(self.galaxy, "save")
         elif self.buttons[MainButtons.COLONY_SUMMARY].clicked():
             self.display_mode = DisplayMode.COLONY_SUM
@@ -190,7 +219,7 @@ class Game(BaseGraphics):
             if self.empire.has_interest_in(system):
                 self.display_mode = DisplayMode.PLANET
                 self.planet = pick_planet(system)
-            elif self.empire.is_known_system(system):
+            elif system in self.cache[CacheKeys.KNOWN_SYSTEMS]:
                 self.display_mode = DisplayMode.ORBIT
 
     #####################################################################################################
@@ -278,7 +307,7 @@ class Game(BaseGraphics):
     def draw_fleets(self):
         rects: dict[tuple[int, int, int, int], list[Ship]] = {}
         self.ship_rects = []
-        for ship in self.empire.ships:
+        for ship in self.cache[CacheKeys.SHIPS]:
             ship_image = self.images["ship"]
             if system := ship.orbit:
                 star_img_size = self.images[f"small_{system.colour.name.lower()}_star"].get_size()
@@ -326,7 +355,7 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_food(self) -> None:
-        food = self.empire.food()
+        food = self.cache[CacheKeys.FOOD]
         top_left = pygame.Vector2(580, 250)
         rp_text_surface = self.text_font.render(f"{food}", True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
@@ -350,12 +379,12 @@ class Game(BaseGraphics):
         """Draw what is being researched"""
         top_left = pygame.Vector2(550, 380)
 
-        if not self.empire.researching:
+        if not self.cache[CacheKeys.RESEARCHING]:
             rp_text_surface = self.text_font.render("Nothing", True, "white", "black")
             self.screen.blit(rp_text_surface, top_left)
             return
 
-        research = get_research(self.empire.researching)
+        research = get_research(self.cache[CacheKeys.RESEARCHING])
         try:
             time_left = int((research.cost - self.empire.research_spent) / self.empire.get_research_points())
         except ZeroDivisionError:
@@ -373,7 +402,7 @@ class Game(BaseGraphics):
             top_left.y += rp_text_surface.get_size()[1]
 
     #####################################################################################################
-    def draw_galaxy_view_system(self, system):
+    def draw_galaxy_view_system(self, system: "System"):
         sys_coord = system.position
         star_image = self.images[f"small_{system.colour.name.lower()}_star"]
         img_size = star_image.get_size()
@@ -382,7 +411,7 @@ class Game(BaseGraphics):
         pygame.draw.rect(self.screen, "purple", planet_rect, width=1)  # DBG
         self.system_rects.append((planet_rect, system))
 
-        if self.empire.is_known_system(system):
+        if system in self.cache[CacheKeys.KNOWN_SYSTEMS]:
             colours = []
             for planet in system:
                 if planet and planet.owner:

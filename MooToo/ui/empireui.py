@@ -1,6 +1,7 @@
 """ Act as a copy of the empire class for UI purposes"""
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from enum import StrEnum, auto
 from ui_util import get
 from MooToo.constants import Technology
 from MooToo.ui.shipui import ShipUI as Ship
@@ -11,12 +12,19 @@ if TYPE_CHECKING:
 
 
 #####################################################################################################
+class CacheKeys(StrEnum):
+    SHIPS = auto()
+
+
+#####################################################################################################
 class EmpireUI:
     def __init__(self, url: str):
         self.url = url
         data = get(url)["empire"]
         self.id = data["id"]
         self.income = data["income"]
+        self.name = data["name"]
+        self.cache: dict[CacheKeys, Any] = {}
 
     #################################################################################################
     @property
@@ -51,5 +59,12 @@ class EmpireUI:
     #####################################################################################################
     @property
     def ships(self) -> list["Ship"]:
-        ship_list = get(f"/empires/{self.id}/ships")["ships"]
-        return [Ship(_["url"]) for _ in ship_list]
+        if not self.cache.get(CacheKeys.SHIPS):
+            ship_list = get(f"/empires/{self.id}/ships")["ships"]
+            self.cache[CacheKeys.SHIPS] = [Ship(_["url"]) for _ in ship_list]
+        return self.cache[CacheKeys.SHIPS]
+
+    #####################################################################################################
+    def next_research(self, category: "TechCategory") -> list[Technology]:
+        ans = get(f"/empires/{self.id}/{category}/next_research")["research"]
+        return [Technology(_) for _ in ans]

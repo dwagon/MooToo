@@ -72,4 +72,11 @@ def ships(empire_id) -> dict[str, Any]:
     return {"status": "OK", "result": {"ships": [ship_reference_serializer(_) for _ in empire.ships]}}
 
 
+#####################################################################################################
+@router.get("/{empire_id:int}/{category:str}/next_research")
+def next_research(empire_id, category) -> dict[str, Any]:
+    empire = get_safe_empire(empire_id)
+    return {"status": "OK", "result": {"research": empire.next_research(category)}}
+
+
 # EOF
