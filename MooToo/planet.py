@@ -4,7 +4,7 @@ import math
 import random
 from typing import TYPE_CHECKING
 
-from MooToo.utils import get_research, get_building, EmpireId, PlanetId
+from MooToo.utils import get_research, get_building, EmpireId, PlanetId, SystemId
 from MooToo.constants import Technology
 from MooToo.constants import (
     PopulationJobs,
@@ -24,7 +24,6 @@ from MooToo.construct import Construct, ConstructType
 from MooToo.ship import ShipType
 
 if TYPE_CHECKING:
-    from MooToo.system import System
     from MooToo.galaxy import Galaxy
 
 
@@ -32,10 +31,10 @@ if TYPE_CHECKING:
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, planet_id: PlanetId, system: "System", galaxy: "Galaxy", **kwargs):
+    def __init__(self, planet_id: PlanetId, system_id: SystemId, galaxy: "Galaxy", **kwargs):
         self.id = planet_id
         self.name = ""
-        self.system = system
+        self.system = galaxy.systems[system_id]
         self.galaxy = galaxy
 
         self.owner: EmpireId = 0
@@ -163,7 +162,7 @@ class Planet:
             self.jobs[PopulationJobs.WORKERS] = 1
         self._population = 1e6
         self.owner = owner
-        self.galaxy.empires[self.owner].own_planet(self)
+        self.galaxy.empires[self.owner].own_planet(self.id)
 
     #####################################################################################################
     def building_production(self) -> None:
@@ -185,9 +184,9 @@ class Planet:
             case ConstructType.BUILDING:
                 self.buildings.add(construct.tag)
             case ConstructType.SHIP:
-                self.galaxy.empires[self.owner].add_ship(construct.ship, self.system)
+                self.galaxy.empires[self.owner].add_ship(construct.ship.id, self.system.id)
                 if not construct.ship.built():
-                    self.galaxy.empires[self.owner].delete_ship(construct.ship)
+                    self.galaxy.empires[self.owner].delete_ship(construct.ship.id)
             case ConstructType.FREIGHTER:
                 self.galaxy.empires[self.owner].freighters += 5
 
@@ -249,7 +248,7 @@ class Planet:
         return False
 
     #####################################################################################################
-    def can_build_ship(self, ship: ShipType) -> bool:
+    def can_build_ship(self, ship_type: ShipType) -> bool:
         """Can this empire build a type of ship"""
         if not self.owner:
             return False
@@ -259,7 +258,7 @@ class Planet:
         if Technology.STANDARD_FUEL_CELLS not in known_techs or Technology.NUCLEAR_DRIVE not in known_techs:
             return False
 
-        match ship:
+        match ship_type:
             case ShipType.ColonyShip:
                 if Technology.COLONY_SHIP in known_techs:
                     return True

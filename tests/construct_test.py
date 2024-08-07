@@ -14,7 +14,8 @@ class TestConstruct(unittest.TestCase):
     def test_creation(self):
         b = Construct(ConstructType.BUILDING, building_tag=Building.STOCK_EXCHANGE)
         self.assertIsNone(b.ship)
-        ship = select_ship_type_by_name("Frigate", self.galaxy)
+        ship_id = select_ship_type_by_name("Frigate", self.galaxy)
+        ship = self.galaxy.ships[ship_id]
         s = Construct(ConstructType.SHIP, ship=ship)
         self.assertIsNone(s.tag)
         self.assertEqual(s.ship, ship)
@@ -22,7 +23,8 @@ class TestConstruct(unittest.TestCase):
     def test_cost(self):
         b = Construct(ConstructType.BUILDING, building_tag=Building.STOCK_EXCHANGE)
         self.assertEqual(b.cost, 150)
-        s = Construct(ConstructType.SHIP, ship=select_ship_type_by_name("Frigate", self.galaxy))
+        ship_id = select_ship_type_by_name("Frigate", self.galaxy)
+        s = Construct(ConstructType.SHIP, ship=self.galaxy.ships[ship_id])
         self.assertEqual(s.cost, 25)
 
 

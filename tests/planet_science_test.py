@@ -1,5 +1,5 @@
 import unittest
-from MooToo.constants import PopulationJobs, PlanetSize, PlanetRichness, PlanetGravity
+from MooToo.constants import PopulationJobs, PlanetSize, PlanetRichness, PlanetGravity, StarColour
 from MooToo.planet import Planet
 from MooToo.system import System
 from MooToo.galaxy import Galaxy
@@ -11,10 +11,11 @@ class TestPlanetScience(unittest.TestCase):
     #################################################################################################
     def setUp(self):
         self.galaxy = Galaxy()
-        self.system = System(99, "test", "white", (0, 0), self.galaxy)
+        self.system = System(99, "test", StarColour.WHITE, (0, 0), self.galaxy)
+        self.galaxy.systems[self.system.id] = self.system
         self.planet = Planet(
             99,
-            self.system,
+            self.system.id,
             self.galaxy,
             size=PlanetSize.MEDIUM,
             richness=PlanetRichness.ABUNDANT,

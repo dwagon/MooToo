@@ -6,11 +6,11 @@ import random
 from typing import TYPE_CHECKING, Optional
 from enum import StrEnum, auto
 
-from MooToo.utils import get_distance_tuple, ShipId, EmpireId
+from MooToo.utils import get_distance_tuple, ShipId, EmpireId, SystemId
 from MooToo.constants import PlanetCategory
 
+
 if TYPE_CHECKING:
-    from MooToo.system import System
     from MooToo.planet import Planet
     from MooToo.galaxy import Galaxy
 
@@ -60,9 +60,9 @@ class Ship:
         self.coloniser = False
         self.name = name
         self.icon = ""
-        self.destination: Optional[System] = None
+        self.destination: Optional[SystemId] = None
         self.location: tuple[int, int] = (-1, -1)
-        self.orbit: Optional[System] = None
+        self.orbit: Optional[SystemId] = None
         self.type = ShipType.Unknown
 
     #################################################################################################
@@ -83,29 +83,31 @@ class Ship:
         return 10
 
     #################################################################################################
-    def set_destination(self, dest_system: "System") -> None:
+    def set_destination(self, dest_system_id: SystemId) -> None:
+        assert isinstance(dest_system_id, SystemId)
         if self.orbit:
-            self.location = self.orbit.position
-            if dest_system == self.orbit:
+            system = self.galaxy.systems[self.orbit]
+            self.location = system.position
+            if dest_system_id == system.id:
                 self.destination = None
                 return
-        self.destination = dest_system
+        self.destination = dest_system_id
 
     #################################################################################################
     def arrived_at_destination(self):
-        self.orbit = self.destination
-        self.location = self.destination.position
+        dest = self.galaxy.systems[self.destination]
+        self.orbit = dest
+        self.location = dest.position
         self.destination = None
 
     #################################################################################################
     def move_towards_destination(self):
-        if get_distance_tuple(self.location, self.destination.position) < self.speed() + 0.01:
+        dest = self.galaxy.systems[self.destination]
+        if get_distance_tuple(self.location, dest.position) < self.speed() + 0.01:
             self.arrived_at_destination()
 
             return
-        angle = math.atan2(
-            self.destination.position[1] - self.location[1], self.destination.position[0] - self.location[0]
-        )
+        angle = math.atan2(dest.position[1] - self.location[1], dest.position[0] - self.location[0])
         self.location = (
             int(self.location[0] + math.cos(angle) * self.speed()),
             int(self.location[1] + math.sin(angle) * self.speed()),
@@ -131,7 +133,7 @@ class ColonyBase(Ship):
 
     def built(self) -> bool:
         """TODO: make the player choose"""
-        for orbit in self.orbit:
+        for orbit in self.galaxy.systems[self.orbit]:
             if orbit and not orbit.owner and orbit.category == PlanetCategory.PLANET:
                 orbit.colonize(self.owner)
                 break
@@ -159,7 +161,7 @@ class ColonyShip(Ship):
 
     #################################################################################################
     def set_destination_planet(self, dest_planet: "Planet") -> None:
-        self.set_destination(dest_planet.system)
+        self.set_destination(dest_planet.system.id)
         self.target_planet = dest_planet
 
 
@@ -236,34 +238,37 @@ class DoomStar(Ship):
 
 
 #####################################################################################################
-def select_ship_type_by_name(name: str, galaxy: "Galaxy") -> Ship:
+def select_ship_type_by_name(name: str, galaxy: "Galaxy") -> ShipId:
     ship_type = str_to_ship_type(name)
+    ship = None
     match ship_type:
         case ShipType.ColonyBase:
-            return ColonyBase("ColonyBase", galaxy)
+            ship = ColonyBase("ColonyBase", galaxy)
         case ShipType.ColonyShip:
-            return ColonyShip(f"Colony {counts[ShipType.ColonyShip]}", galaxy)
+            ship = ColonyShip(f"Colony {counts[ShipType.ColonyShip]}", galaxy)
         case ShipType.Transport:
             counts[ShipType.Transport] += 1
-            return Transport(f"Transport {counts[ShipType.Transport]}", galaxy)
+            ship = Transport(f"Transport {counts[ShipType.Transport]}", galaxy)
         case ShipType.Frigate:
             counts[ShipType.Frigate] += 1
-            return Frigate(f"Frigate {counts[ShipType.Frigate]}", galaxy)
+            ship = Frigate(f"Frigate {counts[ShipType.Frigate]}", galaxy)
         case ShipType.Destroyer:
             counts[ShipType.Destroyer] += 1
-            return Destroyer(f"Destroyer {counts[ShipType.Destroyer]}", galaxy)
+            ship = Destroyer(f"Destroyer {counts[ShipType.Destroyer]}", galaxy)
         case ShipType.Cruiser:
             counts[ShipType.Cruiser] += 1
-            return Cruiser(f"Cruiser {counts[ShipType.Cruiser]}", galaxy)
+            ship = Cruiser(f"Cruiser {counts[ShipType.Cruiser]}", galaxy)
         case ShipType.Battleship:
             counts[ShipType.Battleship] += 1
-            return Battleship(f"Battleship {counts[ShipType.Battleship]}", galaxy)
+            ship = Battleship(f"Battleship {counts[ShipType.Battleship]}", galaxy)
         case ShipType.Titan:
             counts[ShipType.Titan] += 1
-            return Titan(f"Titan {counts[ShipType.Titan]}", galaxy)
+            ship = Titan(f"Titan {counts[ShipType.Titan]}", galaxy)
         case ShipType.DoomStar:
             counts[ShipType.DoomStar] += 1
-            return DoomStar(f"DoomStar {counts[ShipType.DoomStar]}", galaxy)
+            ship = DoomStar(f"DoomStar {counts[ShipType.DoomStar]}", galaxy)
+    galaxy.ships[ship.id] = ship
+    return ship.id
 
 
 #####################################################################################################

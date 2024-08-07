@@ -2,7 +2,7 @@ import unittest
 
 from MooToo.build_queue import BuildQueue
 from MooToo.bigbang import create_galaxy
-from MooToo.constants import Building
+from MooToo.constants import Building, StarColour
 from MooToo.construct import Construct, ConstructType
 from MooToo.ship import select_ship_type_by_name
 from MooToo.system import System
@@ -14,8 +14,10 @@ from MooToo.empire import Empire
 class TestBuildQueue(unittest.TestCase):
     def setUp(self):
         self.galaxy = create_galaxy()
-        system = System(99, "test", "white", (0, 0), self.galaxy)
-        planet = Planet(99, system, self.galaxy)
+        system = System(99, "test", StarColour.WHITE, (0, 0), self.galaxy)
+        self.galaxy.systems[system.id] = system
+        planet = Planet(99, system.id, self.galaxy)
+        self.galaxy.planets[planet.id] = planet
         self.empire = Empire(99, "Foo", "purple", self.galaxy)
         planet.owner = self.empire
         self.q = BuildQueue(planet)
@@ -25,15 +27,16 @@ class TestBuildQueue(unittest.TestCase):
         self.q.add(Building.MARINE_BARRACKS)
         self.assertEqual(type(self.q._queue[0]), Construct)
         self.assertEqual(self.q._queue[0].tag, Building.MARINE_BARRACKS)
-        self.q.add(select_ship_type_by_name("Cruiser", self.galaxy))
+        ship_id = select_ship_type_by_name("Cruiser", self.galaxy)
+        self.q.add(self.galaxy.ships[ship_id])
         self.assertEqual(type(self.q._queue[1]), Construct)
         self.assertEqual(self.q._queue[1].ship.name, "Cruiser 1")
         self.assertEqual(len(self.q), 2)
 
     #############################################################################################
     def test_cost(self):
-        ship = select_ship_type_by_name("Battleship", self.galaxy)
-        self.q.add(ship)
+        ship_id = select_ship_type_by_name("Battleship", self.galaxy)
+        self.q.add(self.galaxy.ships[ship_id])
         self.assertEqual(self.q.cost, 725)
 
     #############################################################################################
