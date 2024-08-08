@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, Any
 from fastapi import APIRouter, HTTPException, status
 from MooToo.server.server_utils import GALAXY
-from MooToo.system import System
+from MooToo.utils import SystemId
 from ..server_utils import URL_PREFIX_SHIPS
 from ..serializers import ship_reference_serializer
 from ..serializers.ship import ship_serializer
@@ -24,7 +24,7 @@ def get_safe_ship(ship_id: int) -> "Ship":
 #####################################################################################################
 @router.get("/")
 def ship_list() -> dict[str, Any]:
-    data = [ship_reference_serializer(_) for _ in GALAXY.ships.values()]
+    data = [ship_reference_serializer(_) for _ in GALAXY.ships.keys()]
     return {"status": "OK", "result": {"ships": data}}
 
 
@@ -41,9 +41,9 @@ async def ship_detail(ship_id: int) -> dict[str, Any]:
 
 #####################################################################################################
 @router.post("/{ship_id:int}/set_destination")
-async def set_destination(ship_id: int, destination: System) -> dict[str, Any]:
+async def set_destination(ship_id: int, destination_id: SystemId) -> dict[str, Any]:
     ship = get_safe_ship(ship_id)
-    ship.set_destination(destination)
+    ship.set_destination(destination_id)
 
     return {
         "status": "OK",

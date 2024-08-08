@@ -6,9 +6,8 @@ from typing import Optional, TYPE_CHECKING
 
 import pygame
 from MooToo.constants import PlanetClimate, PlanetSize, PlanetCategory
+from MooToo.utils import PlanetId, SystemId
 from MooToo.ui.ui_util import get_distance_tuple
-from MooToo.ui.planetui import PlanetUI
-from MooToo.ui.systemui import SystemUI
 from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.gui_button import Button
 
@@ -22,8 +21,8 @@ class OrbitWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
         super().__init__(game)
         self.screen = screen
-        self.planet = None  # Which planet we are looking at
-        self.system = None  # Which system we are looking at
+        self.planet_id: Optional[PlanetId] = None  # Which planet we are looking at
+        self.system_id: Optional[SystemId] = None  # Which system we are looking at
         self.window: Optional[pygame.Rect] = None  # The window Rect
         self.images = self.load_images()
         self.close_button = Button(load_image("BUFFER0.LBX", 82), self.mid_point + pygame.Vector2(90, 100))
@@ -69,8 +68,9 @@ class OrbitWindow(BaseGraphics):
         return images
 
     #####################################################################################################
-    def draw_planet_details(self, planet: PlanetUI):
+    def draw_planet_details(self, planet_id: PlanetId):
         """Describe details of planet in text format"""
+        planet = self.game.galaxy.planets[planet_id]
         text_list = (
             planet.name,
             f"{planet.size}, {planet.climate}",
@@ -86,28 +86,29 @@ class OrbitWindow(BaseGraphics):
             top_left[1] += text_surface.get_size()[1] + 2
 
     #####################################################################################################
-    def mouse_pos(self):
+    def mouse_pos(self, event: pygame.event):
         """ """
         pos = pygame.mouse.get_pos()
         if self.window is None or not self.window.collidepoint(pos):
             return
         if planet := self.pick_planet(pos):
-            self.planet = planet
+            self.planet_id = planet
 
     #####################################################################################################
     def button_left_down(self) -> bool:
         if self.close_button.clicked():
-            self.system = None
-            self.planet = None
+            self.system_id = None
+            self.planet_id = None
             return True
         return False
 
     #####################################################################################################
-    def pick_planet(self, coords: tuple[int, int]) -> Optional[PlanetUI]:
+    def pick_planet(self, coords: tuple[int, int]) -> Optional[PlanetId]:
         """Return which planet the mouse coords are close to"""
-        if not self.system.orbits:
+        system = self.game.galaxy.systems[self.system_id]
+        if not system.orbits:
             return None
-        for orbit, planet in enumerate(self.system.orbits):
+        for orbit, planet in enumerate(system.orbits):
             if not planet:
                 continue
             sys_coords = get_planet_position(planet.arc, orbit)
@@ -124,11 +125,12 @@ class OrbitWindow(BaseGraphics):
         self.draw_centered_image(image)
 
     #####################################################################################################
-    def draw(self, system: SystemUI) -> None:
+    def draw(self, system_id: SystemId) -> None:
         """Draw a solar system"""
         image = self.images["orbit_window"]
         self.window = self.draw_centered_image(image)
-        self.system = system
+        self.system_id = system_id
+        system = self.game.galaxy.systems[self.system_id]
 
         # Draw Sun
         star_image = self.images[f"big_{system.colour.name}_star"]
@@ -138,12 +140,13 @@ class OrbitWindow(BaseGraphics):
             if planet is None:
                 continue
             self.draw_planet_in_orbit(orbit, planet)
-        if self.planet:
-            self.draw_planet_details(self.planet)
+        if self.planet_id:
+            self.draw_planet_details(self.planet_id)
         self.close_button.draw(self.screen)
 
     #####################################################################################################
-    def draw_planet_in_orbit(self, orbit: int, planet: PlanetUI) -> None:
+    def draw_planet_in_orbit(self, orbit: int, planet_id: PlanetId) -> None:
+        planet = self.game.galaxy.planets[planet_id]
         position = get_planet_position(planet.arc, orbit)
         orbit_image = self.images[f"orbit_{orbit}"]
 
@@ -165,8 +168,9 @@ class OrbitWindow(BaseGraphics):
         self.screen.blit(image, image_position)
 
     #####################################################################################################
-    def draw_planet(self, planet: PlanetUI, position: pygame.Vector2) -> None:
+    def draw_planet(self, planet_id: PlanetId, position: pygame.Vector2) -> None:
         """Draw a specific planet"""
+        planet = self.game.galaxy.planets[planet_id]
         image = self.images[f"planet_{planet.climate.name}_{planet.size.name}"]
         image_position = self.top_left(image, position) + self.mid_point
         self.screen.blit(image, image_position)

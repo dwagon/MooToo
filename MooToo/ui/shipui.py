@@ -3,14 +3,14 @@
 from enum import StrEnum, auto
 from typing import Optional, Any
 
-from .ui_util import get, post
+from MooToo.utils import SystemId
+from .ui_util import get, post, get_cache
 from .systemui import SystemUI as System
 
 
 #####################################################################################################
 class CacheKeys(StrEnum):
-    ORBIT = auto()
-    DESTINATION = auto()
+    SHIP = auto()
 
 
 #####################################################################################################
@@ -22,32 +22,19 @@ class ShipUI:
         self.name = data["name"]
         self.icon = data["icon"]
         self.cache: dict[CacheKeys, Any] = {}
-
-    #################################################################################################
-    def load_cache(self):
-        self.cache[CacheKeys.ORBIT] = None
-        self.cache[CacheKeys.DESTINATION] = None
+        self.dirty: dict[CacheKeys, bool] = {}
 
     #################################################################################################
     @property
-    def orbit(self) -> Optional[System]:
-        if not self.cache.get(CacheKeys.ORBIT):
-            data = get(self.url)["ship"]
-            if data["orbit"]:
-                self.cache[CacheKeys.ORBIT] = System(data["orbit"]["url"])
-        return self.cache[CacheKeys.ORBIT]
+    def orbit(self) -> Optional[SystemId]:
+        if orbit := get_cache(self, CacheKeys.SHIP)["ship"]["orbit"]:
+            return orbit["id"]
 
     #################################################################################################
     @property
-    def destination(self) -> Optional[System]:
-        try:
-            if not self.cache[CacheKeys.DESTINATION]:
-                data = get(self.url)["ship"]
-                if data["destination"]:
-                    self.cache[CacheKeys.DESTINATION] = System(data["destination"]["url"])
-        except KeyError:
-            return self.cache[CacheKeys.DESTINATION]
+    def destination(self) -> Optional[SystemId]:
+        return get_cache(self, CacheKeys.SHIP)["ship"]["destination"]
 
     #################################################################################################
     def set_destination(self, dest_system: "System") -> None:
-        post("/ship/{ship.id}/set_destination", {"dest_system": dest_system})
+        post(f"/ships/{self.id}/set_destination", {"dest_system": dest_system})

@@ -1,16 +1,15 @@
 #!/usr/bin/env python
 import random
 import time
-from typing import Optional, Any
+from typing import Optional
 
 import pygame
 
 from enum import StrEnum, auto
 
-from MooToo.utils import get_research
+from MooToo.utils import get_research, SystemId, PlanetId, ShipId
 
 from MooToo.ui.planetui import PlanetUI as Planet
-from MooToo.ui.shipui import ShipUI as Ship
 from MooToo.ui.systemui import SystemUI as System
 from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button, InvisButton
@@ -36,21 +35,13 @@ class MainButtons(StrEnum):
 
 
 #####################################################################################################
-class CacheKeys(StrEnum):
-    KNOWN_SYSTEMS = auto()
-    RESEARCHING = auto()
-    FOOD = auto()
-    SHIPS = auto()
-
-
-#####################################################################################################
 class Game(BaseGraphics):
     def __init__(self):
         super().__init__(self)
         self.galaxy = Galaxy()
         self.display_mode = DisplayMode.GALAXY
         self.empire = self.galaxy.empires[1]  # Change to select empire
-        self.system = None  # System we are looking at
+        self.system: Optional[SystemId] = None  # System we are looking at
         self.planet = None  # Planet we are looking at
         self.orbit_window = OrbitWindow(self.screen, self)
         self.planet_window = PlanetWindow(self.screen, self)
@@ -58,7 +49,7 @@ class Game(BaseGraphics):
         self.fleet_window = FleetWindow(self.screen, self)
         self.colonies_window = ColonySummaryWindow(self.screen, self)
         self.planet_summary_window = PlanetSummaryWindow(self.screen, self, self.empire)
-        self.images = self.load_images()
+        self.images = load_images()
         self.nebulae: list[tuple[str, pygame.Vector2]] = self.calculate_nebulae()
         self.buttons = {
             MainButtons.TURN: Button(self.images["turn_button"], pygame.Vector2(540, 440)),
@@ -72,10 +63,8 @@ class Game(BaseGraphics):
                 pygame.Rect(82, 434, 74, 52),
             ),
         }
-        self.ship_rects: list[tuple[pygame.Rect, list[Ship]]] = []
-        self.system_rects: list[tuple[pygame.Rect, System]] = []
-        self.dirty = True  # Cache needs refreshing
-        self.cache: dict[CacheKeys:Any] = {}
+        self.ship_rects: list[tuple[pygame.Rect, list[ShipId]]] = []
+        self.system_rects: list[tuple[pygame.Rect, SystemId]] = []
 
     #####################################################################################################
     def calculate_nebulae(self) -> list[tuple[str, pygame.Vector2]]:
@@ -91,57 +80,10 @@ class Game(BaseGraphics):
         return nebulae
 
     #####################################################################################################
-    def load_images(self) -> dict[str, pygame.surface.Surface]:
-        """Load all the images from disk"""
-        start = time.time()
-        images = {}
-        images["base_window"] = load_image("BUFFER0.LBX", 0)
-        images["star_bg"] = load_image("STARBG.LBX", 0, palette_index=2)
-        for neb in range(6, 52):
-            try:
-                images[f"nebula_{neb}"] = load_image("STARBG.LBX", neb)
-            except IndexError:
-                pass
-
-        images["small_blue_star"] = load_image("BUFFER0.LBX", 149)
-        images["small_white_star"] = load_image("BUFFER0.LBX", 155)
-        images["small_yellow_star"] = load_image("BUFFER0.LBX", 161)
-        images["small_orange_star"] = load_image("BUFFER0.LBX", 167)
-        images["small_red_star"] = load_image("BUFFER0.LBX", 173)
-        images["small_brown_star"] = load_image("BUFFER0.LBX", 179)
-        images["ship"] = load_image("BUFFER0.LBX", 205)
-        images["turn_button"] = load_image("BUFFER0.LBX", 2)
-        images["colonies_button"] = load_image("BUFFER0.LBX", 3)
-        images["planets_button"] = load_image("BUFFER0.LBX", 4)
-
-        end = time.time()
-        print(f"Main: Loaded {len(images)} in {end-start} seconds")
-
-        return images
-
-    #####################################################################################################
-    def if_new_turn(self):
-        """Stuff to do at the start of a turn to stop hammering the server"""
-        self.cache = {
-            CacheKeys.KNOWN_SYSTEMS: set(),
-            CacheKeys.RESEARCHING: self.empire.researching,
-            CacheKeys.FOOD: self.empire.food(),
-            CacheKeys.SHIPS: self.empire.ships,
-        }
-        for system in self.galaxy.systems.values():
-            if self.empire.is_known_system(system):
-                self.cache[CacheKeys.KNOWN_SYSTEMS].add(system)
-        for ship in self.empire.ships:
-            ship.load_cache()
-
-    #####################################################################################################
     def loop(self):
         running = True
 
         while running:
-            if self.dirty:
-                self.if_new_turn()
-                self.dirty = False
             self.event_loop()
 
             match self.display_mode:
@@ -176,7 +118,7 @@ class Game(BaseGraphics):
             case DisplayMode.GALAXY:
                 pass
             case DisplayMode.ORBIT:
-                self.orbit_window.mouse_pos()
+                self.orbit_window.mouse_pos(event)
             case DisplayMode.PLANET:
                 pass
             case DisplayMode.FLEET:
@@ -201,7 +143,6 @@ class Game(BaseGraphics):
         mouse = pygame.mouse.get_pos()
         if self.buttons[MainButtons.TURN].clicked():
             self.galaxy.turn()
-            self.dirty = True
             # save(self.galaxy, "save")
         elif self.buttons[MainButtons.COLONY_SUMMARY].clicked():
             self.display_mode = DisplayMode.COLONY_SUM
@@ -209,25 +150,25 @@ class Game(BaseGraphics):
             self.display_mode = DisplayMode.PLANET_SUM
         elif self.buttons[MainButtons.SCIENCE].clicked():
             self.display_mode = DisplayMode.SCIENCE
-        for rect, ships in self.ship_rects:
+        for rect, ship_ids in self.ship_rects:
             if rect.collidepoint(mouse[0], mouse[1]):
                 self.display_mode = DisplayMode.FLEET
-                self.fleet_window.reset(ships)
+                self.fleet_window.reset(ship_ids)
 
-        if system := self.click_system():
-            self.system = system
-            if self.empire.has_interest_in(system):
+        if system_id := self.click_system():
+            self.system_id = system_id
+            if self.empire.has_interest_in(system_id):
                 self.display_mode = DisplayMode.PLANET
-                self.planet = pick_planet(system)
-            elif system in self.cache[CacheKeys.KNOWN_SYSTEMS]:
+                self.planet = pick_planet(self.galaxy.systems[system_id])
+            elif system_id in self.empire.known_systems:
                 self.display_mode = DisplayMode.ORBIT
 
     #####################################################################################################
-    def click_system(self) -> Optional[System]:
+    def click_system(self) -> Optional[SystemId]:
         mouse = pygame.mouse.get_pos()
-        for rect, system in self.system_rects:
+        for rect, system_id in self.system_rects:
             if rect.collidepoint(mouse[0], mouse[1]):
-                return system
+                return system_id
         return None
 
     #####################################################################################################
@@ -249,8 +190,8 @@ class Game(BaseGraphics):
             case DisplayMode.FLEET:
                 if self.fleet_window.button_left_down():
                     self.display_mode = DisplayMode.GALAXY
-                elif system := self.click_system():
-                    self.fleet_window.select_destination(system)
+                elif system_id := self.click_system():
+                    self.fleet_window.select_destination(system_id)
             case DisplayMode.PLANET_SUM | DisplayMode.PLANET | DisplayMode.COLONY_SUM:
                 pass  # Handled in the window
 
@@ -275,8 +216,8 @@ class Game(BaseGraphics):
     def draw_galaxy_view(self):
         self.draw_background()
         self.system_rects = []
-        for system in self.galaxy.systems.values():
-            self.draw_galaxy_view_system(system)
+        for system_id in self.galaxy.systems.keys():
+            self.draw_galaxy_view_system(system_id)
         for button in self.buttons.values():
             button.draw(self.screen)
         self.draw_research()
@@ -305,11 +246,13 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_fleets(self):
-        rects: dict[tuple[int, int, int, int], list[Ship]] = {}
+        rects: dict[tuple[int, int, int, int], list[ShipId]] = {}
         self.ship_rects = []
-        for ship in self.cache[CacheKeys.SHIPS]:
+        for ship_id in self.empire.ships:
+            ship = self.galaxy.ships[ship_id]
             ship_image = self.images["ship"]
-            if system := ship.orbit:
+            if system_id := ship.orbit:
+                system = self.galaxy.systems[system_id]
                 star_img_size = self.images[f"small_{system.colour.name.lower()}_star"].get_size()
 
                 if ship.destination:  # Ship is in orbit with a destination (top-left of star)
@@ -338,9 +281,9 @@ class Game(BaseGraphics):
             r = self.screen.blit(ship_image, ship_coord)
             rect_tuple = (r.x, r.y, r.h, r.w)
             if rect_tuple not in rects:
-                rects[rect_tuple] = [ship]
+                rects[rect_tuple] = [ship_id]
             else:
-                rects[rect_tuple].append(ship)
+                rects[rect_tuple].append(ship_id)
             pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
         self.ship_rects.extend((pygame.Rect(k[0], k[1], k[2], k[3]), v) for k, v in rects.items())
 
@@ -355,7 +298,7 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_food(self) -> None:
-        food = self.cache[CacheKeys.FOOD]
+        food = self.empire.food()
         top_left = pygame.Vector2(580, 250)
         rp_text_surface = self.text_font.render(f"{food}", True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
@@ -379,12 +322,12 @@ class Game(BaseGraphics):
         """Draw what is being researched"""
         top_left = pygame.Vector2(550, 380)
 
-        if not self.cache[CacheKeys.RESEARCHING]:
+        if not self.empire.researching:
             rp_text_surface = self.text_font.render("Nothing", True, "white", "black")
             self.screen.blit(rp_text_surface, top_left)
             return
 
-        research = get_research(self.cache[CacheKeys.RESEARCHING])
+        research = get_research(self.empire.researching)
         try:
             time_left = int((research.cost - self.empire.research_spent) / self.empire.get_research_points())
         except ZeroDivisionError:
@@ -402,16 +345,17 @@ class Game(BaseGraphics):
             top_left.y += rp_text_surface.get_size()[1]
 
     #####################################################################################################
-    def draw_galaxy_view_system(self, system: "System"):
+    def draw_galaxy_view_system(self, system_id: SystemId):
+        system = self.galaxy.systems[system_id]
         sys_coord = system.position
         star_image = self.images[f"small_{system.colour.name.lower()}_star"]
         img_size = star_image.get_size()
         img_coord = pygame.Vector2(sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
         planet_rect = self.screen.blit(star_image, img_coord)
         pygame.draw.rect(self.screen, "purple", planet_rect, width=1)  # DBG
-        self.system_rects.append((planet_rect, system))
+        self.system_rects.append((planet_rect, system_id))
 
-        if system in self.cache[CacheKeys.KNOWN_SYSTEMS]:
+        if self.empire.is_known_system(system_id):
             colours = []
             for planet in system:
                 if planet and planet.owner:
@@ -424,7 +368,37 @@ class Game(BaseGraphics):
 
 
 #####################################################################################################
-def pick_planet(system: System) -> Planet:
+def load_images() -> dict[str, pygame.surface.Surface]:
+    """Load all the images from disk"""
+    start = time.time()
+    images = {}
+    images["base_window"] = load_image("BUFFER0.LBX", 0)
+    images["star_bg"] = load_image("STARBG.LBX", 0, palette_index=2)
+    for neb in range(6, 52):
+        try:
+            images[f"nebula_{neb}"] = load_image("STARBG.LBX", neb)
+        except IndexError:
+            pass
+
+    images["small_blue_star"] = load_image("BUFFER0.LBX", 149)
+    images["small_white_star"] = load_image("BUFFER0.LBX", 155)
+    images["small_yellow_star"] = load_image("BUFFER0.LBX", 161)
+    images["small_orange_star"] = load_image("BUFFER0.LBX", 167)
+    images["small_red_star"] = load_image("BUFFER0.LBX", 173)
+    images["small_brown_star"] = load_image("BUFFER0.LBX", 179)
+    images["ship"] = load_image("BUFFER0.LBX", 205)
+    images["turn_button"] = load_image("BUFFER0.LBX", 2)
+    images["colonies_button"] = load_image("BUFFER0.LBX", 3)
+    images["planets_button"] = load_image("BUFFER0.LBX", 4)
+
+    end = time.time()
+    print(f"Main: Loaded {len(images)} in {end-start} seconds")
+
+    return images
+
+
+#####################################################################################################
+def pick_planet(system: System) -> PlanetId:
     """When we look at a system which planet should we start with"""
     max_pop = -1
     picked_planet = None
@@ -434,7 +408,7 @@ def pick_planet(system: System) -> Planet:
         if planet.current_population() > max_pop:
             max_pop = planet.current_population()
             picked_planet = planet
-    return picked_planet
+    return picked_planet.id
 
 
 #####################################################################################################

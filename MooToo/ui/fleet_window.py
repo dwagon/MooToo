@@ -3,11 +3,10 @@
 import time
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.ui.shipui import ShipUI
-from MooToo.ui.systemui import SystemUI
 from MooToo.ui.ui_util import get_distance_tuple
 from .base_graphics import BaseGraphics, load_image
 from .gui_button import Button, InvisButton
+from ..utils import SystemId, ShipId
 
 if TYPE_CHECKING:
     from MooToo.ui.game import Game
@@ -23,18 +22,18 @@ class FleetWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
         super().__init__(game)
         self.screen = screen
-        self.ships: list[ShipUI] = []
+        self.ship_ids: list[ShipId] = []
         self.images = self.load_images()
         self.reset([])
 
     #####################################################################################################
-    def reset(self, ships: list[ShipUI]):
+    def reset(self, ships: list[ShipId]):
         self.top_left = pygame.Vector2(640 / 2 - self.images["top_window"].get_size()[0] / 2, 100)
         self.all_button = Button(self.images["all_button"], self.top_left + ALL_OFFSET)
         self.close_button = Button(self.images["close_button"], self.top_left + CLOSE_OFFSET)
         self.title_bar = InvisButton(pygame.Rect(self.top_left.x, self.top_left.y, TITLE_OFFSET.x, TITLE_OFFSET.y))
-        self.ships = ships
-        self.selected_ships = set(self.ships)
+        self.ship_ids = ships
+        self.selected_ships = set(self.ship_ids)
         self.ship_rects = []
         self.selected = False
 
@@ -59,16 +58,17 @@ class FleetWindow(BaseGraphics):
                     self.selected_ships.add(ship)
         # Clicking the "All" button
         if self.all_button.clicked():
-            if len(self.selected_ships) < len(self.ships):
-                self.selected_ships = set(self.ships)
+            if len(self.selected_ships) < len(self.ship_ids):
+                self.selected_ships = set(self.ship_ids)
             else:
                 self.selected_ships = set()
         return False
 
     #####################################################################################################
-    def select_destination(self, dest_system: "SystemUI"):
+    def select_destination(self, dest_system: SystemId):
         """Tell ships to move to selected system"""
-        for ship in self.selected_ships:
+        for ship_id in self.selected_ships:
+            ship = self.game.galaxy.ships[ship_id]
             ship.set_destination(dest_system)
 
     #####################################################################################################
@@ -126,27 +126,29 @@ class FleetWindow(BaseGraphics):
         v.y += self.images["middle_window"].get_size()[1]
         self.screen.blit(self.images["bottom_window"], v)
         v.y += self.images["bottom_window"].get_size()[1]
-        if dest := self.ships[0].destination:
-            turns = int(get_distance_tuple(dest.position, self.ships[0].location) / self.ships[0].speed())
+        ship = self.game.galaxy.ships[self.ship_ids[0]]
+        if dest := ship.destination:
+            turns = int(get_distance_tuple(dest.position, ship.location) / ship.speed())
             distance_surface = self.text_font.render(f"{turns} turns", True, "white")
             self.screen.blit(distance_surface, pygame.Vector2(v.x + 70, v.y - 28))
 
-        for index, ship in enumerate(self.ships):
+        for index, ship_id in enumerate(self.ship_ids):
             v_idx = index // 3
             h_idx = index % 3
-            self.draw_ship(ship, h_idx, v_idx, ship_display_top_left)
+            self.draw_ship(ship_id, h_idx, v_idx, ship_display_top_left)
 
         self.screen.blit(self.images["close_button"], v)
         self.all_button.draw(self.screen)
         self.close_button.draw(self.screen)
 
     #####################################################################################################
-    def draw_ship(self, ship: ShipUI, h_idx: int, v_idx: int, top_left: pygame.Vector2):
+    def draw_ship(self, ship_id: ShipId, h_idx: int, v_idx: int, top_left: pygame.Vector2):
         ship_top_left = top_left + pygame.Vector2(16 + h_idx * 58, 3 + v_idx * 56)
-        if ship in self.selected_ships:
+        ship = self.game.galaxy.ships[ship_id]
+        if ship_id in self.selected_ships:
             self.screen.blit(self.images["blue_bg"], ship_top_left)
         rect = self.screen.blit(self.images[ship.icon], ship_top_left)
-        self.ship_rects.append((rect, ship))
+        self.ship_rects.append((rect, ship_id))
 
 
 # EOF

@@ -193,6 +193,8 @@ class Empire:
     #####################################################################################################
     def has_interest_in(self, system_id: int) -> bool:
         for planet_id in self.galaxy.systems[system_id].orbits:
+            if planet_id is None:
+                continue
             planet = self.galaxy.planets[planet_id]
             if planet and planet.owner == self:
                 return True

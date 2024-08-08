@@ -1,7 +1,7 @@
 all: test
 
 server:
-	fastapi dev MooToo/server/main.py &
+	fastapi dev MooToo/server/main.py
 
 test:
 	PYTHONPATH=. pytest -n auto

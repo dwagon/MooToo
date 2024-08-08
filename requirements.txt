@@ -1,5 +1,6 @@
-pygame
-pillow
-jsonpickle
 fastapi
+jsonpickle
+pillow
+pygame
 requests
+uvicorn

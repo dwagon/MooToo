@@ -19,5 +19,5 @@ def system_serializer(system: "System") -> dict[str, Any]:
         if not orbit:
             result["orbits"].append("")
         else:
-            result["orbits"].append({"id": orbit.id, "url": f"{URL_PREFIX_PLANETS}/{orbit.id}"})
+            result["orbits"].append({"id": orbit, "url": f"{URL_PREFIX_PLANETS}/{orbit}"})
     return result

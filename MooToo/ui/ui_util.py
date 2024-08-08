@@ -29,4 +29,15 @@ def get_distance(x1: float, y1: float, x2: float, y2: float) -> float:
     return float(result["distance"])
 
 
+#################################################################################################
+def get_cache(obj, key, endpoint=""):
+    if obj.dirty.get(key, True):
+        full_url = f"{obj.url}/{endpoint}" if endpoint else obj.url
+        data = get(full_url)
+        print(f"DBG {obj.id} {key} {full_url} = {data}")
+        obj.cache[key] = data
+        obj.dirty[key] = False
+    return obj.cache[key]
+
+
 # EOF

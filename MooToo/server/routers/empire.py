@@ -5,6 +5,7 @@ from MooToo.server.server_utils import GALAXY
 from ..server_utils import URL_PREFIX_EMPIRES
 from ..serializers import empire_reference_serializer, ship_reference_serializer
 from ..serializers.empire import empire_serializer
+from ...utils import EmpireId, SystemId
 
 if TYPE_CHECKING:
     from MooToo.empire import Empire
@@ -13,7 +14,7 @@ router = APIRouter(prefix=URL_PREFIX_EMPIRES)
 
 
 #####################################################################################################
-def get_safe_empire(empire_id: int) -> "Empire":
+def get_safe_empire(empire_id: EmpireId) -> "Empire":
     try:
         empire = GALAXY.empires[empire_id]
     except KeyError as e:
@@ -31,21 +32,28 @@ async def list_empires() -> dict[str, Any]:
 
 #####################################################################################################
 @router.get("/{empire_id:int}")
-async def get_empire(empire_id: int) -> dict[str, Any]:
+async def get_empire(empire_id: EmpireId) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     return {"status": "OK", "result": {"empire": empire_serializer(empire)}}
 
 
 #####################################################################################################
 @router.get("/{empire_id:int}/{system_id:int}/has_interest_in")
-async def has_interest_in(empire_id: int, system_id: int) -> dict[str, Any]:
+async def has_interest_in(empire_id: EmpireId, system_id: SystemId) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     return {"status": "OK", "result": {"interest": empire.has_interest_in(system_id)}}
 
 
 #####################################################################################################
+@router.get("/{empire_id:int}/known_systems")
+async def known_systems(empire_id: EmpireId) -> dict[str, Any]:
+    empire = get_safe_empire(empire_id)
+    return {"status": "OK", "result": {"known": empire.known_systems}}
+
+
+#####################################################################################################
 @router.get("/{empire_id:int}/food")
-async def get_food(empire_id) -> dict[str, Any]:
+async def get_food(empire_id: EmpireId) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     food = empire_food(empire)
     return {"status": "OK", "result": {"food": food}}
@@ -53,28 +61,35 @@ async def get_food(empire_id) -> dict[str, Any]:
 
 #####################################################################################################
 @router.get("/{empire_id:int}/{system_id:int}/is_known")
-def is_known_system(empire_id, system_id) -> dict[str, Any]:
+def is_known_system(empire_id: EmpireId, system_id: SystemId) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     return {"status": "OK", "result": {"known": empire.is_known_system(system_id)}}
 
 
 #####################################################################################################
+@router.get("/{empire_id:int}/{system_id:int}/has_interest_in")
+def has_interest_in(empire_id: EmpireId, system_id: SystemId) -> dict[str, Any]:
+    empire = get_safe_empire(empire_id)
+    return {"status": "OK", "result": {"interest": empire.has_interest_in(system_id)}}
+
+
+#####################################################################################################
 @router.get("/{empire_id:int}/researching")
-def researching(empire_id) -> dict[str, Any]:
+def researching(empire_id: EmpireId) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     return {"status": "OK", "result": {"researching": empire.researching}}
 
 
 #####################################################################################################
 @router.get("/{empire_id:int}/ships")
-def ships(empire_id) -> dict[str, Any]:
+def ships(empire_id: EmpireId) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     return {"status": "OK", "result": {"ships": [ship_reference_serializer(_) for _ in empire.ships]}}
 
 
 #####################################################################################################
 @router.get("/{empire_id:int}/{category:str}/next_research")
-def next_research(empire_id, category) -> dict[str, Any]:
+def next_research(empire_id: EmpireId, category) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     return {"status": "OK", "result": {"research": empire.next_research(category)}}
 

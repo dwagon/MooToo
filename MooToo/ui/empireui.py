@@ -1,70 +1,84 @@
 """ Act as a copy of the empire class for UI purposes"""
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from enum import StrEnum, auto
-from ui_util import get
+
+from MooToo.research import TechCategory
+from MooToo.utils import SystemId, ShipId
+from ui_util import get, get_cache
 from MooToo.constants import Technology
-from MooToo.ui.shipui import ShipUI as Ship
-
-
-if TYPE_CHECKING:
-    from MooToo.ui.systemui import SystemUI as System
 
 
 #####################################################################################################
 class CacheKeys(StrEnum):
+    EMPIRE = auto()
     SHIPS = auto()
+    FREIGHTERS = auto()
+    FREIGHTERS_USED = auto()
+    MONEY = auto()
+    FOOD = auto()
+    IS_KNOWN = auto()
+    KNOWN_SYSTEMS = auto()
 
 
 #####################################################################################################
 class EmpireUI:
     def __init__(self, url: str):
         self.url = url
-        data = get(url)["empire"]
+        data = get(self.url)["empire"]
         self.id = data["id"]
         self.income = data["income"]
+        self.money = data["money"]
         self.name = data["name"]
+        self.freighters = data["freighters"]
+        self.freight_used = data["freighters_used"]
         self.cache: dict[CacheKeys, Any] = {}
+        self.dirty: dict[CacheKeys, bool] = {}
 
     #################################################################################################
-    @property
-    def money(self) -> int:
-        data = get(self.url)["empire"]
-        return data["money"]
+    def reset_cache(self):
+        self.cache = {}
+        self.dirty = {}
 
     #################################################################################################
-    @property
-    def freighters(self) -> int:
-        data = get(self.url)["empire"]
-        return data["freighters"]
-
-    #################################################################################################
-    def freighters_used(self) -> int:
-        data = get(self.url)["empire"]
-        return data["freighters_used"]
+    def freighters_used(self):
+        return self.freight_used
 
     #################################################################################################
     def food(self) -> int:
-        return get(f"/empires/{self.id}/food")["food"]
+        return get_cache(self, CacheKeys.FOOD, "food")["food"]
 
     #####################################################################################################
-    def is_known_system(self, system: "System") -> bool:
-        return get(f"/empires/{self.id}/{system.id}/is_known")["known"]
+    def is_known_system(self, system_id: SystemId) -> bool:
+        return get_cache(self, CacheKeys.IS_KNOWN, f"{system_id}/is_known")["known"]
 
     #####################################################################################################
     @property
     def researching(self) -> Technology:
-        return get(f"/empires/{self.id}/researching")["researching"]
+        return get_cache(self, CacheKeys.EMPIRE, "researching")["researching"]
 
     #####################################################################################################
     @property
-    def ships(self) -> list["Ship"]:
-        if not self.cache.get(CacheKeys.SHIPS):
-            ship_list = get(f"/empires/{self.id}/ships")["ships"]
-            self.cache[CacheKeys.SHIPS] = [Ship(_["url"]) for _ in ship_list]
+    def known_systems(self) -> set[SystemId]:
+        return get_cache(self, CacheKeys.KNOWN_SYSTEMS, "known_systems")["known"]
+
+    #####################################################################################################
+    @property
+    def ships(self) -> list[ShipId]:
+        if self.dirty.get(CacheKeys.SHIPS, True):
+            ship_list = get("/ships")["ships"]
+            self.cache[CacheKeys.SHIPS] = [_["id"] for _ in ship_list]
+            self.dirty[CacheKeys.SHIPS] = False
         return self.cache[CacheKeys.SHIPS]
 
     #####################################################################################################
     def next_research(self, category: "TechCategory") -> list[Technology]:
         ans = get(f"/empires/{self.id}/{category}/next_research")["research"]
         return [Technology(_) for _ in ans]
+
+    #####################################################################################################
+    def has_interest_in(self, system_id: SystemId) -> bool:
+        return get(f"{self.url}/{system_id}/has_interest_in")["interest"]
+
+
+# EOF

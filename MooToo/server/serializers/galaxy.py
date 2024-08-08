@@ -14,9 +14,9 @@ if TYPE_CHECKING:
 ####################################################################################################
 def galaxy_serializer(galaxy: "Galaxy") -> dict[str, Any]:
     return {
-        "systems": [system_reference_serializer(_) for _ in galaxy.systems.values()],
-        "empires": [empire_reference_serializer(_) for _ in galaxy.empires.values()],
-        "planets": [planet_reference_serializer(_) for _ in galaxy.planets.values()],
-        "ships": [ship_reference_serializer(_) for _ in galaxy.ships.values()],
+        "systems": [system_reference_serializer(_) for _ in galaxy.systems.keys()],
+        "empires": [empire_reference_serializer(_) for _ in galaxy.empires.keys()],
+        "planets": [planet_reference_serializer(_) for _ in galaxy.planets.keys()],
+        "ships": [ship_reference_serializer(_) for _ in galaxy.ships.keys()],
         "turn_number": galaxy.turn_number,
     }
