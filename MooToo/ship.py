@@ -73,9 +73,9 @@ class Ship:
     #################################################################################################
     def __repr__(self):
         if self.orbit:
-            return f"<Ship {self.id} {self.name} {self.orbit}>"
+            return f"<Ship {self.id} '{self.name}' {self.orbit}>"
         else:
-            return f"<Ship {self.id} {self.name} {self.location}>"
+            return f"<Ship {self.id} '{self.name}' {self.location}>"
 
     #################################################################################################
     def speed(self):
@@ -83,7 +83,7 @@ class Ship:
         return 10
 
     #################################################################################################
-    def set_destination(self, dest_system_id: SystemId) -> None:
+    def set_destination(self, dest_system_id: SystemId) -> SystemId:
         assert isinstance(dest_system_id, SystemId)
         if self.orbit:
             system = self.galaxy.systems[self.orbit]
@@ -92,6 +92,7 @@ class Ship:
                 self.destination = None
                 return
         self.destination = dest_system_id
+        return self.destination
 
     #################################################################################################
     def arrived_at_destination(self):

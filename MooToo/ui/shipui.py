@@ -36,5 +36,6 @@ class ShipUI:
         return get_cache(self, CacheKeys.SHIP)["ship"]["destination"]
 
     #################################################################################################
-    def set_destination(self, dest_system: "System") -> None:
-        post(f"/ships/{self.id}/set_destination", {"dest_system": dest_system})
+    def set_destination(self, dest_system_id: SystemId) -> SystemId:
+        post(f"/ships/{self.id}/set_destination", {"destination_id": dest_system_id})
+        return self.destination

@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING, Any
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Request
 from MooToo.server.server_utils import GALAXY
 from MooToo.utils import SystemId
 from ..server_utils import URL_PREFIX_SHIPS
@@ -41,7 +41,8 @@ async def ship_detail(ship_id: int) -> dict[str, Any]:
 
 #####################################################################################################
 @router.post("/{ship_id:int}/set_destination")
-async def set_destination(ship_id: int, destination_id: SystemId) -> dict[str, Any]:
+def set_destination(ship_id: int, destination_id: SystemId, request: Request) -> dict[str, Any]:
+    print(f"DBG {request.query_params=} {ship_id=} {destination_id=}")
     ship = get_safe_ship(ship_id)
     ship.set_destination(destination_id)
 

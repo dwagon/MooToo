@@ -15,7 +15,8 @@ def ship_serializer(ship: "Ship") -> Any:
         "location": location_serializer(ship.location),
         "type": ship.type.name,
         "owner": empire_reference_serializer(ship.owner),
-        "destination": ship.destination,
     }
     result["orbit"] = system_reference_serializer(ship.orbit) if ship.orbit is not None else None
+    result["destination"] = system_reference_serializer(ship.destination) if ship.destination is not None else None
+
     return result
