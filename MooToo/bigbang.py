@@ -140,25 +140,10 @@ def find_home_systems(galaxy: Galaxy, num_empires: int) -> list[SystemId]:
 #####################################################################################################
 def make_orbits(galaxy: Galaxy, system_id: SystemId):
     system = galaxy.systems[system_id]
-    for _ in range(MAX_ORBITS):
+    for _ in range(MAX_ORBITS - len(system.orbits)):
         pct = random.randint(0, 100)
         if pct <= STAR_COLOURS[system.colour]["prob_orbit"]:
-            planet_id = next(UNIQUE_PLANET_ID)
-            size = pick_planet_size()
-            richness = pick_planet_richness(STAR_COLOURS[system.colour]["richness"])
-            planet = Planet(
-                planet_id,
-                system_id,
-                galaxy,
-                category=pick_planet_category(),
-                size=size,
-                richness=richness,
-                climate=pick_planet_climate(STAR_COLOURS[system.colour]["climate"]),
-                gravity=pick_planet_gravity(size, richness),
-            )
-
-            system.orbits.append(planet.id)
-            galaxy.planets[planet.id] = planet
+            make_planet(galaxy, system_id, system)
         else:
             system.orbits.append(None)
 
@@ -171,6 +156,26 @@ def make_orbits(galaxy: Galaxy, system_id: SystemId):
             if not planet.name:
                 planet.name = f"{system.name} {ORBIT_NAMES[name_index]}"
             name_index += 1
+
+
+#####################################################################################################
+def make_planet(galaxy: Galaxy, system_id: SystemId, system: System):
+    planet_id = next(UNIQUE_PLANET_ID)
+    size = pick_planet_size()
+    richness = pick_planet_richness(STAR_COLOURS[system.colour]["richness"])
+    planet = Planet(
+        planet_id,
+        system_id,
+        galaxy,
+        category=pick_planet_category(),
+        size=size,
+        richness=richness,
+        climate=pick_planet_climate(STAR_COLOURS[system.colour]["climate"]),
+        gravity=pick_planet_gravity(size, richness),
+    )
+
+    system.orbits.append(planet.id)
+    galaxy.planets[planet.id] = planet
 
 
 #####################################################################################################
@@ -189,7 +194,6 @@ def make_empire(
     home_planet_id = make_home_planet(home_system.id, galaxy)
     set_home_planet(galaxy, empire_id, home_planet_id)
     home_system.orbits.append(home_planet_id)
-    random.shuffle(home_system.orbits)
     return empire
 
 

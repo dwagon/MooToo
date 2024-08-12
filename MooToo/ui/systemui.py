@@ -24,3 +24,16 @@ class SystemUI:
         self.colour = StarColour(data["colour"].lower())
         self.cache: dict[CacheKeys, Any] = {}
         self.dirty: dict[CacheKeys, bool] = {}
+
+    #####################################################################################################
+    def __iter__(self):
+        self._index = 0
+        return self
+
+    def __next__(self):
+        try:
+            data = self.orbits[self._index]
+        except IndexError as e:
+            raise StopIteration from e
+        self._index += 1
+        return data

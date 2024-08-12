@@ -108,14 +108,16 @@ class OrbitWindow(BaseGraphics):
         system = self.game.galaxy.systems[self.system_id]
         if not system.orbits:
             return None
-        for orbit, planet in enumerate(system.orbits):
-            if not planet:
+        for orbit, planet_id in enumerate(system.orbits):
+            if not planet_id:
                 continue
+
+            planet = self.game.galaxy.planets[planet_id]
             sys_coords = get_planet_position(planet.arc, orbit)
             adjusted_coords = sys_coords + self.mid_point
             distance = get_distance_tuple(adjusted_coords, coords)
             if distance < 20:
-                return planet
+                return planet.id
         return None
 
     #####################################################################################################
@@ -137,7 +139,7 @@ class OrbitWindow(BaseGraphics):
         self.draw_centered_image(star_image)
 
         for orbit, planet in enumerate(system.orbits):
-            if planet is None:
+            if not planet:
                 continue
             self.draw_planet_in_orbit(orbit, planet)
         if self.planet_id:
@@ -156,7 +158,7 @@ class OrbitWindow(BaseGraphics):
                 self.draw_gas_giant(position)
             case PlanetCategory.PLANET:
                 self.draw_centered_image(orbit_image)
-                self.draw_planet(planet, position)
+                self.draw_planet(planet_id, position)
             case PlanetCategory.ASTEROID:
                 self.draw_asteroid(orbit)
 

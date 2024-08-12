@@ -1,5 +1,4 @@
 from typing import Any, TYPE_CHECKING
-from ..server_utils import URL_PREFIX_PLANETS
 from .location import location_serializer
 
 if TYPE_CHECKING:
@@ -19,5 +18,5 @@ def system_serializer(system: "System") -> dict[str, Any]:
         if not orbit:
             result["orbits"].append("")
         else:
-            result["orbits"].append({"id": orbit, "url": f"{URL_PREFIX_PLANETS}/{orbit}"})
+            result["orbits"].append(orbit)
     return result

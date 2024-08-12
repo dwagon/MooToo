@@ -5,12 +5,12 @@ from typing import Optional, Any
 
 from MooToo.utils import SystemId
 from .ui_util import get, post, get_cache
-from .systemui import SystemUI as System
 
 
 #####################################################################################################
 class CacheKeys(StrEnum):
     SHIP = auto()
+    LOCATION = auto()
 
 
 #####################################################################################################
@@ -36,6 +36,11 @@ class ShipUI:
         return get_cache(self, CacheKeys.SHIP)["ship"]["destination"]
 
     #################################################################################################
+    @property
+    def location(self) -> tuple[int, int]:
+        return get_cache(self, CacheKeys.LOCATION)["ship"]["location"]
+
+    #################################################################################################
     def set_destination(self, dest_system_id: SystemId) -> SystemId:
-        post(f"/ships/{self.id}/set_destination", {"destination_id": dest_system_id})
+        post(f"/ships/{self.id}/set_destination", params={"destination_id": dest_system_id})
         return self.destination

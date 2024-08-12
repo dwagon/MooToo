@@ -41,7 +41,7 @@ class Game(BaseGraphics):
         self.galaxy = Galaxy()
         self.display_mode = DisplayMode.GALAXY
         self.empire = self.galaxy.empires[1]  # Change to select empire
-        self.system: Optional[SystemId] = None  # System we are looking at
+        self.system_id: Optional[SystemId] = None  # System we are looking at
         self.planet = None  # Planet we are looking at
         self.orbit_window = OrbitWindow(self.screen, self)
         self.planet_window = PlanetWindow(self.screen, self)
@@ -202,7 +202,7 @@ class Game(BaseGraphics):
                 self.draw_galaxy_view()
             case DisplayMode.ORBIT:
                 self.draw_galaxy_view()
-                self.orbit_window.draw(self.system)
+                self.orbit_window.draw(self.system_id)
             case DisplayMode.SCIENCE:
                 self.draw_galaxy_view()
                 self.science_window.draw()
@@ -284,7 +284,7 @@ class Game(BaseGraphics):
                 rects[rect_tuple] = [ship_id]
             else:
                 rects[rect_tuple].append(ship_id)
-            pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
+            pygame.draw.rect(self.screen, "purple", r, width=1)
         self.ship_rects.extend((pygame.Rect(k[0], k[1], k[2], k[3]), v) for k, v in rects.items())
 
     #####################################################################################################
@@ -352,13 +352,16 @@ class Game(BaseGraphics):
         img_size = star_image.get_size()
         img_coord = pygame.Vector2(sys_coord[0] - img_size[0] / 2, sys_coord[1] - img_size[1] / 2)
         planet_rect = self.screen.blit(star_image, img_coord)
-        pygame.draw.rect(self.screen, "purple", planet_rect, width=1)  # DBG
+        pygame.draw.rect(self.screen, "purple", planet_rect, width=1)
         self.system_rects.append((planet_rect, system_id))
 
         if self.empire.is_known_system(system_id):
             colours = []
-            for planet in system:
-                if planet and planet.owner:
+            for planet_id in system:
+                if planet_id is None:
+                    continue
+                planet = self.galaxy.planets[planet_id]
+                if planet.owner:
                     colours.append(planet.owner.colour)
             colour = colours[0] if colours else "grey"  # Need to do multi-colours if appropriate
             text_surface = self.label_font.render(system.name, True, colour)

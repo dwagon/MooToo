@@ -13,6 +13,7 @@ def planet_serializer(planet: "Planet") -> dict[str, Any]:
             "planet": {
                 "id": planet.id,
                 "name": planet.name,
+                "category": planet.category,
                 "owner": empire_reference_serializer(planet.owner),
                 "size": planet.size,
                 "richness": planet.richness,
