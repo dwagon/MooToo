@@ -3,13 +3,7 @@
 import io
 import jsonpickle
 from typing import TYPE_CHECKING, Optional
-from MooToo.utils import (
-    SystemId,
-    PlanetId,
-    ShipId,
-    EmpireId,
-    unique_ship_id,
-)
+from MooToo.utils import SystemId, PlanetId, ShipId, EmpireId, unique_ship_id
 
 if TYPE_CHECKING:
     from MooToo.system import System

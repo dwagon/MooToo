@@ -2,6 +2,7 @@ import time
 import pygame
 from .base_graphics import BaseGraphics, load_image
 from .gui_button import Button
+from .researchui import get_research
 from MooToo.constants import Technology
 from MooToo.research import TechCategory
 
