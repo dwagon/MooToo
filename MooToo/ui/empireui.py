@@ -5,7 +5,7 @@ from enum import StrEnum, auto
 
 from MooToo.research import TechCategory
 from MooToo.utils import SystemId, ShipId
-from ui_util import get, get_cache
+from ui_util import get, get_cache, post
 from MooToo.constants import Technology
 
 
@@ -34,11 +34,13 @@ class EmpireUI:
         self.freight_used = data["freighters_used"]
         self.cache: dict[CacheKeys, Any] = {}
         self.dirty: dict[CacheKeys, bool] = {}
+        self.research_cache: dict["TechCategory" : list[Technology]] = {}
 
     #################################################################################################
     def reset_cache(self):
         self.cache = {}
         self.dirty = {}
+        self.research_cache = {}
 
     #################################################################################################
     def freighters_used(self):
@@ -73,12 +75,19 @@ class EmpireUI:
 
     #####################################################################################################
     def next_research(self, category: "TechCategory") -> list[Technology]:
-        ans = get(f"/empires/{self.id}/{category}/next_research")["research"]
-        return [Technology(_) for _ in ans]
+        if category not in self.research_cache:
+            ans = get(f"/empires/{self.id}/{category}/next_research")["research"]
+            self.research_cache[category] = [Technology(_) for _ in ans]
+        return self.research_cache[category]
 
     #####################################################################################################
     def has_interest_in(self, system_id: SystemId) -> bool:
         return get(f"{self.url}/{system_id}/has_interest_in")["interest"]
+
+    #####################################################################################################
+    def start_researching(self, to_research: Technology) -> None:
+        post(f"{self.url}/start_researching", params={"tech": to_research})
+        self.dirty[CacheKeys.EMPIRE] = True
 
 
 # EOF

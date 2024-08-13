@@ -6,6 +6,7 @@ from ..server_utils import URL_PREFIX_EMPIRES
 from ..serializers import empire_reference_serializer, ship_reference_serializer
 from ..serializers.empire import empire_serializer
 from ...utils import EmpireId, SystemId
+from MooToo.constants import Technology
 
 if TYPE_CHECKING:
     from MooToo.empire import Empire
@@ -92,6 +93,18 @@ def ships(empire_id: EmpireId) -> dict[str, Any]:
 def next_research(empire_id: EmpireId, category) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     return {"status": "OK", "result": {"research": empire.next_research(category)}}
+
+
+#####################################################################################################
+@router.post("/{empire_id:int}/start_researching")
+def start_research(empire_id: EmpireId, tech: Technology) -> dict[str, Any]:
+    empire = get_safe_empire(empire_id)
+    empire.start_researching(tech)
+
+    return {
+        "status": "OK",
+        "result": {"research": empire_serializer(empire)},
+    }
 
 
 # EOF
