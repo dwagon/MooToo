@@ -30,6 +30,8 @@ class EmpireUI:
         self.income = data["income"]
         self.money = data["money"]
         self.name = data["name"]
+        self.research_spent = data["research_spent"]
+        self.research_points = data["research_points"]
         self.freighters = data["freighters"]
         self.freight_used = data["freighters_used"]
         self.cache: dict[CacheKeys, Any] = {}
@@ -88,6 +90,10 @@ class EmpireUI:
     def start_researching(self, to_research: Technology) -> None:
         post(f"{self.url}/start_researching", params={"tech": to_research})
         self.dirty[CacheKeys.EMPIRE] = True
+
+    #####################################################################################################
+    def get_research_points(self) -> int:
+        return self.research_points
 
 
 # EOF
