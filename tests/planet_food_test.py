@@ -28,14 +28,14 @@ class TestPlanetFood(unittest.TestCase):
         """Test Consumption"""
         self.planet.jobs[PopulationJobs.FARMERS] = 4
         self.planet.jobs[PopulationJobs.WORKERS] = 1
-        self.planet._population = 5.2e6
+        self.planet.raw_population = 5.2e6
 
         self.assertEqual(food_cost(self.planet), 5)
 
     def test_production(self):
         self.planet.jobs[PopulationJobs.FARMERS] = 5
         self.planet.jobs[PopulationJobs.WORKERS] = 2
-        self.planet._population = 7.5e6
+        self.planet.raw_population = 7.5e6
 
         self.planet.buildings.add(Building.HYDROPONIC_FARM)
 

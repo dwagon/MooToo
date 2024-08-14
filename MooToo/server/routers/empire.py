@@ -42,7 +42,8 @@ async def get_empire(empire_id: EmpireId) -> dict[str, Any]:
 @router.get("/{empire_id:int}/{system_id:int}/has_interest_in")
 async def has_interest_in(empire_id: EmpireId, system_id: SystemId) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
-    return {"status": "OK", "result": {"interest": empire.has_interest_in(system_id)}}
+    interest = empire.has_interest_in(system_id)
+    return {"status": "OK", "result": {"interest": interest}}
 
 
 #####################################################################################################

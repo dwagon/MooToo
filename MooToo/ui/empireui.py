@@ -28,6 +28,7 @@ class EmpireUI:
         data = get(self.url)["empire"]
         self.id = data["id"]
         self.income = data["income"]
+        self.government = data["government"]
         self.money = data["money"]
         self.name = data["name"]
         self.research_spent = data["research_spent"]
@@ -84,7 +85,8 @@ class EmpireUI:
 
     #####################################################################################################
     def has_interest_in(self, system_id: SystemId) -> bool:
-        return get(f"{self.url}/{system_id}/has_interest_in")["interest"]
+        ans = get(f"{self.url}/{system_id}/has_interest_in")["interest"]
+        return ans
 
     #####################################################################################################
     def start_researching(self, to_research: Technology) -> None:

@@ -196,7 +196,7 @@ class Empire:
             if planet_id is None:
                 continue
             planet = self.galaxy.planets[planet_id]
-            if planet and planet.owner == self:
+            if planet and planet.owner == self.id:
                 return True
         return False
 

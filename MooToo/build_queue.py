@@ -77,7 +77,7 @@ class BuildQueue:
         elif isinstance(construct, Ship):
             con = Construct(ConstructType.SHIP, ship=construct)
         elif isinstance(construct, ShipType):
-            ship = select_ship_type_by_name(construct.name)
+            ship = select_ship_type_by_name(construct.name, self.planet.galaxy)
             con = Construct(ConstructType.SHIP, ship=ship)
         elif construct == ConstructType.FREIGHTER:
             con = Construct(ConstructType.FREIGHTER)

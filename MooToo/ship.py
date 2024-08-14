@@ -6,12 +6,11 @@ import random
 from typing import TYPE_CHECKING, Optional
 from enum import StrEnum, auto
 
-from MooToo.utils import get_distance_tuple, ShipId, EmpireId, SystemId
+from MooToo.utils import get_distance_tuple, ShipId, EmpireId, SystemId, PlanetId
 from MooToo.constants import PlanetCategory
 
 
 if TYPE_CHECKING:
-    from MooToo.planet import Planet
     from MooToo.galaxy import Galaxy
 
 
@@ -83,7 +82,7 @@ class Ship:
         return 10
 
     #################################################################################################
-    def set_destination(self, dest_system_id: SystemId) -> SystemId:
+    def set_destination(self, dest_system_id: SystemId) -> Optional[SystemId]:
         assert isinstance(dest_system_id, SystemId)
         if self.orbit:
             system = self.galaxy.systems[self.orbit]
@@ -151,19 +150,20 @@ class ColonyShip(Ship):
         self.maintenance = 10
         self.coloniser = True
         self.type = ShipType.ColonyShip
-        self.target_planet: Optional["Planet"] = None
+        self.target_planet_id: Optional["PlanetId"] = None
         self.icon = "colony"
 
     #################################################################################################
     def arrived_at_destination(self):
         super().arrived_at_destination()
-        if self.target_planet:
-            self.target_planet.colonize(self.owner)
+        if self.target_planet_id:
+            planet = self.galaxy.planets[self.target_planet_id]
+            planet.colonize(self.owner)
 
     #################################################################################################
-    def set_destination_planet(self, dest_planet: "Planet") -> None:
-        self.set_destination(dest_planet.system.id)
-        self.target_planet = dest_planet
+    def set_destination_planet(self, dest_planet_id: PlanetId) -> None:
+        self.set_destination(dest_planet_id)
+        self.target_planet_id = dest_planet_id
 
 
 #####################################################################################################

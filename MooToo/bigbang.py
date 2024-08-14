@@ -223,14 +223,14 @@ def set_home_planet(galaxy: Galaxy, empire_id: EmpireId, planet_id: PlanetId):
     empire = galaxy.empires[empire_id]
     planet.name = f"{empire.name} Home"
     planet.owner = empire.id
-    planet._population = 8e6
+    planet.raw_population = 8e6
     planet.jobs[PopulationJobs.FARMERS] = 4
     planet.jobs[PopulationJobs.WORKERS] = 2
     planet.jobs[PopulationJobs.SCIENTISTS] = 2
     planet.buildings.add(Building.MARINE_BARRACKS)
     planet.buildings.add(Building.STAR_BASE)
     empire.owned_planets.add(planet_id)
-    empire.know_system(planet.system.id)
+    empire.know_system(planet.system_id)
 
 
 #####################################################################################################

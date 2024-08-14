@@ -222,7 +222,8 @@ class PlanetSummaryWindow(BaseGraphics):
     #####################################################################################################
     def has_colony_ship_available(self) -> bool:
         """Does the empire have a colony ship"""
-        for ship in self.empire.ships:
+        for ship_id in self.empire.ships:
+            ship = self.game.galaxy.ships[ship_id]
             if ship.coloniser and not ship.destination:
                 return True
         return False

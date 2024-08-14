@@ -10,7 +10,6 @@ from enum import StrEnum, auto
 from MooToo.utils import get_research, SystemId, PlanetId, ShipId
 
 from MooToo.ui.planetui import PlanetUI as Planet
-from MooToo.ui.systemui import SystemUI as System
 from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.ui.orbit_window import OrbitWindow
@@ -42,7 +41,7 @@ class Game(BaseGraphics):
         self.display_mode = DisplayMode.GALAXY
         self.empire = self.galaxy.empires[1]  # Change to select empire
         self.system_id: Optional[SystemId] = None  # System we are looking at
-        self.planet = None  # Planet we are looking at
+        self.planet_id: Optional[PlanetId] = None  # Planet we are looking at
         self.orbit_window = OrbitWindow(self.screen, self)
         self.planet_window = PlanetWindow(self.screen, self)
         self.science_window = ScienceWindow(self.screen, self)
@@ -88,7 +87,7 @@ class Game(BaseGraphics):
 
             match self.display_mode:
                 case DisplayMode.PLANET:
-                    self.display_mode = self.planet_window.loop(self.planet)
+                    self.display_mode = self.planet_window.loop(self.planet_id)
                 case DisplayMode.PLANET_SUM:
                     self.display_mode = self.planet_summary_window.loop()
                 case DisplayMode.COLONY_SUM:
@@ -159,9 +158,24 @@ class Game(BaseGraphics):
             self.system_id = system_id
             if self.empire.has_interest_in(system_id):
                 self.display_mode = DisplayMode.PLANET
-                self.planet = pick_planet(self.galaxy.systems[system_id])
+                self.planet_id = self.pick_planet(system_id)
             elif system_id in self.empire.known_systems:
                 self.display_mode = DisplayMode.ORBIT
+
+    #####################################################################################################
+    def pick_planet(self, system_id: SystemId) -> PlanetId:
+        """When we look at a system which planet should we start with"""
+        max_pop = -1
+        system = self.galaxy.systems[system_id]
+        picked_planet = None
+        for planet_id in system.orbits:
+            if not planet_id:
+                continue
+            planet = self.galaxy.planets[planet_id]
+            if planet.current_population() > max_pop:
+                max_pop = planet.current_population()
+                picked_planet = planet
+        return picked_planet.id
 
     #####################################################################################################
     def click_system(self) -> Optional[SystemId]:
@@ -174,7 +188,7 @@ class Game(BaseGraphics):
     #####################################################################################################
     def look_at_planet(self, planet: Planet) -> None:
         self.display_mode = DisplayMode.PLANET
-        self.planet = planet
+        self.planet = planet.id
 
     #####################################################################################################
     def button_left_down(self):
@@ -278,7 +292,11 @@ class Game(BaseGraphics):
                     ship.destination.position,
                 )
 
-            r = self.screen.blit(ship_image, ship_coord)
+            try:
+                r = self.screen.blit(ship_image, ship_coord)
+            except TypeError:
+                print(f"DBG {ship_id=} {ship_image=} {ship_coord=}")
+                raise
             rect_tuple = (r.x, r.y, r.h, r.w)
             if rect_tuple not in rects:
                 rects[rect_tuple] = [ship_id]
@@ -358,7 +376,7 @@ class Game(BaseGraphics):
         if self.empire.is_known_system(system_id):
             colours = []
             for planet_id in system:
-                if planet_id is None:
+                if not planet_id:
                     continue
                 planet = self.galaxy.planets[planet_id]
                 if planet.owner:
@@ -398,20 +416,6 @@ def load_images() -> dict[str, pygame.surface.Surface]:
     print(f"Main: Loaded {len(images)} in {end-start} seconds")
 
     return images
-
-
-#####################################################################################################
-def pick_planet(system: System) -> PlanetId:
-    """When we look at a system which planet should we start with"""
-    max_pop = -1
-    picked_planet = None
-    for planet in system.orbits:
-        if not planet:
-            continue
-        if planet.current_population() > max_pop:
-            max_pop = planet.current_population()
-            picked_planet = planet
-    return picked_planet.id
 
 
 #####################################################################################################

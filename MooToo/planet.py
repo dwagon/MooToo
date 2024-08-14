@@ -34,7 +34,7 @@ class Planet:
     def __init__(self, planet_id: PlanetId, system_id: SystemId, galaxy: "Galaxy", **kwargs):
         self.id = planet_id
         self.name = ""
-        self.system = galaxy.systems[system_id]
+        self.system_id = system_id
         self.galaxy = galaxy
 
         self.owner: EmpireId = 0
@@ -44,7 +44,7 @@ class Planet:
         self.richness = kwargs.get("richness", PlanetRichness.ABUNDANT)
         self.climate = kwargs.get("climate", PlanetClimate.TERRAN)
         self.gravity = kwargs.get("gravity", PlanetGravity.NORMAL)
-        self._population = 0.0
+        self.raw_population = 0.0
         self.buildings: set[Building] = set()  # Built buildings
         self._buildings_available: set[Building] = set()
         self.build_queue = BuildQueue(self)
@@ -160,7 +160,7 @@ class Planet:
             self.jobs[PopulationJobs.FARMERS] = 1
         else:
             self.jobs[PopulationJobs.WORKERS] = 1
-        self._population = 1e6
+        self.raw_population = 1e6
         self.owner = owner
         self.galaxy.empires[self.owner].own_planet(self.id)
 
@@ -194,10 +194,10 @@ class Planet:
     def grow_population(self) -> None:
         from MooToo.planet_food import food_surplus
 
-        old_pop = int(self._population / 1e6)
-        self._population += self.population_increment()
-        if int(self._population / 1e6) > old_pop:
-            for _ in range(int(self._population / 1e6) - old_pop):  # Assign to new jobs
+        old_pop = int(self.raw_population / 1e6)
+        self.raw_population += self.population_increment()
+        if int(self.raw_population / 1e6) > old_pop:
+            for _ in range(int(self.raw_population / 1e6) - old_pop):  # Assign to new jobs
                 if FOOD_CLIMATE_MAP[self.climate] and food_surplus(self) < 5:
                     self.jobs[PopulationJobs.FARMERS] += 1
                 else:
@@ -213,7 +213,7 @@ class Planet:
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
         if self.build_queue.is_building(Building.HOUSING):
-            housing_bonus = int((work_surplus(self) * 40) / (self._population / 1e6))
+            housing_bonus = int((work_surplus(self) * 40) / (self.raw_population / 1e6))
         else:
             housing_bonus = 0
         if self.current_population() == self.max_population():
@@ -223,8 +223,8 @@ class Planet:
             food_lack_penalty = -50 * food_surplus(self)
         else:
             food_lack_penalty = 0
-        free_space = max_pop - self._population
-        basic_increment = int(math.sqrt(2000 * self._population * free_space / max_pop))
+        free_space = max_pop - self.raw_population
+        basic_increment = int(math.sqrt(2000 * self.raw_population * free_space / max_pop))
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )
@@ -234,7 +234,7 @@ class Planet:
 
     #####################################################################################################
     def current_population(self) -> int:
-        return int(self._population / 1e6)
+        return int(self.raw_population / 1e6)
 
     #####################################################################################################
     def can_build(self, con: ConstructType) -> bool:
