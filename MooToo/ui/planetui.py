@@ -5,7 +5,6 @@ from typing import Any
 
 from MooToo.constants import PlanetClimate, PlanetCategory, PlanetRichness, PlanetSize, PlanetGravity, PopulationJobs
 from .ui_util import get, get_cache
-from ..utils import PlanetId
 from MooToo.utils import get_building
 
 
@@ -34,6 +33,17 @@ class PlanetUI:
         self.buildings = data["buildings"]
         self.climate_image = data["climate_image"]
         self.system_id = data["system_id"]
+        self.money_production = data["money_production"]
+        self.money_cost = data["money_cost"]
+        self.food_per = data["food_per"]
+        self.food_cost = data["food_cost"]
+        self.food_surplus = data["food_surplus"]
+        self.work_per = data["work_per"]
+        self.work_cost = data["work_cost"]
+        self.work_surplus = data["work_surplus"]
+        self.science_per = data["science_per"]
+        self.science_production = data["science_production"]
+
         self.jobs = {
             PopulationJobs.FARMERS: data["jobs"][PopulationJobs.FARMERS],
             PopulationJobs.WORKERS: data["jobs"][PopulationJobs.WORKERS],
@@ -73,56 +83,6 @@ class PlanetUI:
     #################################################################################################
     def population_increment(self) -> int:
         return get_cache(self, CacheKeys.PLANET)["planet"]["population_increment"]
-
-
-#################################################################################################
-def money_production(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["money_production"]
-
-
-#################################################################################################
-def money_cost(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["money_cost"]
-
-
-#################################################################################################
-def food_per(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["food_per"]
-
-
-#################################################################################################
-def food_cost(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["food_cost"]
-
-
-#################################################################################################
-def food_surplus(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["food_surplus"]
-
-
-#################################################################################################
-def work_per(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["work_per"]
-
-
-#################################################################################################
-def work_cost(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["work_cost"]
-
-
-#################################################################################################
-def work_surplus(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["work_surplus"]
-
-
-#################################################################################################
-def science_per(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["science_per"]
-
-
-#################################################################################################
-def science_production(planet_id: PlanetId) -> int:
-    return get(f"/planets/{planet_id}")["planet"]["science_production"]
 
 
 # EOF

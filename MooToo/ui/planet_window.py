@@ -7,18 +7,6 @@ from typing import Optional, TYPE_CHECKING
 import pygame
 from MooToo.constants import PopulationJobs, PlanetClimate, PlanetSize, PlanetCategory, MAX_ORBITS
 from MooToo.ui.planetui import PlanetUI as Planet
-from MooToo.ui.planetui import (
-    money_production,
-    money_cost,
-    food_per,
-    food_cost,
-    food_surplus,
-    work_per,
-    work_cost,
-    work_surplus,
-    science_per,
-    science_production,
-)
 from .base_graphics import BaseGraphics, load_image
 from .textbox_window import TextBoxWindow
 from .constants import DisplayMode
@@ -91,16 +79,17 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def details_text(self) -> list[str]:
         planet = self.game.galaxy.planets[self.planet_id]
+        empire = self.game.galaxy.empires[planet.owner]
         pop_str = f"{planet.current_population()}/{planet.max_population()}"
         return [
-            f"{planet.name} - {planet.owner.name} Colony",
+            f"{planet.name} - {empire.name} Colony",
             f"{planet.size} {planet.climate}",
             f"Mineral {planet.richness}",
             f"{planet.gravity} G",
             "",
-            f"{'Base food per':<20}{food_per(planet):>30}",
-            f"{'Base industry per':<20}{work_per(planet):>30}",
-            f"{'Base research per':<20}{science_per(planet):>30}",
+            f"{'Base food per':<20}{planet.food_per:>30}",
+            f"{'Base industry per':<20}{planet.work_per:>30}",
+            f"{'Base research per':<20}{planet.science_per:>30}",
             "",
             f"{'Morale':<20}{planet.morale()*10:>29}%",
             "",
@@ -144,7 +133,7 @@ class PlanetWindow(BaseGraphics):
     def draw_buildings(self, planet_id: PlanetId) -> None:
         """Draw the current buildings on the planet"""
         top_left = pygame.Vector2(8, 170)
-        planet = self.game.galaxy.planets[self.planet_id]
+        planet = self.game.galaxy.planets[planet_id]
         for building in planet.buildings:
             text = self.text_font.render(planet[building].name, True, "purple")
             self.screen.blit(text, top_left)
@@ -153,7 +142,7 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def draw_morale(self, planet_id: PlanetId) -> None:
         top_left = pygame.Vector2(340, 31)
-        planet = self.game.galaxy.planets[self.planet_id]
+        planet = self.game.galaxy.planets[planet_id]
         if not planet.owner:
             return
         for _ in range(planet.morale()):
@@ -163,7 +152,7 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def draw_government(self, planet_id: PlanetId) -> None:
         top_left = pygame.Vector2(309, 31)
-        planet = self.game.galaxy.planets[self.planet_id]
+        planet = self.game.galaxy.planets[planet_id]
         if not planet.owner:
             return
         empire = self.game.galaxy.empires[planet.owner]
@@ -221,8 +210,9 @@ class PlanetWindow(BaseGraphics):
 
     #####################################################################################################
     def draw_income(self, planet_id: PlanetId) -> None:
-        income = money_production(planet_id)
-        cost = money_cost(planet_id)
+        planet = self.game.galaxy.planets[planet_id]
+        income = planet.money_production
+        cost = planet.money_cost
         dest = pygame.Vector2(126, 31)
 
         dest = self.draw_resource_sequence(
@@ -242,8 +232,9 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def draw_food(self, planet_id: PlanetId) -> None:
         # Eating Surplus
-        eating = food_cost(planet_id)
-        surplus = food_surplus(planet_id)
+        planet = self.game.galaxy.planets[planet_id]
+        eating = planet.food_cost
+        surplus = planet.food_surplus
         dest = pygame.Vector2(126, 60)
         dest = self.draw_resource_sequence(dest, self.images[ImageNames.FOOD_1], self.images[ImageNames.FOOD_X], eating)
         dest.x += 10
@@ -257,8 +248,9 @@ class PlanetWindow(BaseGraphics):
     #####################################################################################################
     def draw_work(self, planet_id: PlanetId) -> None:
         # Surplus Pollution
-        work = work_surplus(planet_id)
-        pollution = work_cost(planet_id)
+        planet = self.game.galaxy.planets[planet_id]
+        work = planet.work_surplus
+        pollution = planet.work_cost
         dest = pygame.Vector2(126, 90)
         dest = self.draw_resource_sequence(dest, self.images[ImageNames.WORK_1], self.images[ImageNames.WORK_X], work)
         self.draw_resource_sequence(
@@ -270,7 +262,8 @@ class PlanetWindow(BaseGraphics):
 
     #####################################################################################################
     def draw_science(self, planet_id: PlanetId) -> None:
-        labs = science_production(planet_id)
+        planet = self.game.galaxy.planets[planet_id]
+        labs = planet.science_production
         dest = pygame.Vector2(126, 120)
         self.draw_resource_sequence(
             dest,

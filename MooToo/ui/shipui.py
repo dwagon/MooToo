@@ -33,17 +33,15 @@ class ShipUI:
     #################################################################################################
     @property
     def destination(self) -> Optional[SystemId]:
-        dest = get_cache(self, CacheKeys.SHIP)["ship"]["destination"]
-        if dest:
-            print(f"destination {dest=}")
-        return dest
+        if dest := get_cache(self, CacheKeys.SHIP)["ship"]["destination"]:
+            return dest
+        return None
 
     #################################################################################################
     @property
     def location(self) -> tuple[int, int]:
         dest = get_cache(self, CacheKeys.LOCATION)["ship"]["location"]
-        print(f"location {dest=}")
-        return dest
+        return (dest["x"], dest["y"])
 
     #################################################################################################
     def set_destination(self, dest_system_id: SystemId) -> SystemId:
