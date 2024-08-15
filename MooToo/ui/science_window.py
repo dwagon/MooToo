@@ -2,7 +2,7 @@ import time
 import pygame
 from .base_graphics import BaseGraphics, load_image
 from .gui_button import Button
-from .researchui import get_research
+from MooToo.ui.proxy.research_proxy import get_research
 from MooToo.constants import Technology
 from MooToo.research import TechCategory
 
@@ -21,7 +21,7 @@ class ScienceWindow(BaseGraphics):
 
     #####################################################################################################
     def draw_category(self, category: TechCategory, top_left: pygame.Vector2, rp_place: pygame.Vector2) -> None:
-        technologies = self.game.empire.next_research(category)
+        technologies = self.game.empire_id.next_research(category)
 
         rp_text_surface = self.text_font.render(f"{get_research(technologies[0]).cost} RP", True, "white")
         self.screen.blit(rp_text_surface, rp_place)
@@ -63,6 +63,6 @@ class ScienceWindow(BaseGraphics):
         for sys_rect, tech in self.research_rects.items():
             r = pygame.Rect(sys_rect[0], sys_rect[1], sys_rect[2], sys_rect[3])
             if r.collidepoint(pygame.mouse.get_pos()):
-                self.game.empire.start_researching(tech)
+                self.game.empire_id.start_researching(tech)
                 return True
         return False

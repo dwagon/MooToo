@@ -9,7 +9,6 @@ from enum import StrEnum, auto
 
 from MooToo.utils import get_research, SystemId, PlanetId, ShipId
 
-from MooToo.ui.planetui import PlanetUI as Planet
 from MooToo.ui.constants import DisplayMode
 from MooToo.ui.gui_button import Button, InvisButton
 from MooToo.ui.orbit_window import OrbitWindow
@@ -19,7 +18,7 @@ from MooToo.ui.science_window import ScienceWindow
 from MooToo.ui.fleet_window import FleetWindow
 from MooToo.ui.colony_summary import ColonySummaryWindow
 from MooToo.ui.planet_summary import PlanetSummaryWindow
-from MooToo.ui.galaxyui import GalaxyUI as Galaxy
+from MooToo.ui.proxy.galaxy_proxy import GalaxyProxy as Galaxy
 
 
 MAX_NEBULAE = 5
@@ -47,7 +46,7 @@ class Game(BaseGraphics):
         self.science_window = ScienceWindow(self.screen, self)
         self.fleet_window = FleetWindow(self.screen, self)
         self.colonies_window = ColonySummaryWindow(self.screen, self)
-        self.planet_summary_window = PlanetSummaryWindow(self.screen, self, self.empire)
+        self.planet_summary_window = PlanetSummaryWindow(self.screen, self, self.empire.id)
         self.images = load_images()
         self.nebulae: list[tuple[str, pygame.Vector2]] = self.calculate_nebulae()
         self.buttons = {
@@ -93,7 +92,7 @@ class Game(BaseGraphics):
                 case DisplayMode.COLONY_SUM:
                     self.display_mode = self.colonies_window.loop()
                 case DisplayMode.PLANET_BUILD:
-                    self.display_mode = self.planet_window.building_choice_window.loop(self.planet)
+                    self.display_mode = self.planet_window.building_choice_window.loop(self.planet_id)
                 case _:
                     pass
 
@@ -186,9 +185,9 @@ class Game(BaseGraphics):
         return None
 
     #####################################################################################################
-    def look_at_planet(self, planet: Planet) -> None:
+    def look_at_planet(self, planet_id: PlanetId) -> None:
         self.display_mode = DisplayMode.PLANET
-        self.planet = planet.id
+        self.planet_id = planet_id
 
     #####################################################################################################
     def button_left_down(self):
@@ -363,6 +362,19 @@ class Game(BaseGraphics):
             top_left.y += rp_text_surface.get_size()[1]
 
     #####################################################################################################
+    def system_colour(self, system_id: SystemId) -> str:
+        colours = []
+        system = self.galaxy.systems[system_id]
+        for planet_id in system:
+            if not planet_id:
+                continue
+            planet = self.galaxy.planets[planet_id]
+            if planet.owner:
+                colour = self.galaxy.empires[planet.owner].colour
+                colours.append(colour)
+        return colours[0] if colours else "grey"
+
+    #####################################################################################################
     def draw_galaxy_view_system(self, system_id: SystemId):
         system = self.galaxy.systems[system_id]
         sys_coord = system.position
@@ -374,14 +386,7 @@ class Game(BaseGraphics):
         self.system_rects.append((planet_rect, system_id))
 
         if self.empire.is_known_system(system_id):
-            colours = []
-            for planet_id in system:
-                if not planet_id:
-                    continue
-                planet = self.galaxy.planets[planet_id]
-                if planet.owner:
-                    colours.append(planet.owner.colour)
-            colour = colours[0] if colours else "grey"  # Need to do multi-colours if appropriate
+            colour = self.system_colour(system_id)
             text_surface = self.label_font.render(system.name, True, colour)
             text_size = text_surface.get_size()
             text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)

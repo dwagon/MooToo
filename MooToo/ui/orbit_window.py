@@ -7,7 +7,7 @@ from typing import Optional, TYPE_CHECKING
 import pygame
 from MooToo.constants import PlanetClimate, PlanetSize, PlanetCategory
 from MooToo.utils import PlanetId, SystemId
-from MooToo.ui.ui_util import get_distance_tuple
+from MooToo.ui.proxy.proxy_util import get_distance_tuple
 from MooToo.ui.base_graphics import BaseGraphics, load_image
 from MooToo.ui.gui_button import Button
 

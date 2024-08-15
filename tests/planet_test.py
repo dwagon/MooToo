@@ -53,7 +53,7 @@ class TestPlanet(unittest.TestCase):
         planet = Planet(99, self.system.id, self.galaxy)
         con = Construct(ConstructType.BUILDING, building_tag=Building.MARINE_BARRACKS)
         self.assertNotIn(Building.MARINE_BARRACKS, planet.buildings)
-        planet.finish_construction(con)
+        planet._finish_construction(con)
         self.assertIn(Building.MARINE_BARRACKS, planet.buildings)
 
     #################################################################################################
@@ -63,7 +63,7 @@ class TestPlanet(unittest.TestCase):
         planet.build_queue.add(Building.MARINE_BARRACKS)
         planet.construction_spent = 59
         planet.jobs[PopulationJobs.WORKERS] = 5
-        planet.building_production()
+        planet._building_production()
         self.assertIn(Building.MARINE_BARRACKS, planet.buildings)
         self.assertLess(planet.construction_spent, 59)
         self.assertNotIn(Building.MARINE_BARRACKS, planet.build_queue)
@@ -72,10 +72,10 @@ class TestPlanet(unittest.TestCase):
     def test_available_to_build(self):
         planet = Planet(99, self.system.id, self.galaxy)
         planet.owner = self.empire.id
-        self.assertIn(Building.HOUSING, planet.available_to_build())
-        self.assertIn(Building.MARINE_BARRACKS, planet.available_to_build())
+        self.assertIn(Building.HOUSING, planet._available_to_build())
+        self.assertIn(Building.MARINE_BARRACKS, planet._available_to_build())
         planet.buildings.add(Building.MARINE_BARRACKS)
-        self.assertNotIn(Building.MARINE_BARRACKS, planet.available_to_build())
+        self.assertNotIn(Building.MARINE_BARRACKS, planet._available_to_build())
 
     #################################################################################################
     def test_can_build_ship(self):

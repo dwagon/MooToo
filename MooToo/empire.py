@@ -86,7 +86,9 @@ class Empire:
             return
 
         print(f"DBG Migrating {num} {src_job} from {src_planet_id} to {dst_job} at {dst_planet_id}")
-        distance = get_distance_tuple(src_planet.system.position, dst_planet.system.position)
+        src_system = self.galaxy.systems[src_planet.system_id]
+        dst_system = self.galaxy.systems[dst_planet.system_id]
+        distance = get_distance_tuple(src_system.position, dst_system.position)
         arrival_time = self.galaxy.turn_number + distance // 5  # 5 = speed of freighter
         for _ in range(num):
             src_planet.remove_workers(num, src_job)
@@ -137,7 +139,7 @@ class Empire:
         self.money += self.income
 
     #####################################################################################################
-    def send_colony(self, dest_planet_id: PlanetId) -> None:
+    def send_coloniser(self, dest_planet_id: PlanetId) -> None:
         """Send a colony ship to the planet"""
         for ship_id in self.ships:
             ship = self.galaxy.ships[ship_id]

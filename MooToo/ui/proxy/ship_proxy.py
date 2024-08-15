@@ -4,7 +4,7 @@ from enum import StrEnum, auto
 from typing import Optional, Any
 
 from MooToo.utils import SystemId
-from .ui_util import get, post, get_cache
+from MooToo.ui.proxy.proxy_util import get, post, get_cache
 
 
 #####################################################################################################
@@ -14,13 +14,15 @@ class CacheKeys(StrEnum):
 
 
 #####################################################################################################
-class ShipUI:
+class ShipProxy:
     def __init__(self, url: str):
         self.url = url
         data = get(self.url)["ship"]
         self.id = data["id"]
         self.name = data["name"]
         self.icon = data["icon"]
+        self.coloniser = data["coloniser"]
+        self.target_planet_id = data["target_planet_id"]
         self.cache: dict[CacheKeys, Any] = {}
         self.dirty: dict[CacheKeys, bool] = {}
 

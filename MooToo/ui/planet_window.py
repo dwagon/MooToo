@@ -6,7 +6,7 @@ from typing import Optional, TYPE_CHECKING
 
 import pygame
 from MooToo.constants import PopulationJobs, PlanetClimate, PlanetSize, PlanetCategory, MAX_ORBITS
-from MooToo.ui.planetui import PlanetUI as Planet
+from MooToo.ui.proxy.planet_proxy import PlanetProxy as Planet
 from .base_graphics import BaseGraphics, load_image
 from .textbox_window import TextBoxWindow
 from .constants import DisplayMode

@@ -1,19 +1,19 @@
 from MooToo.constants import Technology
-from MooToo.ui.ui_util import get
+from MooToo.ui.proxy.proxy_util import get
 
-RESEARCH_CACHE: dict[Technology:"ResearchUI"] = {}
+RESEARCH_CACHE: dict[Technology:"ResearchProxy"] = {}
 
 
 #################################################################################################
-def get_research(tech: "Technology") -> "ResearchUI":
+def get_research(tech: "Technology") -> "ResearchProxy":
     if tech not in RESEARCH_CACHE:
         research = get(f"/galaxy/research/{tech}")["research"]
-        RESEARCH_CACHE[tech] = ResearchUI(**research)
+        RESEARCH_CACHE[tech] = ResearchProxy(**research)
     return RESEARCH_CACHE[tech]
 
 
 #####################################################################################################
-class ResearchUI:
+class ResearchProxy:
     def __init__(self, **kwargs):
         self.name = kwargs["name"]
         self.cost = kwargs["cost"]

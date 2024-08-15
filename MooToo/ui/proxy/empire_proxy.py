@@ -4,8 +4,8 @@ from typing import Any
 from enum import StrEnum, auto
 
 from MooToo.research import TechCategory
-from MooToo.utils import SystemId, ShipId
-from ui_util import get, get_cache, post
+from MooToo.utils import SystemId, ShipId, PlanetId
+from MooToo.ui.proxy.proxy_util import get, get_cache, post
 from MooToo.constants import Technology
 
 
@@ -22,7 +22,7 @@ class CacheKeys(StrEnum):
 
 
 #####################################################################################################
-class EmpireUI:
+class EmpireProxy:
     def __init__(self, url: str):
         self.url = url
         data = get(self.url)["empire"]
@@ -32,6 +32,7 @@ class EmpireUI:
         self.money = data["money"]
         self.name = data["name"]
         self.research_spent = data["research_spent"]
+        self.owned_planets = data["owned_planets"]
         self.research_points = data["research_points"]
         self.freighters = data["freighters"]
         self.freight_used = data["freighters_used"]
@@ -85,8 +86,7 @@ class EmpireUI:
 
     #####################################################################################################
     def has_interest_in(self, system_id: SystemId) -> bool:
-        ans = get(f"{self.url}/{system_id}/has_interest_in")["interest"]
-        return ans
+        return get(f"{self.url}/{system_id}/has_interest_in")["interest"]
 
     #####################################################################################################
     def start_researching(self, to_research: Technology) -> None:
@@ -96,6 +96,11 @@ class EmpireUI:
     #####################################################################################################
     def get_research_points(self) -> int:
         return self.research_points
+
+    #####################################################################################################
+    def send_coloniser(self, dest_planet_id: PlanetId) -> None:
+        post(f"{self.url}/send_coloniser", params={"dest_planet_id": dest_planet_id})
+        self.reset_cache()
 
 
 # EOF

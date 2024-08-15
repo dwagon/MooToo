@@ -5,7 +5,7 @@ from MooToo.server.server_utils import GALAXY
 from ..server_utils import URL_PREFIX_EMPIRES
 from ..serializers import empire_reference_serializer, ship_reference_serializer
 from ..serializers.empire import empire_serializer
-from ...utils import EmpireId, SystemId
+from ...utils import EmpireId, SystemId, PlanetId
 from MooToo.constants import Technology
 
 if TYPE_CHECKING:
@@ -105,6 +105,18 @@ def start_research(empire_id: EmpireId, tech: Technology) -> dict[str, Any]:
     return {
         "status": "OK",
         "result": {"research": empire_serializer(empire)},
+    }
+
+
+#####################################################################################################
+@router.post("/{empire_id:int}/send_coloniser")
+def send_colony(empire_id: EmpireId, dest_planet_id: PlanetId) -> dict[str, Any]:
+    empire = get_safe_empire(empire_id)
+    empire.send_coloniser(dest_planet_id)
+
+    return {
+        "status": "OK",
+        "result": {"empire": empire_serializer(empire)},
     }
 
 

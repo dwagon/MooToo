@@ -3,7 +3,7 @@
 import time
 from typing import TYPE_CHECKING
 import pygame
-from MooToo.ui.ui_util import get_distance_tuple
+from MooToo.ui.proxy.proxy_util import get_distance_tuple
 from .base_graphics import BaseGraphics, load_image
 from .gui_button import Button, InvisButton
 from ..utils import SystemId, ShipId
@@ -118,7 +118,7 @@ class FleetWindow(BaseGraphics):
         self.ship_rects = []
         v = pygame.Vector2(self.top_left.x, self.top_left.y)
         self.screen.blit(self.images["top_window"], v)
-        text_surface = self.text_font.render(f"{self.game.empire.name}'s Fleet", True, "white")
+        text_surface = self.text_font.render(f"{self.game.empire_id.name}'s Fleet", True, "white")
         self.screen.blit(text_surface, pygame.Vector2(v.x + 15, v.y + 13))
         v.y += self.images["top_window"].get_size()[1]
         ship_display_top_left = pygame.Vector2(v.x, v.y)

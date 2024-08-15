@@ -63,6 +63,7 @@ class Ship:
         self.location: tuple[int, int] = (-1, -1)
         self.orbit: Optional[SystemId] = None
         self.type = ShipType.Unknown
+        self.target_planet_id: Optional[PlanetId] = None
 
     #################################################################################################
     def built(self) -> bool:
@@ -150,7 +151,6 @@ class ColonyShip(Ship):
         self.maintenance = 10
         self.coloniser = True
         self.type = ShipType.ColonyShip
-        self.target_planet_id: Optional["PlanetId"] = None
         self.icon = "colony"
 
     #################################################################################################

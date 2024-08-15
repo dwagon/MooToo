@@ -3,8 +3,16 @@
 from enum import StrEnum, auto
 from typing import Any
 
-from MooToo.constants import PlanetClimate, PlanetCategory, PlanetRichness, PlanetSize, PlanetGravity, PopulationJobs
-from .ui_util import get, get_cache
+from MooToo.constants import (
+    PlanetClimate,
+    PlanetCategory,
+    PlanetRichness,
+    PlanetSize,
+    PlanetGravity,
+    PopulationJobs,
+    Building,
+)
+from MooToo.ui.proxy.proxy_util import get, get_cache, post
 from MooToo.utils import get_building
 
 
@@ -18,7 +26,7 @@ class CacheKeys(StrEnum):
 
 
 #####################################################################################################
-class PlanetUI:
+class PlanetProxy:
     def __init__(self, url: str):
         self.url = url
         data = get(self.url)["planet"]
@@ -54,9 +62,26 @@ class PlanetUI:
         self.cache: dict[CacheKeys, Any] = {}
         self.dirty: dict[CacheKeys, bool] = {}
 
-    #####################################################################################################
+    #################################################################################################
+    @property
+    def buildings_available(self) -> set[Building]:
+        pass
+
+    #################################################################################################
     def __getitem__(self, item):
         return get_building(item)
+
+    #####################################################################################################
+    def buy_cost(self) -> int:
+        pass
+
+    #####################################################################################################
+    def turns_to_build(self) -> int:
+        pass
+
+    #####################################################################################################
+    def available_to_build(self) -> set[Building]:
+        pass
 
     #################################################################################################
     @property
@@ -83,6 +108,11 @@ class PlanetUI:
     #################################################################################################
     def population_increment(self) -> int:
         return get_cache(self, CacheKeys.PLANET)["planet"]["population_increment"]
+
+    #####################################################################################################
+    def move_workers(self, num: int, src_job: PopulationJobs, target_job: PopulationJobs):
+        self.dirty: dict[CacheKeys, bool] = {}
+        return post(f"{self.url}/move_workers", params={"num": num, "src_job": src_job, "target_job": target_job})
 
 
 # EOF

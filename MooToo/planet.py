@@ -46,18 +46,10 @@ class Planet:
         self.gravity = kwargs.get("gravity", PlanetGravity.NORMAL)
         self.raw_population = 0.0
         self.buildings: set[Building] = set()  # Built buildings
-        self._buildings_available: set[Building] = set()
         self.build_queue = BuildQueue(self)
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
         self.climate_image = self.gen_climate_image()
-
-    #####################################################################################################
-    @property
-    def buildings_available(self) -> set[Building]:
-        if not self._buildings_available:
-            self._buildings_available = self.available_to_build()
-        return self._buildings_available
 
     #####################################################################################################
     def __getitem__(self, item):
@@ -85,7 +77,7 @@ class Planet:
         return min(10000, (self.build_queue.cost - self.construction_spent) // work_surplus(self))
 
     #####################################################################################################
-    def can_build_big_ships(self) -> bool:
+    def _can_build_big_ships(self) -> bool:
         return (
             Building.STAR_BASE in self.buildings
             or Building.BATTLESTATION in self.buildings
@@ -131,9 +123,8 @@ class Planet:
         self.arc = random.randint(0, 359)
         if not self.owner:
             return
-        self.building_production()
-        self.grow_population()
-        self._buildings_available = self.available_to_build()
+        self._building_production()
+        self._grow_population()
 
     #####################################################################################################
     def remove_workers(self, num: int, job: PopulationJobs) -> int:
@@ -165,7 +156,7 @@ class Planet:
         self.galaxy.empires[self.owner].own_planet(self.id)
 
     #####################################################################################################
-    def building_production(self) -> None:
+    def _building_production(self) -> None:
         """Produce buildings"""
         if not self.build_queue:
             return
@@ -175,23 +166,23 @@ class Planet:
             self.construction_spent = 0
         if self.construction_spent >= cost:
             self.construction_spent -= cost
-            self.finish_construction(self.build_queue.pop(0))
+            self._finish_construction(self.build_queue.pop(0))
 
     #####################################################################################################
-    def finish_construction(self, construct: Construct) -> None:
+    def _finish_construction(self, construct: Construct) -> None:
         """Create a new building or ship"""
         match construct.category:
             case ConstructType.BUILDING:
                 self.buildings.add(construct.tag)
             case ConstructType.SHIP:
-                self.galaxy.empires[self.owner].add_ship(construct.ship.id, self.system.id)
+                self.galaxy.empires[self.owner].add_ship(construct.ship.id, self.system_id)
                 if not construct.ship.built():
                     self.galaxy.empires[self.owner].delete_ship(construct.ship.id)
             case ConstructType.FREIGHTER:
                 self.galaxy.empires[self.owner].freighters += 5
 
     #####################################################################################################
-    def grow_population(self) -> None:
+    def _grow_population(self) -> None:
         from MooToo.planet_food import food_surplus
 
         old_pop = int(self.raw_population / 1e6)
@@ -244,7 +235,8 @@ class Planet:
             case ConstructType.FREIGHTER:
                 return Technology.FREIGHTERS in self.galaxy.empires[self.owner].known_techs
             case ConstructType.COLONY_BASE:
-                return self.system.unoccupied_planet()
+                system = self.galaxy.systems[self.system_id]
+                return system.unoccupied_planet()
         return False
 
     #####################################################################################################
@@ -271,13 +263,13 @@ class Planet:
             case ShipType.Frigate | ShipType.Destroyer:
                 return True
             case ShipType.Cruiser | ShipType.Battleship:
-                if self.can_build_big_ships():
+                if self._can_build_big_ships():
                     return True
             case ShipType.Titan:
-                if Technology.TITAN_CONSTRUCTION in known_techs and self.can_build_big_ships():
+                if Technology.TITAN_CONSTRUCTION in known_techs and self._can_build_big_ships():
                     return True
             case ShipType.DoomStar:
-                if Technology.DOOM_STAR_CONSTRUCTION in known_techs and self.can_build_big_ships():
+                if Technology.DOOM_STAR_CONSTRUCTION in known_techs and self._can_build_big_ships():
                     return True
         return False
 
