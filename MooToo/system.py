@@ -40,8 +40,10 @@ class System:
     def unoccupied_planet(self) -> bool:
         """Return True if there is an unoccupied planet in the system"""
         for planet_id in self:
+            if not planet_id:
+                continue
             planet = self.galaxy.planets[planet_id]
-            if planet and not planet.owner:
+            if not planet.owner:
                 return True
         return False
 

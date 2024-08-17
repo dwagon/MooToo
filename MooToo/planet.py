@@ -229,6 +229,8 @@ class Planet:
 
     #####################################################################################################
     def can_build(self, con: ConstructType) -> bool:
+        if not self.owner:
+            return False
         match con:
             case ConstructType.SPY:
                 return True

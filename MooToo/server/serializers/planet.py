@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
+from MooToo.construct import ConstructType
 from MooToo.planet_food import food_per, food_cost, food_surplus
 from MooToo.planet_money import money_production, money_cost
 from MooToo.planet_science import science_per, science_production
@@ -10,7 +11,6 @@ if TYPE_CHECKING:
     from MooToo.planet import Planet
 
 
-#####################################################################################################
 def planet_serializer(planet: "Planet") -> dict[str, Any]:
     return {
         "id": planet.id,
@@ -45,5 +45,6 @@ def planet_serializer(planet: "Planet") -> dict[str, Any]:
             PopulationJobs.WORKERS: planet.jobs[PopulationJobs.WORKERS],
             PopulationJobs.SCIENTISTS: planet.jobs[PopulationJobs.SCIENTISTS],
         },
+        "can_build": {_: planet.can_build(_) for _ in ConstructType},
         "build_queue": [],
     }

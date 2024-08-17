@@ -56,3 +56,13 @@ def planet_move_workers(
     planet = get_safe_planet(planet_id)
     planet.move_workers(num, src_job, target_job)
     return {"status": "OK", "result": {"planet": planet_serializer(planet)}}
+
+
+#####################################################################################################
+@router.get("/{planet_id:int}/available_to_build")
+def available_to_build(planet_id: int) -> dict[str, Any]:
+    planet = get_safe_planet(planet_id)
+    return {"status": "OK", "result": {"available": planet.available_to_build()}}
+
+
+# EOF

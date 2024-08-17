@@ -1,6 +1,6 @@
 """ Things that can be built - ships & buildings"""
 
-from enum import Enum, auto
+from enum import StrEnum, auto
 
 from typing import Optional, TYPE_CHECKING
 from MooToo.utils import get_building
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 
 #########################################################################################################
-class ConstructType(Enum):
+class ConstructType(StrEnum):
     BUILDING = auto()
     SHIP = auto()
     COLONY_BASE = auto()

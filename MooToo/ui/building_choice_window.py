@@ -48,7 +48,7 @@ class BuildingChoiceWindow(BaseGraphics):
                 rect = self.screen.blit(text_surface, top_left)
                 top_left.y += text_surface.get_size()[1]
                 self.to_build_rects[ship_type] = rect
-                pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
+                pygame.draw.rect(self.screen, "purple", rect, width=1)
             else:
                 text_surface = self.text_font.render(ship_type.name, True, "grey")
                 self.screen.blit(text_surface, top_left)
@@ -60,7 +60,7 @@ class BuildingChoiceWindow(BaseGraphics):
         rect = self.screen.blit(text_surface, top_left)
         top_left.y += text_surface.get_size()[1]
         self.to_build_rects[ConstructType.FREIGHTER] = rect
-        pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
+        pygame.draw.rect(self.screen, "purple", rect, width=1)
         return top_left
 
     #####################################################################################################
@@ -84,7 +84,7 @@ class BuildingChoiceWindow(BaseGraphics):
             rect = self.screen.blit(text, top_left)
             top_left.y += text.get_size()[1]
             self.to_build_rects[buildings[building]] = rect
-            pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
+            pygame.draw.rect(self.screen, "purple", rect, width=1)
 
     #####################################################################################################
     def draw_building_queue(self) -> None:
@@ -97,7 +97,7 @@ class BuildingChoiceWindow(BaseGraphics):
                 name = construct.name
             text = self.text_font.render(name, True, "white", "black")
             rect = self.screen.blit(text, top_left)
-            pygame.draw.rect(self.screen, "purple", rect, width=1)  # DBG
+            pygame.draw.rect(self.screen, "purple", rect, width=1)
             self.build_queue_rects[num] = rect
             top_left.y += 20
 

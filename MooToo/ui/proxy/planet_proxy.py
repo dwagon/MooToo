@@ -12,6 +12,7 @@ from MooToo.constants import (
     PopulationJobs,
     Building,
 )
+from MooToo.construct import ConstructType
 from MooToo.ui.proxy.proxy_util import get, get_cache, post
 from MooToo.utils import get_building
 
@@ -23,6 +24,7 @@ class CacheKeys(StrEnum):
     MAX_POP = auto()
     POP_INCR = auto()
     POPULATION = auto()
+    AVAIL_TO_BUILD = auto()
 
 
 #####################################################################################################
@@ -72,11 +74,6 @@ class PlanetProxy:
         return get_cache(self, CacheKeys.PLANET)["planet"]["jobs"]
 
     #################################################################################################
-    @property
-    def buildings_available(self) -> set[Building]:
-        pass
-
-    #################################################################################################
     def __getitem__(self, item):
         return get_building(item)
 
@@ -90,7 +87,16 @@ class PlanetProxy:
 
     #####################################################################################################
     def available_to_build(self) -> set[Building]:
-        pass
+        return get_cache(self, CacheKeys.AVAIL_TO_BUILD, "available_to_build")["available"]
+
+    #####################################################################################################
+    def can_build(self, con: ConstructType) -> bool:
+        ans = get_cache(
+            self,
+            CacheKeys.PLANET,
+        )["planet"]
+
+        return ans["can_build"][con.name.lower()]
 
     #################################################################################################
     @property
