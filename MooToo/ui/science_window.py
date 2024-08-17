@@ -15,13 +15,14 @@ class ScienceWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
         super().__init__(game)
         self.screen = screen
-        self.images = self.load_images()
+        self.images = load_images()
         self.research_rects: dict[tuple[float, float, float, float], Technology] = {}
         self.cancel_button = Button(load_image("TECHSEL.LBX", 27), pygame.Vector2(274, 453))
 
     #####################################################################################################
     def draw_category(self, category: TechCategory, top_left: pygame.Vector2, rp_place: pygame.Vector2) -> None:
-        technologies = self.game.empire_id.next_research(category)
+        empire = self.game.galaxy.empires[self.game.empire_id]
+        technologies = empire.next_research(category)
 
         rp_text_surface = self.text_font.render(f"{get_research(technologies[0]).cost} RP", True, "white")
         self.screen.blit(rp_text_surface, rp_place)
@@ -32,15 +33,6 @@ class ScienceWindow(BaseGraphics):
             top_left.y += text_surface.get_size()[1]
             self.research_rects[(r.left, r.top, r.width, r.height)] = research.tag
             pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
-
-    #####################################################################################################
-    def load_images(self) -> dict[str, pygame.surface.Surface]:
-        start = time.time()
-        images = {}
-        images["window"] = load_image("TECHSEL.LBX", 14)
-        end = time.time()
-        print(f"Science: Loaded {len(images)} in {end-start} seconds")
-        return images
 
     #####################################################################################################
     def draw(self):
@@ -66,3 +58,13 @@ class ScienceWindow(BaseGraphics):
                 self.game.empire_id.start_researching(tech)
                 return True
         return False
+
+
+#####################################################################################################
+def load_images() -> dict[str, pygame.surface.Surface]:
+    start = time.time()
+    images = {}
+    images["window"] = load_image("TECHSEL.LBX", 14)
+    end = time.time()
+    print(f"Science: Loaded {len(images)} in {end-start} seconds")
+    return images

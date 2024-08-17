@@ -52,7 +52,7 @@ class PlanetProxy:
         self.science_per = data["science_per"]
         self.science_production = data["science_production"]
 
-        self.jobs = {
+        self._jobs = {
             PopulationJobs.FARMERS: data["jobs"][PopulationJobs.FARMERS],
             PopulationJobs.WORKERS: data["jobs"][PopulationJobs.WORKERS],
             PopulationJobs.SCIENTISTS: data["jobs"][PopulationJobs.SCIENTISTS],
@@ -61,6 +61,15 @@ class PlanetProxy:
 
         self.cache: dict[CacheKeys, Any] = {}
         self.dirty: dict[CacheKeys, bool] = {}
+
+    #################################################################################################
+    def reset_cache(self):
+        self.dirty: dict[CacheKeys, bool] = {}
+
+    #################################################################################################
+    @property
+    def jobs(self):
+        return get_cache(self, CacheKeys.PLANET)["planet"]["jobs"]
 
     #################################################################################################
     @property
@@ -111,7 +120,7 @@ class PlanetProxy:
 
     #####################################################################################################
     def move_workers(self, num: int, src_job: PopulationJobs, target_job: PopulationJobs):
-        self.dirty: dict[CacheKeys, bool] = {}
+        self.reset_cache()
         return post(f"{self.url}/move_workers", params={"num": num, "src_job": src_job, "target_job": target_job})
 
 

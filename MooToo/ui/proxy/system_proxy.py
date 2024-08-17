@@ -26,6 +26,10 @@ class SystemProxy:
         self.dirty: dict[CacheKeys, bool] = {}
 
     #####################################################################################################
+    def __repr__(self):
+        return f"<SystemProxy id={self.id} {self.name}>"
+
+    #####################################################################################################
     def __iter__(self):
         self._index = 0
         return self

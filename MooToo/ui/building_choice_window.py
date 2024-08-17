@@ -20,7 +20,7 @@ class BuildingChoiceWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
         super().__init__(game)
         self.screen = screen
-        self.planet_id: Optional[int] = None
+        self.planet_id: Optional[PlanetId] = None
         self.images = load_images()
         self.ok_button = Button(self.images["ok_button"], pygame.Vector2(564, 450))
         self.cancel_button = Button(self.images["cancel_button"], pygame.Vector2(495, 450))

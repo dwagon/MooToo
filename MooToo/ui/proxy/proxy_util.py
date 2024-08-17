@@ -34,7 +34,6 @@ def get_cache(obj, key, endpoint=""):
     if obj.dirty.get(key, True):
         full_url = f"{obj.url}/{endpoint}" if endpoint else obj.url
         data = get(full_url)
-        print(f"DBG {obj.id} {key} {full_url} = {data}")
         obj.cache[key] = data
         obj.dirty[key] = False
     return obj.cache[key]

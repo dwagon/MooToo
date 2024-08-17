@@ -50,7 +50,8 @@ class ColonySummaryWindow(BaseGraphics):
         self.population_rects = {}
         self.destination_rects = {}
         top_left = pygame.Vector2(10, 37)
-        for planet_id in self.game.empire.owned_planets:
+        empire = self.game.galaxy.empires[self.game.empire_id]
+        for planet_id in empire.owned_planets:
             self.draw_planet(planet_id, top_left)
             top_left += pygame.Vector2(0, 31)
 
@@ -70,26 +71,26 @@ class ColonySummaryWindow(BaseGraphics):
         pygame.draw.rect(self.screen, "purple", self.destination_rects[planet_id, PopulationJobs.WORKERS], width=1)
         pygame.draw.rect(self.screen, "purple", self.destination_rects[planet_id, PopulationJobs.SCIENTISTS], width=1)
 
-        self.population_rects[(planet, PopulationJobs.FARMERS)] = self.draw_population_sequence(
+        self.population_rects[(planet_id, PopulationJobs.FARMERS)] = self.draw_population_sequence(
             top_left + pygame.Vector2(90, 0), self.images[ImageNames.FARMER], planet.jobs[PopulationJobs.FARMERS], 130
         )
-        self.population_rects[(planet, PopulationJobs.WORKERS)] = self.draw_population_sequence(
+        self.population_rects[(planet_id, PopulationJobs.WORKERS)] = self.draw_population_sequence(
             top_left + pygame.Vector2(225, 0), self.images[ImageNames.WORKER], planet.jobs[PopulationJobs.WORKERS], 130
         )
-        self.population_rects[(planet, PopulationJobs.SCIENTISTS)] = self.draw_population_sequence(
+        self.population_rects[(planet_id, PopulationJobs.SCIENTISTS)] = self.draw_population_sequence(
             top_left + pygame.Vector2(370, 0),
             self.images[ImageNames.SCIENTIST],
             planet.jobs[PopulationJobs.SCIENTISTS],
             130,
         )
         self.building_rect[planet_id] = pygame.Rect(512, top_left.y, 87, 25)
-        pygame.draw.rect(self.screen, "purple", self.building_rect[planet_id], width=1)  # DBG
+        pygame.draw.rect(self.screen, "purple", self.building_rect[planet_id], width=1)
         if planet.build_queue:
             self.draw_building(planet_id, top_left)
             if planet.buy_cost() < planet.owner.money:
                 rect = self.screen.blit(self.images[ImageNames.PURCHASE_BUTTON], top_left + pygame.Vector2(590, 0))
                 self.buy_now_rects[planet] = rect
-                pygame.draw.rect(self.screen, "purple", self.buy_now_rects[planet], width=1)  # DBG
+                pygame.draw.rect(self.screen, "purple", self.buy_now_rects[planet], width=1)
 
     #####################################################################################################
     def draw_building(self, planet_id: PlanetId, top_left: pygame.Vector2) -> None:
@@ -149,7 +150,8 @@ class ColonySummaryWindow(BaseGraphics):
         if dest_planet_id == planet_id:
             planet.move_workers(num, job, dest_job)
             return
-        self.game.empire.migrate(num, planet_id, job, dest_planet_id, dest_job)
+        empire = self.game.galaxy.empires[self.game.empire_id]
+        empire.migrate(num, planet_id, job, dest_planet_id, dest_job)
 
     #####################################################################################################
     def mouse_pos(self, event: pygame.event):

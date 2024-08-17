@@ -431,7 +431,7 @@ class PlanetWindow(BaseGraphics):
 
             match self.display_mode:
                 case DisplayMode.PLANET_BUILD:
-                    self.building_choice_window.loop(planet)
+                    self.building_choice_window.loop(planet_id)
                     self.display_mode = DisplayMode.PLANET
                 case DisplayMode.PLANET_DETAILS:
                     pass

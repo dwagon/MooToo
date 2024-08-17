@@ -6,7 +6,7 @@ from ..server_utils import URL_PREFIX_EMPIRES
 from ..serializers import empire_reference_serializer, ship_reference_serializer
 from ..serializers.empire import empire_serializer
 from ...utils import EmpireId, SystemId, PlanetId
-from MooToo.constants import Technology
+from MooToo.constants import Technology, PopulationJobs
 
 if TYPE_CHECKING:
     from MooToo.empire import Empire
@@ -27,7 +27,6 @@ def get_safe_empire(empire_id: EmpireId) -> "Empire":
 @router.get("/")
 async def list_empires() -> dict[str, Any]:
     data = [empire_reference_serializer(empire) for empire in GALAXY.empires.values() if empire]
-    print(f"DBG {data=}")
     return {"status": "OK", "result": {"empires": data}}
 
 
@@ -113,6 +112,25 @@ def start_research(empire_id: EmpireId, tech: Technology) -> dict[str, Any]:
 def send_colony(empire_id: EmpireId, dest_planet_id: PlanetId) -> dict[str, Any]:
     empire = get_safe_empire(empire_id)
     empire.send_coloniser(dest_planet_id)
+
+    return {
+        "status": "OK",
+        "result": {"empire": empire_serializer(empire)},
+    }
+
+
+#####################################################################################################
+@router.post("/{empire_id:int}/migrate")
+def migrate(
+    empire_id: EmpireId,
+    num: int,
+    src_planet_id: PlanetId,
+    src_job: PopulationJobs,
+    dest_planet_id: PlanetId,
+    dst_job: PopulationJobs,
+) -> dict[str, Any]:
+    empire = get_safe_empire(empire_id)
+    empire.migrate(num, src_planet_id, src_job, dest_planet_id, dst_job)
 
     return {
         "status": "OK",

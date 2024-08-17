@@ -43,7 +43,7 @@ class ShipProxy:
     @property
     def location(self) -> tuple[int, int]:
         dest = get_cache(self, CacheKeys.LOCATION)["ship"]["location"]
-        return (dest["x"], dest["y"])
+        return dest["x"], dest["y"]
 
     #################################################################################################
     def set_destination(self, dest_system_id: SystemId) -> SystemId:

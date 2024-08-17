@@ -116,9 +116,10 @@ class FleetWindow(BaseGraphics):
     #####################################################################################################
     def draw(self):
         self.ship_rects = []
+        empire = self.game.galaxy.empires[self.game.empire_id]
         v = pygame.Vector2(self.top_left.x, self.top_left.y)
         self.screen.blit(self.images["top_window"], v)
-        text_surface = self.text_font.render(f"{self.game.empire_id.name}'s Fleet", True, "white")
+        text_surface = self.text_font.render(f"{empire.name}'s Fleet", True, "white")
         self.screen.blit(text_surface, pygame.Vector2(v.x + 15, v.y + 13))
         v.y += self.images["top_window"].get_size()[1]
         ship_display_top_left = pygame.Vector2(v.x, v.y)

@@ -24,48 +24,8 @@ class OrbitWindow(BaseGraphics):
         self.planet_id: Optional[PlanetId] = None  # Which planet we are looking at
         self.system_id: Optional[SystemId] = None  # Which system we are looking at
         self.window: Optional[pygame.Rect] = None  # The window Rect
-        self.images = self.load_images()
+        self.images = load_images()
         self.close_button = Button(load_image("BUFFER0.LBX", 82), self.mid_point + pygame.Vector2(90, 100))
-
-    #####################################################################################################
-    def load_images(self) -> dict[str, pygame.Surface]:
-        start = time.time()
-        images = {}
-        images["orbit_window"] = load_image("BUFFER0.LBX", 73)
-        images["gas_giant"] = load_image("BUFFER0.LBX", 142)
-
-        images["big_BLUE_star"] = load_image("BUFFER0.LBX", 83)
-        images["big_WHITE_star"] = load_image("BUFFER0.LBX", 154)
-        images["big_YELLOW_star"] = load_image("BUFFER0.LBX", 160)
-        images["big_ORANGE_star"] = load_image("BUFFER0.LBX", 166)
-        images["big_RED_star"] = load_image("BUFFER0.LBX", 172)
-        images["big_BROWN_star"] = load_image("BUFFER0.LBX", 178)
-
-        index = 92
-        for climate in [
-            PlanetClimate.TOXIC,
-            PlanetClimate.SWAMP,
-            PlanetClimate.OCEAN,
-            PlanetClimate.RADIATED,
-            PlanetClimate.BARREN,
-            PlanetClimate.DESERT,
-            PlanetClimate.TUNDRA,
-            PlanetClimate.ARID,
-            PlanetClimate.TERRAN,
-            PlanetClimate.GAIA,
-        ]:
-            for size in [PlanetSize.TINY, PlanetSize.SMALL, PlanetSize.MEDIUM, PlanetSize.LARGE, PlanetSize.HUGE]:
-                images[f"planet_{climate.name}_{size.name}"] = load_image("BUFFER0.LBX", index, frame=0)
-                index += 1
-
-        for orbit in range(5):
-            images[f"orbit_{orbit}"] = load_image("BUFFER0.LBX", 90, frame=orbit)
-            images[f"asteroid_{orbit}"] = load_image("BUFFER0.LBX", 91, frame=orbit)
-
-        end = time.time()
-        print(f"Orbit: Loaded {len(images)} in {end-start} seconds")
-
-        return images
 
     #####################################################################################################
     def draw_planet_details(self, planet_id: PlanetId):
@@ -183,6 +143,47 @@ def get_planet_position(arc: float, orbit: int) -> pygame.Vector2:
     x = (91 / 2 + orbit * 47 / 2) * math.cos(math.radians(arc))
     y = (46 / 2 + orbit * 27 / 2) * math.sin(math.radians(arc))
     return pygame.Vector2(x, y)
+
+
+#####################################################################################################
+def load_images() -> dict[str, pygame.Surface]:
+    start = time.time()
+    images = {}
+    images["orbit_window"] = load_image("BUFFER0.LBX", 73)
+    images["gas_giant"] = load_image("BUFFER0.LBX", 142)
+
+    images["big_BLUE_star"] = load_image("BUFFER0.LBX", 83)
+    images["big_WHITE_star"] = load_image("BUFFER0.LBX", 154)
+    images["big_YELLOW_star"] = load_image("BUFFER0.LBX", 160)
+    images["big_ORANGE_star"] = load_image("BUFFER0.LBX", 166)
+    images["big_RED_star"] = load_image("BUFFER0.LBX", 172)
+    images["big_BROWN_star"] = load_image("BUFFER0.LBX", 178)
+
+    index = 92
+    for climate in [
+        PlanetClimate.TOXIC,
+        PlanetClimate.SWAMP,
+        PlanetClimate.OCEAN,
+        PlanetClimate.RADIATED,
+        PlanetClimate.BARREN,
+        PlanetClimate.DESERT,
+        PlanetClimate.TUNDRA,
+        PlanetClimate.ARID,
+        PlanetClimate.TERRAN,
+        PlanetClimate.GAIA,
+    ]:
+        for size in [PlanetSize.TINY, PlanetSize.SMALL, PlanetSize.MEDIUM, PlanetSize.LARGE, PlanetSize.HUGE]:
+            images[f"planet_{climate.name}_{size.name}"] = load_image("BUFFER0.LBX", index, frame=0)
+            index += 1
+
+    for orbit in range(5):
+        images[f"orbit_{orbit}"] = load_image("BUFFER0.LBX", 90, frame=orbit)
+        images[f"asteroid_{orbit}"] = load_image("BUFFER0.LBX", 91, frame=orbit)
+
+    end = time.time()
+    print(f"Orbit: Loaded {len(images)} in {end-start} seconds")
+
+    return images
 
 
 # EOF

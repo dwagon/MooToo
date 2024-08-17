@@ -6,7 +6,7 @@ from enum import StrEnum, auto
 from MooToo.research import TechCategory
 from MooToo.utils import SystemId, ShipId, PlanetId
 from MooToo.ui.proxy.proxy_util import get, get_cache, post
-from MooToo.constants import Technology
+from MooToo.constants import Technology, PopulationJobs
 
 
 #####################################################################################################
@@ -27,6 +27,7 @@ class EmpireProxy:
         self.url = url
         data = get(self.url)["empire"]
         self.id = data["id"]
+        self.colour = data["colour"]
         self.income = data["income"]
         self.government = data["government"]
         self.money = data["money"]
@@ -40,6 +41,7 @@ class EmpireProxy:
         self.cache: dict[CacheKeys, Any] = {}
         self.dirty: dict[CacheKeys, bool] = {}
         self.research_cache: dict["TechCategory" : list[Technology]] = {}
+        self.reset_cache()
 
     #################################################################################################
     def reset_cache(self):
@@ -96,6 +98,27 @@ class EmpireProxy:
     #####################################################################################################
     def send_coloniser(self, dest_planet_id: PlanetId) -> None:
         post(f"{self.url}/send_coloniser", params={"dest_planet_id": dest_planet_id})
+        self.reset_cache()
+
+    #####################################################################################################
+    def migrate(
+        self,
+        num: int,
+        src_planet_id: PlanetId,
+        src_job: PopulationJobs,
+        dst_planet_id: PlanetId,
+        dst_job: PopulationJobs,
+    ):
+        post(
+            f"{self.url}/migrate",
+            params={
+                "num": num,
+                "src_planet_id": src_planet_id,
+                "src_job": src_job,
+                "dst_planet_id": dst_planet_id,
+                "dst_job": dst_job,
+            },
+        )
         self.reset_cache()
 
 

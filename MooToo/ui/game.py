@@ -38,7 +38,7 @@ class Game(BaseGraphics):
         super().__init__(self)
         self.galaxy = Galaxy()
         self.display_mode = DisplayMode.GALAXY
-        self.empire = self.galaxy.empires[1]  # Change to select empire
+        self.empire_id = 1  # Change to select empire
         self.system_id: Optional[SystemId] = None  # System we are looking at
         self.planet_id: Optional[PlanetId] = None  # Planet we are looking at
         self.orbit_window = OrbitWindow(self.screen, self)
@@ -46,7 +46,7 @@ class Game(BaseGraphics):
         self.science_window = ScienceWindow(self.screen, self)
         self.fleet_window = FleetWindow(self.screen, self)
         self.colonies_window = ColonySummaryWindow(self.screen, self)
-        self.planet_summary_window = PlanetSummaryWindow(self.screen, self, self.empire.id)
+        self.planet_summary_window = PlanetSummaryWindow(self.screen, self, self.empire_id)
         self.images = load_images()
         self.nebulae: list[tuple[str, pygame.Vector2]] = self.calculate_nebulae()
         self.buttons = {
@@ -244,7 +244,8 @@ class Game(BaseGraphics):
     #####################################################################################################
     def draw_freighters(self):
         """Draw freighters"""
-        freighter_str = f"{self.empire.freighters - self.empire.freighters_used()} ({self.empire.freighters})"
+        empire = self.galaxy.empires[self.empire_id]
+        freighter_str = f"{empire.freighters - empire.freighters_used()} ({empire.freighters})"
         top_left = pygame.Vector2(570, 320)
         rp_text_surface = self.text_font.render(freighter_str, True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
@@ -262,7 +263,8 @@ class Game(BaseGraphics):
     def draw_fleets(self):
         rects: dict[tuple[int, int, int, int], list[ShipId]] = {}
         self.ship_rects = []
-        for ship_id in self.empire.ships:
+        empire = self.galaxy.empires[self.empire_id]
+        for ship_id in empire.ships:
             ship = self.galaxy.ships[ship_id]
             ship_image = self.images["ship"]
             if system_id := ship.orbit:
@@ -316,7 +318,8 @@ class Game(BaseGraphics):
 
     #####################################################################################################
     def draw_food(self) -> None:
-        food = self.empire.food()
+        empire = self.galaxy.empires[self.empire_id]
+        food = empire.food()
         top_left = pygame.Vector2(580, 250)
         rp_text_surface = self.text_font.render(f"{food}", True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
@@ -325,13 +328,14 @@ class Game(BaseGraphics):
     def draw_income(self):
         """Draw money / income"""
         top_left = pygame.Vector2(555, 92)
-        rp_text_surface = self.text_font.render(f"{self.empire.money} BC", True, "white", "black")
+        empire = self.galaxy.empires[self.empire_id]
+        rp_text_surface = self.text_font.render(f"{empire.money} BC", True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
         top_left.y += rp_text_surface.get_size()[1]
-        if self.empire.income < 0:
-            income_str = f"-{self.empire.income} BC"
+        if empire.income < 0:
+            income_str = f"-{empire.income} BC"
         else:
-            income_str = f"+{self.empire.income} BC"
+            income_str = f"+{empire.income} BC"
         rp_text_surface = self.text_font.render(income_str, True, "white", "black")
         self.screen.blit(rp_text_surface, top_left)
 
@@ -339,22 +343,23 @@ class Game(BaseGraphics):
     def draw_research(self):
         """Draw what is being researched"""
         top_left = pygame.Vector2(550, 380)
+        empire = self.galaxy.empires[self.empire_id]
 
-        if not self.empire.researching:
+        if not empire.researching:
             rp_text_surface = self.text_font.render("Nothing", True, "white", "black")
             self.screen.blit(rp_text_surface, top_left)
             return
 
-        research = get_research(self.empire.researching)
+        research = get_research(empire.researching)
         try:
-            time_left = int((research.cost - self.empire.research_spent) / self.empire.get_research_points())
+            time_left = int((research.cost - empire.research_spent) / empire.get_research_points())
         except ZeroDivisionError:
             time_left = 10000
 
         words = [
             research.name,
             f"~{time_left} turns",
-            f"{self.empire.get_research_points()} RP",
+            f"{empire.get_research_points()} RP",
         ]
 
         for word in words:
