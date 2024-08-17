@@ -31,6 +31,7 @@ class EmpireProxy:
         self.government = data["government"]
         self.money = data["money"]
         self.name = data["name"]
+        self.known_systems = data["known_systems"]
         self.research_spent = data["research_spent"]
         self.owned_planets = data["owned_planets"]
         self.research_points = data["research_points"]
@@ -56,17 +57,12 @@ class EmpireProxy:
 
     #####################################################################################################
     def is_known_system(self, system_id: SystemId) -> bool:
-        return get_cache(self, CacheKeys.IS_KNOWN, f"{system_id}/is_known")["known"]
+        return system_id in self.known_systems
 
     #####################################################################################################
     @property
     def researching(self) -> Technology:
         return get_cache(self, CacheKeys.EMPIRE, "researching")["researching"]
-
-    #####################################################################################################
-    @property
-    def known_systems(self) -> set[SystemId]:
-        return get_cache(self, CacheKeys.KNOWN_SYSTEMS, "known_systems")["known"]
 
     #####################################################################################################
     @property

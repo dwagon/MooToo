@@ -155,10 +155,11 @@ class Game(BaseGraphics):
 
         if system_id := self.click_system():
             self.system_id = system_id
-            if self.empire.has_interest_in(system_id):
+            empire = self.galaxy.empires[self.empire_id]
+            if empire.has_interest_in(system_id):
                 self.display_mode = DisplayMode.PLANET
                 self.planet_id = self.pick_planet(system_id)
-            elif system_id in self.empire.known_systems:
+            elif system_id in empire.known_systems:
                 self.display_mode = DisplayMode.ORBIT
 
     #####################################################################################################
@@ -385,7 +386,8 @@ class Game(BaseGraphics):
         pygame.draw.rect(self.screen, "purple", planet_rect, width=1)
         self.system_rects.append((planet_rect, system_id))
 
-        if self.empire.is_known_system(system_id):
+        empire = self.galaxy.empires[self.empire_id]
+        if empire.is_known_system(system_id):
             colour = self.system_colour(system_id)
             text_surface = self.label_font.render(system.name, True, colour)
             text_size = text_surface.get_size()
