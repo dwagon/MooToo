@@ -1,11 +1,12 @@
 """ Run the game server"""
 
+from typing import Annotated
 import time
 import uvicorn
-from fastapi import FastAPI, Request
-from .server_utils import GALAXY
-from MooToo.galaxy import save
+from fastapi import FastAPI, Request, Depends
+from MooToo.galaxy import save, Galaxy
 from .routers import system, ship, planet, empire, galaxy
+from .server_utils import get_galaxy
 
 app = FastAPI()
 app.include_router(system.router)
@@ -27,8 +28,8 @@ async def add_process_time_header(request: Request, call_next):
 
 #####################################################################################################
 @app.post("/save/{filename}")
-def save_game(filename):
-    save(GALAXY, filename)
+def save_game(filename, gal: Annotated[Galaxy, Depends(get_galaxy)]):
+    save(gal, filename)
 
 
 #####################################################################################################
