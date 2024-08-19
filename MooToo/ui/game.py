@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import random
+import sys
 import time
 from typing import Optional
 
@@ -36,7 +37,11 @@ class MainButtons(StrEnum):
 class Game(BaseGraphics):
     def __init__(self):
         super().__init__(self)
-        self.galaxy = Galaxy()
+        try:
+            self.galaxy = Galaxy()
+        except Exception as exc:
+            print(f"Couldn't initiate galaxy - backend running? {exc}")
+            sys.exit(1)
         self.display_mode = DisplayMode.GALAXY
         self.empire_id = 1  # Change to select empire
         self.system_id: Optional[SystemId] = None  # System we are looking at
@@ -297,7 +302,7 @@ class Game(BaseGraphics):
             try:
                 r = self.screen.blit(ship_image, ship_coord)
             except TypeError:
-                print(f"DBG {ship_id=} {ship_image=} {ship_coord=}")
+                print(f"{ship_id=} {ship_image=} {ship_coord=}")
                 raise
             rect_tuple = (r.x, r.y, r.h, r.w)
             if rect_tuple not in rects:

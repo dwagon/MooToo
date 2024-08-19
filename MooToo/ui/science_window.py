@@ -2,7 +2,6 @@ import time
 import pygame
 from .base_graphics import BaseGraphics, load_image
 from .gui_button import Button
-from MooToo.ui.proxy.research_proxy import get_research
 from MooToo.constants import Technology
 from MooToo.research import TechCategory
 
@@ -24,10 +23,12 @@ class ScienceWindow(BaseGraphics):
         empire = self.game.galaxy.empires[self.game.empire_id]
         technologies = empire.next_research(category)
 
-        rp_text_surface = self.text_font.render(f"{get_research(technologies[0]).cost} RP", True, "white")
+        rp_text_surface = self.text_font.render(
+            f"{self.game.galaxy.get_research(technologies[0]).cost} RP", True, "white"
+        )
         self.screen.blit(rp_text_surface, rp_place)
         for tech in technologies:
-            research = get_research(tech)
+            research = self.game.galaxy.get_research(tech)
             text_surface = self.text_font.render(research.name, True, "white")
             r = self.screen.blit(text_surface, top_left)
             top_left.y += text_surface.get_size()[1]

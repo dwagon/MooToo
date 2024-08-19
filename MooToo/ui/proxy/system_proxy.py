@@ -1,9 +1,10 @@
 """ Act as a copy of the system class for UI purposes"""
 
+import requests
 from enum import StrEnum, auto
 from typing import Any
 
-from MooToo.ui.proxy.proxy_util import get
+from MooToo.ui.proxy.proxy_util import Proxy
 from MooToo.constants import StarColour
 
 
@@ -13,17 +14,16 @@ class CacheKeys(StrEnum):
 
 
 #####################################################################################################
-class SystemProxy:
-    def __init__(self, url: str):
+class SystemProxy(Proxy):
+    def __init__(self, url: str, getter=requests.get, poster=requests.post):
+        super().__init__(url, getter, poster)
         self.url = url
-        data = get(self.url)["system"]
+        data = self.get(self.url)["system"]
         self.id = data["id"]
         self.position = (data["position"]["x"], data["position"]["y"])
         self.name = data["name"]
         self.orbits = data["orbits"]
         self.colour = StarColour(data["colour"].lower())
-        self.cache: dict[CacheKeys, Any] = {}
-        self.dirty: dict[CacheKeys, bool] = {}
 
     #####################################################################################################
     def __repr__(self):
@@ -41,3 +41,6 @@ class SystemProxy:
             raise StopIteration from e
         self._index += 1
         return data
+
+
+# EOF

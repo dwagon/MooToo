@@ -1,7 +1,7 @@
 """ Act as a copy of the planet class for UI purposes"""
 
+import requests
 from enum import StrEnum, auto
-from typing import Any
 
 from MooToo.constants import (
     PlanetClimate,
@@ -13,7 +13,7 @@ from MooToo.constants import (
     Building,
 )
 from MooToo.construct import ConstructType
-from MooToo.ui.proxy.proxy_util import get, get_cache, post
+from MooToo.ui.proxy.proxy_util import Proxy
 from MooToo.utils import get_building
 
 
@@ -28,10 +28,11 @@ class CacheKeys(StrEnum):
 
 
 #####################################################################################################
-class PlanetProxy:
-    def __init__(self, url: str):
-        self.url = url
-        data = get(self.url)["planet"]
+class PlanetProxy(Proxy):
+    def __init__(self, url: str, getter=requests.get, poster=requests.post):
+        super().__init__(url, getter, poster)
+
+        data = self.get(self.url)["planet"]
         self.id = data["id"]
         self.name = data["name"]
         self.owner = data["owner"]
@@ -61,17 +62,10 @@ class PlanetProxy:
         }
         self.build_queue = []
 
-        self.cache: dict[CacheKeys, Any] = {}
-        self.dirty: dict[CacheKeys, bool] = {}
-
-    #################################################################################################
-    def reset_cache(self):
-        self.dirty: dict[CacheKeys, bool] = {}
-
     #################################################################################################
     @property
     def jobs(self):
-        return get_cache(self, CacheKeys.PLANET)["planet"]["jobs"]
+        return self.get_cache(CacheKeys.PLANET)["planet"]["jobs"]
 
     #################################################################################################
     def __getitem__(self, item):
@@ -87,12 +81,11 @@ class PlanetProxy:
 
     #####################################################################################################
     def available_to_build(self) -> set[Building]:
-        return get_cache(self, CacheKeys.AVAIL_TO_BUILD, "available_to_build")["available"]
+        return self.get_cache(CacheKeys.AVAIL_TO_BUILD, "available_to_build")["available"]
 
     #####################################################################################################
     def can_build(self, con: ConstructType) -> bool:
-        ans = get_cache(
-            self,
+        ans = self.get_cache(
             CacheKeys.PLANET,
         )["planet"]
 
@@ -101,33 +94,43 @@ class PlanetProxy:
     #################################################################################################
     @property
     def arc(self) -> int:
-        return get_cache(self, CacheKeys.ARC)["planet"]["arc"]
+        return self.get_cache(CacheKeys.ARC)["planet"]["arc"]
 
     #################################################################################################
     def max_population(self) -> int:
-        return get_cache(self, CacheKeys.MAX_POP)["planet"]["max_pop"]
+        return self.get_cache(CacheKeys.MAX_POP)["planet"]["max_pop"]
 
     #################################################################################################
     def morale(self) -> int:
-        return get_cache(self, CacheKeys.PLANET)["planet"]["morale"]
+        return self.get_cache(CacheKeys.PLANET)["planet"]["morale"]
 
     #################################################################################################
     def current_population(self) -> int:
-        return get_cache(self, CacheKeys.PLANET)["planet"]["population"]
+        return self.get_cache(CacheKeys.PLANET)["planet"]["population"]
 
     #################################################################################################
     @property
     def raw_population(self) -> int:
-        return get_cache(self, CacheKeys.PLANET)["planet"]["raw_population"]
+        return self.get_cache(CacheKeys.PLANET)["planet"]["raw_population"]
 
     #################################################################################################
     def population_increment(self) -> int:
-        return get_cache(self, CacheKeys.PLANET)["planet"]["population_increment"]
+        return self.get_cache(CacheKeys.PLANET)["planet"]["population_increment"]
 
     #####################################################################################################
     def move_workers(self, num: int, src_job: PopulationJobs, target_job: PopulationJobs):
         self.reset_cache()
-        return post(f"{self.url}/move_workers", params={"num": num, "src_job": src_job, "target_job": target_job})
+        return self.post(f"{self.url}/move_workers", params={"num": num, "src_job": src_job, "target_job": target_job})
+
+    #####################################################################################################
+    def __repr__(self):
+        category = self.category.name
+        richness = self.richness.name
+        climate = self.climate.name
+
+        return (
+            f"<PlanetProxy {self.id} {self.name}: {category} {self.size.name} {richness} {climate} {self.gravity.name}>"
+        )
 
 
 # EOF

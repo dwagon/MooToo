@@ -1,11 +1,11 @@
 """ Act as a copy of the empire class for UI purposes"""
 
-from typing import Any
 from enum import StrEnum, auto
+import requests
 
 from MooToo.research import TechCategory
 from MooToo.utils import SystemId, ShipId, PlanetId
-from MooToo.ui.proxy.proxy_util import get, get_cache, post
+from MooToo.ui.proxy.proxy_util import Proxy
 from MooToo.constants import Technology, PopulationJobs
 
 
@@ -22,10 +22,10 @@ class CacheKeys(StrEnum):
 
 
 #####################################################################################################
-class EmpireProxy:
-    def __init__(self, url: str):
-        self.url = url
-        data = get(self.url)["empire"]
+class EmpireProxy(Proxy):
+    def __init__(self, url: str, getter=requests.get, poster=requests.post):
+        super().__init__(url, getter, poster)
+        data = self.get(self.url)["empire"]
         self.id = data["id"]
         self.colour = data["colour"]
         self.income = data["income"]
@@ -38,15 +38,12 @@ class EmpireProxy:
         self.research_points = data["research_points"]
         self.freighters = data["freighters"]
         self.freight_used = data["freighters_used"]
-        self.cache: dict[CacheKeys, Any] = {}
-        self.dirty: dict[CacheKeys, bool] = {}
         self.research_cache: dict["TechCategory" : list[Technology]] = {}
         self.reset_cache()
 
     #################################################################################################
     def reset_cache(self):
-        self.cache = {}
-        self.dirty = {}
+        super().reset_cache()
         self.research_cache = {}
 
     #################################################################################################
@@ -55,7 +52,7 @@ class EmpireProxy:
 
     #################################################################################################
     def food(self) -> int:
-        return get_cache(self, CacheKeys.FOOD, "food")["food"]
+        return self.get_cache(CacheKeys.FOOD, "food")["food"]
 
     #####################################################################################################
     def is_known_system(self, system_id: SystemId) -> bool:
@@ -64,13 +61,13 @@ class EmpireProxy:
     #####################################################################################################
     @property
     def researching(self) -> Technology:
-        return get_cache(self, CacheKeys.EMPIRE, "researching")["researching"]
+        return self.get_cache(CacheKeys.EMPIRE, "researching")["researching"]
 
     #####################################################################################################
     @property
     def ships(self) -> list[ShipId]:
         if self.dirty.get(CacheKeys.SHIPS, True):
-            ship_list = get("/ships")["ships"]
+            ship_list = self.get("/ships")["ships"]
             self.cache[CacheKeys.SHIPS] = [_["id"] for _ in ship_list]
             self.dirty[CacheKeys.SHIPS] = False
         return self.cache[CacheKeys.SHIPS]
@@ -78,17 +75,17 @@ class EmpireProxy:
     #####################################################################################################
     def next_research(self, category: "TechCategory") -> list[Technology]:
         if category not in self.research_cache:
-            ans = get(f"/empires/{self.id}/{category}/next_research")["research"]
+            ans = self.get(f"/empires/{self.id}/{category}/next_research")["research"]
             self.research_cache[category] = [Technology(_) for _ in ans]
         return self.research_cache[category]
 
     #####################################################################################################
     def has_interest_in(self, system_id: SystemId) -> bool:
-        return get(f"{self.url}/{system_id}/has_interest_in")["interest"]
+        return self.get(f"{self.url}/{system_id}/has_interest_in")["interest"]
 
     #####################################################################################################
     def start_researching(self, to_research: Technology) -> None:
-        post(f"{self.url}/start_researching", params={"tech": to_research})
+        self.post(f"{self.url}/start_researching", params={"tech": to_research})
         self.dirty[CacheKeys.EMPIRE] = True
 
     #####################################################################################################
@@ -97,7 +94,7 @@ class EmpireProxy:
 
     #####################################################################################################
     def send_coloniser(self, dest_planet_id: PlanetId) -> None:
-        post(f"{self.url}/send_coloniser", params={"dest_planet_id": dest_planet_id})
+        self.post(f"{self.url}/send_coloniser", params={"dest_planet_id": dest_planet_id})
         self.reset_cache()
 
     #####################################################################################################
@@ -109,7 +106,7 @@ class EmpireProxy:
         dst_planet_id: PlanetId,
         dst_job: PopulationJobs,
     ):
-        post(
+        self.post(
             f"{self.url}/migrate",
             params={
                 "num": num,
