@@ -36,12 +36,12 @@ class MainButtons(StrEnum):
 #####################################################################################################
 class Game(BaseGraphics):
     def __init__(self):
-        super().__init__(self)
         try:
             self.galaxy = Galaxy()
         except Exception as exc:
             print(f"Couldn't initiate galaxy - backend running? {exc}")
             sys.exit(1)
+        super().__init__(self)
         self.display_mode = DisplayMode.GALAXY
         self.empire_id = 1  # Change to select empire
         self.system_id: Optional[SystemId] = None  # System we are looking at
@@ -292,11 +292,12 @@ class Game(BaseGraphics):
 
             if ship.destination:
                 mid_pos = ship_coord + pygame.Vector2(ship_image.get_size()[0] / 2, ship_image.get_size()[1] / 2)
+                destination = self.galaxy.systems[ship.destination]
                 pygame.draw.line(
                     self.screen,
                     "purple",
                     mid_pos,
-                    ship.destination.position,
+                    destination.position,
                 )
 
             try:

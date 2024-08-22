@@ -50,6 +50,8 @@ class System:
     #####################################################################################################
     def turn(self):
         for planet_id in self:
+            if planet_id is None:
+                continue
             if planet := self.galaxy.planets[planet_id]:
                 planet.turn()
 

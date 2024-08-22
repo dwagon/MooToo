@@ -96,8 +96,9 @@ class Ship:
 
     #################################################################################################
     def arrived_at_destination(self):
+        assert isinstance(self.destination, SystemId)
         dest = self.galaxy.systems[self.destination]
-        self.orbit = dest
+        self.orbit = self.destination
         self.location = dest.position
         self.destination = None
 
@@ -106,7 +107,6 @@ class Ship:
         dest = self.galaxy.systems[self.destination]
         if get_distance_tuple(self.location, dest.position) < self.speed() + 0.01:
             self.arrived_at_destination()
-
             return
         angle = math.atan2(dest.position[1] - self.location[1], dest.position[0] - self.location[0])
         self.location = (
@@ -162,6 +162,7 @@ class ColonyShip(Ship):
 
     #################################################################################################
     def set_destination_planet(self, dest_planet_id: PlanetId) -> None:
+        assert isinstance(dest_planet_id, PlanetId)
         self.set_destination(dest_planet_id)
         self.target_planet_id = dest_planet_id
 

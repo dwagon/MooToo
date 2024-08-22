@@ -100,6 +100,7 @@ class Empire:
 
     #####################################################################################################
     def add_ship(self, ship_id: ShipId, system_id: SystemId):
+        assert isinstance(system_id, SystemId)
         self.ships.add(ship_id)
         ship = self.galaxy.ships[ship_id]
         system = self.galaxy.systems[system_id]
@@ -126,10 +127,10 @@ class Empire:
             planet.turn()
             income += money_surplus(planet)
         for ship_id in self.ships:
-            ship = self.galaxy.ships[ship_id].turn()
+            ship = self.galaxy.ships[ship_id]
             ship.turn()
             if ship.orbit is not None:
-                self.know_system(ship.orbit.id)
+                self.know_system(ship.orbit)
         for migration in self.migrations[:]:
             if migration.arrival_time >= self.galaxy.turn_number:
                 migration.dst_planet.add_workers(1, migration.dst_job)
@@ -193,7 +194,8 @@ class Empire:
         return rp
 
     #####################################################################################################
-    def has_interest_in(self, system_id: int) -> bool:
+    def has_interest_in(self, system_id: SystemId) -> bool:
+        assert isinstance(system_id, SystemId)
         for planet_id in self.galaxy.systems[system_id].orbits:
             if planet_id is None:
                 continue
@@ -204,9 +206,11 @@ class Empire:
 
     #####################################################################################################
     def know_system(self, system_id: SystemId) -> None:
+        assert isinstance(system_id, SystemId), f"{system_id=}"
         self.known_systems.add(system_id)
 
     #####################################################################################################
     def is_known_system(self, system_id: SystemId) -> bool:
         """Is the system known to this empire"""
+        assert isinstance(system_id, SystemId)
         return system_id in self.known_systems

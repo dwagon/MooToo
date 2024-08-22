@@ -26,6 +26,7 @@ class GalaxyProxy(Proxy):
 
     #################################################################################################
     def init(self):
+        self.reset_cache()
         data = self.get("/galaxy")["galaxy"]
         self.turn_number = data["turn_number"]
         for system in data["systems"]:

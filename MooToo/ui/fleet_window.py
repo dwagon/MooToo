@@ -23,7 +23,7 @@ class FleetWindow(BaseGraphics):
         super().__init__(game)
         self.screen = screen
         self.ship_ids: list[ShipId] = []
-        self.images = self.load_images()
+        self.images = load_images()
         self.reset([])
 
     #####################################################################################################
@@ -81,39 +81,6 @@ class FleetWindow(BaseGraphics):
         self.title_bar.move(self.top_left + TITLE_OFFSET)
 
     #####################################################################################################
-    def load_images(self) -> dict[str, pygame.Surface]:
-        images = {}
-        start = time.time()
-        images["top_window"] = load_image("BUFFER0.LBX", 52)
-        images["middle_window"] = load_image("BUFFER0.LBX", 54)
-        images["bottom_window"] = load_image("BUFFER0.LBX", 56)
-        for num, idx in enumerate(range(8)):
-            images[f"frigate_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
-        for num, idx in enumerate(range(8, 16)):
-            images[f"destroyer_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
-        for num, idx in enumerate(range(16, 24)):
-            images[f"cruiser_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
-        for num, idx in enumerate(range(24, 32)):
-            images[f"battleship_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
-        for num, idx in enumerate(range(32, 40)):
-            images[f"titan_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
-        for num, idx in enumerate(range(40, 44)):
-            images[f"doomstar_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
-        images["guardian"] = load_image("SHIPS.LBX", 44, palette_index=2)
-        images["colony"] = load_image("SHIPS.LBX", 45, palette_index=2)
-        images["outpost"] = load_image("SHIPS.LBX", 46, palette_index=2)
-        images["transport"] = load_image("SHIPS.LBX", 47, palette_index=2)
-        images["freighter"] = load_image("SHIPS.LBX", 48, palette_index=2)
-        images["close_button"] = load_image("BUFFER0.LBX", 72)
-        images["blue_bg"] = load_image("BUFFER0.LBX", 11)
-        images["all_button"] = load_image("BUFFER0.LBX", 60)
-
-        end = time.time()
-        print(f"ShipUIs: Loaded {len(images)} in {end-start} seconds")
-
-        return images
-
-    #####################################################################################################
     def draw(self):
         self.ship_rects = []
         empire = self.game.galaxy.empires[self.game.empire_id]
@@ -129,7 +96,8 @@ class FleetWindow(BaseGraphics):
         v.y += self.images["bottom_window"].get_size()[1]
         ship = self.game.galaxy.ships[self.ship_ids[0]]
         if dest := ship.destination:
-            turns = int(get_distance_tuple(dest.position, ship.location) / ship.speed())
+            dest_system = self.galaxy.systems[dest]
+            turns = int(get_distance_tuple(dest_system.position, ship.location) / ship.speed())
             distance_surface = self.text_font.render(f"{turns} turns", True, "white")
             self.screen.blit(distance_surface, pygame.Vector2(v.x + 70, v.y - 28))
 
@@ -150,6 +118,41 @@ class FleetWindow(BaseGraphics):
             self.screen.blit(self.images["blue_bg"], ship_top_left)
         rect = self.screen.blit(self.images[ship.icon], ship_top_left)
         self.ship_rects.append((rect, ship_id))
+
+    #####################################################################################################
+
+
+def load_images() -> dict[str, pygame.Surface]:
+    images = {}
+    start = time.time()
+    images["top_window"] = load_image("BUFFER0.LBX", 52)
+    images["middle_window"] = load_image("BUFFER0.LBX", 54)
+    images["bottom_window"] = load_image("BUFFER0.LBX", 56)
+    for num, idx in enumerate(range(8)):
+        images[f"frigate_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
+    for num, idx in enumerate(range(8, 16)):
+        images[f"destroyer_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
+    for num, idx in enumerate(range(16, 24)):
+        images[f"cruiser_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
+    for num, idx in enumerate(range(24, 32)):
+        images[f"battleship_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
+    for num, idx in enumerate(range(32, 40)):
+        images[f"titan_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
+    for num, idx in enumerate(range(40, 44)):
+        images[f"doomstar_{num}"] = load_image("SHIPS.LBX", idx, palette_index=2)
+    images["guardian"] = load_image("SHIPS.LBX", 44, palette_index=2)
+    images["colony"] = load_image("SHIPS.LBX", 45, palette_index=2)
+    images["outpost"] = load_image("SHIPS.LBX", 46, palette_index=2)
+    images["transport"] = load_image("SHIPS.LBX", 47, palette_index=2)
+    images["freighter"] = load_image("SHIPS.LBX", 48, palette_index=2)
+    images["close_button"] = load_image("BUFFER0.LBX", 72)
+    images["blue_bg"] = load_image("BUFFER0.LBX", 11)
+    images["all_button"] = load_image("BUFFER0.LBX", 60)
+
+    end = time.time()
+    print(f"ShipUIs: Loaded {len(images)} in {end-start} seconds")
+
+    return images
 
 
 # EOF

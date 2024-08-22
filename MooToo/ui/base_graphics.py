@@ -15,6 +15,7 @@ IMAGE_CACHE: dict[tuple[str, int, int], pygame.Surface] = {}
 class BaseGraphics:
     def __init__(self, game: "Game"):
         self.game = game
+        self.galaxy = self.game.galaxy
         pygame.init()
         self.label_font = pygame.font.SysFont("Ariel", 14)
         self.label_font_bold = pygame.font.SysFont("Ariel", 14, bold=True)

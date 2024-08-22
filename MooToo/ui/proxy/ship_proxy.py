@@ -29,7 +29,7 @@ class ShipProxy(Proxy):
     @property
     def orbit(self) -> Optional[SystemId]:
         if orbit := self.get_cache(CacheKeys.SHIP)["ship"]["orbit"]:
-            return orbit["id"]
+            return orbit
 
     #################################################################################################
     @property
@@ -45,6 +45,11 @@ class ShipProxy(Proxy):
         return dest["x"], dest["y"]
 
     #################################################################################################
+    def speed(self) -> int:
+        return self.get_cache(CacheKeys.SHIP)["ship"]["speed"]
+
+    #################################################################################################
     def set_destination(self, dest_system_id: SystemId) -> SystemId:
         self.post(f"/ships/{self.id}/set_destination", params={"destination_id": dest_system_id})
+        self.reset_cache()
         return self.destination

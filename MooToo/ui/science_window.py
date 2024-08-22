@@ -20,15 +20,13 @@ class ScienceWindow(BaseGraphics):
 
     #####################################################################################################
     def draw_category(self, category: TechCategory, top_left: pygame.Vector2, rp_place: pygame.Vector2) -> None:
-        empire = self.game.galaxy.empires[self.game.empire_id]
+        empire = self.galaxy.empires[self.game.empire_id]
         technologies = empire.next_research(category)
 
-        rp_text_surface = self.text_font.render(
-            f"{self.game.galaxy.get_research(technologies[0]).cost} RP", True, "white"
-        )
+        rp_text_surface = self.text_font.render(f"{self.galaxy.get_research(technologies[0]).cost} RP", True, "white")
         self.screen.blit(rp_text_surface, rp_place)
         for tech in technologies:
-            research = self.game.galaxy.get_research(tech)
+            research = self.galaxy.get_research(tech)
             text_surface = self.text_font.render(research.name, True, "white")
             r = self.screen.blit(text_surface, top_left)
             top_left.y += text_surface.get_size()[1]
@@ -56,7 +54,8 @@ class ScienceWindow(BaseGraphics):
         for sys_rect, tech in self.research_rects.items():
             r = pygame.Rect(sys_rect[0], sys_rect[1], sys_rect[2], sys_rect[3])
             if r.collidepoint(pygame.mouse.get_pos()):
-                self.game.empire_id.start_researching(tech)
+                empire = self.galaxy.empires[self.game.empire_id]
+                empire.start_researching(tech)
                 return True
         return False
 
