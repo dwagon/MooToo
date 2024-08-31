@@ -2,7 +2,6 @@ import unittest
 
 from MooToo.server.serializers import ship_reference_serializer
 from MooToo.server.serializers.ship import ship_serializer
-from MooToo.ship import select_ship_type_by_name
 from MooToo.bigbang import create_galaxy
 
 
@@ -10,9 +9,7 @@ from MooToo.bigbang import create_galaxy
 class ShipSerializerTest(unittest.TestCase):
     def setUp(self):
         self.galaxy = create_galaxy()
-        ship_id = select_ship_type_by_name("Frigate", self.galaxy)
-
-        self.ship = self.galaxy.ships[ship_id]
+        self.ship = self.galaxy.ships[1]
         self.ship.name = "Nautilus"
 
     #################################################################################################
@@ -26,8 +23,7 @@ class ShipSerializerTest(unittest.TestCase):
         output = ship_serializer(self.ship)
         print(f"DBG {output}")
         self.assertEqual(output["name"], "Nautilus")
-        self.assertEqual(output["owner"], {"id": 0, "url": "/empires/0"})
-        self.assertEqual(output["type"], "Frigate")
+        self.assertEqual(output["owner_id"], 1)
 
 
 #####################################################################################################

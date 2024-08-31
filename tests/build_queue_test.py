@@ -4,7 +4,6 @@ from MooToo.build_queue import BuildQueue
 from MooToo.bigbang import create_galaxy
 from MooToo.constants import Building, StarColour
 from MooToo.construct import Construct, ConstructType
-from MooToo.ship import select_ship_type_by_name
 from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.empire import Empire
@@ -27,17 +26,15 @@ class TestBuildQueue(unittest.TestCase):
         self.q.add(Building.MARINE_BARRACKS)
         self.assertEqual(type(self.q._queue[0]), Construct)
         self.assertEqual(self.q._queue[0].tag, Building.MARINE_BARRACKS)
-        ship_id = select_ship_type_by_name("Cruiser", self.galaxy)
-        self.q.add(self.galaxy.ships[ship_id])
+
+        self.q.add(ConstructType.SPY)
         self.assertEqual(type(self.q._queue[1]), Construct)
-        self.assertEqual(self.q._queue[1].ship.name, "Cruiser 1")
         self.assertEqual(len(self.q), 2)
 
     #############################################################################################
     def test_cost(self):
-        ship_id = select_ship_type_by_name("Battleship", self.galaxy)
-        self.q.add(self.galaxy.ships[ship_id])
-        self.assertEqual(self.q.cost, 725)
+        self.q.add(ConstructType.SPY)
+        self.assertEqual(self.q.cost, 100)
 
     #############################################################################################
     def test_is_building(self):
@@ -51,7 +48,7 @@ class TestBuildQueue(unittest.TestCase):
         self.q.add(Building.BATTLESTATION)
         self.assertIn(Building.BATTLESTATION, self.q)
         self.assertNotIn(Building.TRADE_GOODS, self.q)
-        con = Construct(ConstructType.BUILDING, building_tag=Building.MARINE_BARRACKS)
+        con = Construct(ConstructType.BUILDING, galaxy=self.galaxy, building_tag=Building.MARINE_BARRACKS)
         self.assertIn(con, self.q)
 
     #################################################################################################
@@ -65,3 +62,5 @@ class TestBuildQueue(unittest.TestCase):
 #################################################################################################
 if __name__ == "__main__":
     unittest.main()
+
+# EOF

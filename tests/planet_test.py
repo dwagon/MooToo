@@ -9,7 +9,7 @@ from MooToo.constants import (
     PlanetGravity,
     StarColour,
 )
-from MooToo.ship import ShipType, select_ship_type_by_name
+from MooToo.ship import HullType
 from MooToo.bigbang import create_galaxy
 from MooToo.system import System
 from MooToo.construct import Construct, ConstructType
@@ -51,7 +51,7 @@ class TestPlanet(unittest.TestCase):
     #################################################################################################
     def test_finish_construction(self):
         planet = Planet(99, self.system.id, self.galaxy)
-        con = Construct(ConstructType.BUILDING, building_tag=Building.MARINE_BARRACKS)
+        con = Construct(ConstructType.BUILDING, self.galaxy, building_tag=Building.MARINE_BARRACKS)
         self.assertNotIn(Building.MARINE_BARRACKS, planet.buildings)
         planet._finish_construction(con)
         self.assertIn(Building.MARINE_BARRACKS, planet.buildings)
@@ -72,23 +72,23 @@ class TestPlanet(unittest.TestCase):
     def test_available_to_build(self):
         planet = Planet(99, self.system.id, self.galaxy)
         planet.owner = self.empire.id
-        self.assertIn(Building.HOUSING, planet._available_to_build())
-        self.assertIn(Building.MARINE_BARRACKS, planet._available_to_build())
+        self.assertIn(Building.HOUSING, planet.available_to_build())
+        self.assertIn(Building.MARINE_BARRACKS, planet.available_to_build())
         planet.buildings.add(Building.MARINE_BARRACKS)
-        self.assertNotIn(Building.MARINE_BARRACKS, planet._available_to_build())
+        self.assertNotIn(Building.MARINE_BARRACKS, planet.available_to_build())
 
     #################################################################################################
     def test_can_build_ship(self):
         planet = Planet(101, self.system.id, self.galaxy)
         planet.owner = self.empire.id
-        self.assertFalse(planet.can_build_ship(ShipType.Frigate))
+        self.assertFalse(planet.can_build_ship(HullType.Frigate))
         self.empire.learnt(Technology.NUCLEAR_DRIVE)
-        self.assertFalse(planet.can_build_ship(ShipType.Frigate))
+        self.assertFalse(planet.can_build_ship(HullType.Frigate))
         self.empire.learnt(Technology.STANDARD_FUEL_CELLS)
-        self.assertTrue(planet.can_build_ship(ShipType.Frigate))
-        self.assertFalse(planet.can_build_ship(ShipType.Battleship))
+        self.assertTrue(planet.can_build_ship(HullType.Frigate))
+        self.assertFalse(planet.can_build_ship(HullType.Battleship))
         planet.buildings.add(Building.STAR_BASE)
-        self.assertTrue(planet.can_build_ship(ShipType.Battleship))
+        self.assertTrue(planet.can_build_ship(HullType.Battleship))
 
     #################################################################################################
     def test_turns_to_build(self):
@@ -100,12 +100,11 @@ class TestPlanet(unittest.TestCase):
             gravity=PlanetGravity.NORMAL,
             richness=PlanetRichness.ABUNDANT,
         )
-        ship_id = select_ship_type_by_name("Battleship", self.galaxy)
-        planet.build_queue.add(self.galaxy.ships[ship_id])
+        planet.build_queue.add(Building.AUTOMATED_FACTORY)
         planet.jobs[PopulationJobs.WORKERS] = 5  # Work Prod = 11 (15 prod -4 poll)
-        planet.construction_spent = 200
+        planet.construction_spent = 20
         self.assertEqual(work_surplus(planet), 11)
-        self.assertEqual(planet.turns_to_build(), int((725 - 200) / 11))
+        self.assertEqual(planet.turns_to_build(), int((60 - 20) / 11))
 
         planet.build_queue.pop()  # Remove existing
         planet.build_queue.add(Building.TRADE_GOODS)
@@ -114,13 +113,12 @@ class TestPlanet(unittest.TestCase):
     #################################################################################################
     def test_buy_cost(self):
         planet = Planet(103, self.system.id, self.galaxy)
-        ship_id = select_ship_type_by_name("Battleship", self.galaxy)  # Cost 725
-        planet.build_queue.add(self.galaxy.ships[ship_id])
-        self.assertEqual(planet.buy_cost(), 2900)
-        planet.construction_spent = 725
+        planet.build_queue.add(Building.AUTOMATED_FACTORY)
+        self.assertEqual(planet.buy_cost(), 60 * 4)
+        planet.construction_spent = 60
         self.assertEqual(planet.buy_cost(), 0)
-        planet.construction_spent = 700
-        self.assertEqual(planet.buy_cost(), 50)
+        planet.construction_spent = 30
+        self.assertEqual(planet.buy_cost(), (60 - 30) * 2)
 
 
 #####################################################################################################
