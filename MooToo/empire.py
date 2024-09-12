@@ -1,10 +1,20 @@
 """ Relating to player's empires"""
 
 from collections import defaultdict, namedtuple
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 from MooToo.constants import Technology, PopulationJobs
 from MooToo.research import TechCategory
-from MooToo.utils import all_research, get_research, get_distance_tuple, EmpireId, SystemId, PlanetId, ShipId
+from MooToo.ship import Ship
+from MooToo.utils import (
+    all_research,
+    get_research,
+    get_distance_tuple,
+    EmpireId,
+    SystemId,
+    PlanetId,
+    ShipId,
+    DesignId,
+)
 from MooToo.planet_science import science_surplus
 from MooToo.planet_money import money_surplus
 from MooToo.planet_food import food_surplus
@@ -28,6 +38,7 @@ class Empire:
         self.government = "Feudal"  # Fix me
         self.money: int = 100
         self.income: int = 0
+        self.designs: set[DesignId] = set()
         self.known_systems: set[SystemId] = set()
         self.owned_planets: set[PlanetId] = set()
         self.ships: set[ShipId] = set()
@@ -99,10 +110,24 @@ class Empire:
         self.owned_planets.add(planet_id)
 
     #####################################################################################################
-    def add_ship(self, ship_id: ShipId, system_id: SystemId):
+    def build_ship_design(self, design_id: DesignId, system_id: SystemId, name: str = "") -> ShipId:
+        if not name:
+            name = self.galaxy.designs[design_id].name
+        ship = Ship(name, design_id, self.galaxy)
+        self._add_ship(ship, system_id)
+        return ship.id
+
+    #####################################################################################################
+    def build_ship(self, ship: Ship, system_id: SystemId) -> ShipId:
+        # Should be deleted when fix Colony Ship / Transport creation
+        self._add_ship(ship, system_id)
+        return ship.id
+
+    #####################################################################################################
+    def _add_ship(self, ship: Ship, system_id: SystemId):
         assert isinstance(system_id, SystemId)
-        self.ships.add(ship_id)
-        ship = self.galaxy.ships[ship_id]
+        self.ships.add(ship.id)
+        self.galaxy.ships[ship.id] = ship
         system = self.galaxy.systems[system_id]
         ship.orbit = system_id
         ship.location = system.position
@@ -140,7 +165,7 @@ class Empire:
         self.money += self.income
 
     #####################################################################################################
-    def send_coloniser(self, dest_planet_id: PlanetId) -> None:
+    def send_coloniser(self, dest_planet_id: PlanetId) -> Optional[ShipId]:
         """Send a colony ship to the planet"""
         for ship_id in self.ships:
             ship = self.galaxy.ships[ship_id]
@@ -148,7 +173,7 @@ class Empire:
                 continue
             if not ship.destination:
                 ship.set_destination_planet(dest_planet_id)
-                return
+                return ship_id
         # Make smarter - pick closest coloniser to dest_planet
 
     #####################################################################################################

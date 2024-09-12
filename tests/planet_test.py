@@ -51,7 +51,7 @@ class TestPlanet(unittest.TestCase):
     #################################################################################################
     def test_finish_construction(self):
         planet = Planet(99, self.system.id, self.galaxy)
-        con = Construct(ConstructType.BUILDING, self.galaxy, building_tag=Building.MARINE_BARRACKS)
+        con = Construct(ConstructType.BUILDING, building_tag=Building.MARINE_BARRACKS)
         self.assertNotIn(Building.MARINE_BARRACKS, planet.buildings)
         planet._finish_construction(con)
         self.assertIn(Building.MARINE_BARRACKS, planet.buildings)

@@ -14,17 +14,17 @@ class TestConstruct(unittest.TestCase):
         self.frigate_design_id = self.galaxy.add_design(frigate_design)
 
     def test_creation(self):
-        b = Construct(ConstructType.BUILDING, self.galaxy, building_tag=Building.STOCK_EXCHANGE)
+        b = Construct(ConstructType.BUILDING, building_tag=Building.STOCK_EXCHANGE)
         self.assertIsNone(b.design_id)
-        s = Construct(ConstructType.SHIP, self.galaxy, design_id=self.frigate_design_id)
-        self.assertIsNone(s.tag)
+        s = Construct(ConstructType.SHIP, design_id=self.frigate_design_id)
+        self.assertIsNone(s.building_tag)
         self.assertEqual(s.design_id, self.frigate_design_id)
 
     def test_cost(self):
-        b = Construct(ConstructType.BUILDING, self.galaxy, building_tag=Building.STOCK_EXCHANGE)
-        self.assertEqual(b.cost, 150)
-        s = Construct(ConstructType.SPY, self.galaxy)
-        self.assertEqual(s.cost, 100)
+        b = Construct(ConstructType.BUILDING, building_tag=Building.STOCK_EXCHANGE)
+        self.assertEqual(b.cost(self.galaxy), 150)
+        s = Construct(ConstructType.SPY)
+        self.assertEqual(s.cost(self.galaxy), 100)
 
 
 #################################################################################################

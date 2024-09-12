@@ -3,6 +3,7 @@ import random
 import sys
 import time
 from typing import Optional
+from requests.exceptions import ConnectionError
 
 import pygame
 
@@ -35,15 +36,17 @@ class MainButtons(StrEnum):
 
 #####################################################################################################
 class Game(BaseGraphics):
-    def __init__(self):
+    def __init__(self, empire_id: int = 1):
         try:
             self.galaxy = Galaxy()
-        except Exception as exc:
-            print(f"Couldn't initiate galaxy - backend running? {exc}")
+        except ConnectionError:
+            print("Couldn't initiate galaxy - backend running?")
             sys.exit(1)
+        except Exception:
+            raise
         super().__init__(self)
         self.display_mode = DisplayMode.GALAXY
-        self.empire_id = 1  # Change to select empire
+        self.empire_id = empire_id
         self.system_id: Optional[SystemId] = None  # System we are looking at
         self.planet_id: Optional[PlanetId] = None  # Planet we are looking at
         self.orbit_window = OrbitWindow(self.screen, self)
@@ -438,7 +441,7 @@ def load_images() -> dict[str, pygame.surface.Surface]:
 
 #####################################################################################################
 def main():
-    g = Game()
+    g = Game(1)
     g.loop()
     pygame.quit()
 

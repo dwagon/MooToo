@@ -6,8 +6,8 @@ from .base_graphics import BaseGraphics, load_image
 from .gui_button import Button
 from .constants import DisplayMode
 from ..constants import Building
-from ..construct import ConstructType
-from ..ship import ShipType
+from ..construct import ConstructType, Construct
+from ..ship import HullType
 from ..utils import get_building, PlanetId
 
 if TYPE_CHECKING:
@@ -24,7 +24,7 @@ class BuildingChoiceWindow(BaseGraphics):
         self.images = load_images()
         self.ok_button = Button(self.images["ok_button"], pygame.Vector2(564, 450))
         self.cancel_button = Button(self.images["cancel_button"], pygame.Vector2(495, 450))
-        self.to_build_rects: dict[Building | ShipType | ConstructType, pygame.Rect] = {}
+        self.to_build_rects: dict[Construct, pygame.Rect] = {}
         self.build_queue_rects: dict[int, pygame.Rect] = {}
 
     #####################################################################################################
@@ -42,7 +42,7 @@ class BuildingChoiceWindow(BaseGraphics):
         planet = self.game.galaxy.planets[self.planet_id]
         if planet.can_build(ConstructType.FREIGHTER):
             top_left = self.build_freighter(top_left)
-        for ship_type in ShipType:
+        for ship_type in HullType:
             if planet.can_build_ship(ship_type):
                 text_surface = self.text_font.render(ship_type.name, True, "white")
                 rect = self.screen.blit(text_surface, top_left)
@@ -59,7 +59,7 @@ class BuildingChoiceWindow(BaseGraphics):
         text_surface = self.text_font.render("Freighter", True, "white")
         rect = self.screen.blit(text_surface, top_left)
         top_left.y += text_surface.get_size()[1]
-        self.to_build_rects[ConstructType.FREIGHTER] = rect
+        self.to_build_rects[Construct(ConstructType.FREIGHTER, self.galaxy)] = rect
         pygame.draw.rect(self.screen, "purple", rect, width=1)
         return top_left
 
@@ -75,6 +75,7 @@ class BuildingChoiceWindow(BaseGraphics):
 
     #####################################################################################################
     def draw_available_buildings(self) -> None:
+        # return
         planet = self.game.galaxy.planets[self.planet_id]
         buildings: dict[str, Building] = {get_building(_).name: _ for _ in planet.available_to_build()}
 
@@ -90,6 +91,8 @@ class BuildingChoiceWindow(BaseGraphics):
     def draw_building_queue(self) -> None:
         top_left = pygame.Vector2(209, 330)
         planet = self.game.galaxy.planets[self.planet_id]
+        if not planet.build_queue:
+            return
         for num, construct in enumerate(planet.build_queue):
             if isinstance(construct, Building):
                 name = get_building(construct).name

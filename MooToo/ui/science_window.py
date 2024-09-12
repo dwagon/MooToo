@@ -30,7 +30,7 @@ class ScienceWindow(BaseGraphics):
             text_surface = self.text_font.render(research.name, True, "white")
             r = self.screen.blit(text_surface, top_left)
             top_left.y += text_surface.get_size()[1]
-            self.research_rects[(r.left, r.top, r.width, r.height)] = research.tag
+            self.research_rects[(r.left, r.top, r.width, r.height)] = research.building_tag
             pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
 
     #####################################################################################################

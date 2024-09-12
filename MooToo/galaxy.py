@@ -3,13 +3,15 @@
 import io
 import jsonpickle
 from typing import TYPE_CHECKING, Optional
-from MooToo.utils import SystemId, PlanetId, ShipId, EmpireId, unique_ship_id
+from MooToo.utils import SystemId, PlanetId, ShipId, EmpireId, unique_ship_id, ConstructId, DesignId, unique_design_id
 
 if TYPE_CHECKING:
     from MooToo.system import System
     from MooToo.empire import Empire
     from MooToo.planet import Planet
     from MooToo.ship import Ship
+    from MooToo.construct import Construct
+    from MooToo.ship_design import ShipDesign
 
 
 #####################################################################################################
@@ -19,8 +21,11 @@ class Galaxy:
         self.empires: dict[EmpireId, Optional["Empire"]] = {}
         self.planets: dict[PlanetId, "Planet"] = {}
         self.ships: dict[ShipId, "Ship"] = {}
+        self.constructs: dict[ConstructId, "Construct"] = {}
+        self.designs: dict[DesignId, "ShipDesign"] = {}
         self.turn_number = 0
         self.ship_id_generator = unique_ship_id()
+        self.design_id_generator = unique_design_id()
 
     #####################################################################################################
     def turn(self) -> int:
@@ -31,6 +36,12 @@ class Galaxy:
         for empire in self.empires.values():
             empire.turn()
         return self.turn_number
+
+    #####################################################################################################
+    def add_design(self, design: "ShipDesign") -> DesignId:
+        design_id = next(self.design_id_generator)
+        self.designs[design_id] = design
+        return design_id
 
 
 #####################################################################################################

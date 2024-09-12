@@ -16,6 +16,8 @@ PlanetId = int
 EmpireId = int
 SystemId = int
 ShipId = int
+ConstructId = int
+DesignId = int
 
 
 #################################################################################################
@@ -82,7 +84,7 @@ def load_buildings() -> dict["Building", "PlanetBuilding"]:
         for kls in classes:
             if kls.startswith("Building") and kls != "Building":
                 klass = getattr(mod, kls)
-                mapping[klass().tag] = klass()
+                mapping[klass().building_tag] = klass()
                 break
     return mapping
 
@@ -114,6 +116,22 @@ def arg_parse(sys_args) -> argparse.Namespace:
 #####################################################################################################
 def unique_ship_id() -> ShipId:
     counter = 0
+    while True:
+        yield counter
+        counter += 1
+
+
+#####################################################################################################
+def unique_construct_id() -> ConstructId:
+    counter = 1
+    while True:
+        yield counter
+        counter += 1
+
+
+#####################################################################################################
+def unique_design_id() -> DesignId:
+    counter = 1
     while True:
         yield counter
         counter += 1

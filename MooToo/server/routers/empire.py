@@ -122,11 +122,11 @@ def send_colony(
     empire_id: EmpireId, dest_planet_id: PlanetId, gal: Annotated[Galaxy, Depends(get_galaxy)]
 ) -> dict[str, Any]:
     empire = get_safe_empire(empire_id, gal)
-    empire.send_coloniser(dest_planet_id)
+    ship_id = empire.send_coloniser(dest_planet_id)
 
     return {
         "status": "OK",
-        "result": {"empire": empire_serializer(empire)},
+        "result": {"ship": ship_id},
     }
 
 

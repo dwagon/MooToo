@@ -26,6 +26,13 @@ class ShipProxy(Proxy):
         self.target_planet_id = data["target_planet_id"]
 
     #################################################################################################
+    def __repr__(self):
+        if self.orbit:
+            return f"<ShipProxy {self.id} '{self.name}' {self.orbit}>"
+        else:
+            return f"<ShipProxy {self.id} '{self.name}' {self.location}>"
+
+    #################################################################################################
     @property
     def orbit(self) -> Optional[SystemId]:
         if orbit := self.get_cache(CacheKeys.SHIP)["ship"]["orbit"]:
@@ -41,8 +48,8 @@ class ShipProxy(Proxy):
     #################################################################################################
     @property
     def location(self) -> tuple[int, int]:
-        dest = self.get_cache(CacheKeys.LOCATION)["ship"]["location"]
-        return dest["x"], dest["y"]
+        data = self.get_cache(CacheKeys.LOCATION)["ship"]
+        return data["location_id"]
 
     #################################################################################################
     def speed(self) -> int:

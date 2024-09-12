@@ -6,6 +6,9 @@ from MooToo.planet_money import money_production, money_cost
 from MooToo.planet_science import science_per, science_production
 from MooToo.planet_work import work_per, work_cost, work_surplus
 from MooToo.constants import PopulationJobs
+from MooToo.ship_design import HullType
+from .build_queue import build_queue_serializer
+
 
 if TYPE_CHECKING:
     from MooToo.planet import Planet
@@ -46,5 +49,6 @@ def planet_serializer(planet: "Planet") -> dict[str, Any]:
             PopulationJobs.SCIENTISTS: planet.jobs[PopulationJobs.SCIENTISTS],
         },
         "can_build": {_: planet.can_build(_) for _ in ConstructType},
-        "build_queue": [],
+        "can_build_ship": {_: planet.can_build_ship(_) for _ in HullType},
+        "build_queue": build_queue_serializer(planet.build_queue),
     }

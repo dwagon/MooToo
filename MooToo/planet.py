@@ -21,7 +21,7 @@ from MooToo.planet_building import Building
 from MooToo.planet_work import work_surplus
 from MooToo.build_queue import BuildQueue
 from MooToo.construct import Construct, ConstructType
-from MooToo.ship import ShipType
+from MooToo.ship_design import HullType
 
 if TYPE_CHECKING:
     from MooToo.galaxy import Galaxy
@@ -93,7 +93,7 @@ class Planet:
         for tech in self.galaxy.empires[self.owner].known_techs:
             if building := get_research(tech).enabled_building:
                 if building.available_to_build(self):
-                    avail.add(building.tag)
+                    avail.add(building.building_tag)
         return avail
 
     #####################################################################################################
@@ -173,11 +173,9 @@ class Planet:
         """Create a new building or ship"""
         match construct.category:
             case ConstructType.BUILDING:
-                self.buildings.add(construct.tag)
+                self.buildings.add(construct.building_tag)
             case ConstructType.SHIP:
-                self.galaxy.empires[self.owner].add_ship(construct.ship.id, self.system_id)
-                if not construct.ship.built():
-                    self.galaxy.empires[self.owner].delete_ship(construct.ship.id)
+                self.build_ship_design(construct.design_id)
             case ConstructType.FREIGHTER:
                 self.galaxy.empires[self.owner].freighters += 5
 
@@ -242,7 +240,7 @@ class Planet:
         return False
 
     #####################################################################################################
-    def can_build_ship(self, ship_type: ShipType) -> bool:
+    def can_build_ship(self, ship_type: HullType) -> bool:
         """Can this empire build a type of ship"""
         if not self.owner:
             return False
@@ -253,24 +251,24 @@ class Planet:
             return False
 
         match ship_type:
-            case ShipType.ColonyShip:
+            case HullType.ColonyShip:
                 if Technology.COLONY_SHIP in known_techs:
                     return True
-            case ShipType.OutpostShip:
+            case HullType.OutpostShip:
                 if Technology.OUTPOST_SHIP in known_techs:
                     return True
-            case ShipType.Transport:
+            case HullType.Transport:
                 if Technology.TRANSPORT in known_techs and Building.MARINE_BARRACKS in self.buildings:
                     return True
-            case ShipType.Frigate | ShipType.Destroyer:
+            case HullType.Frigate | HullType.Destroyer:
                 return True
-            case ShipType.Cruiser | ShipType.Battleship:
+            case HullType.Cruiser | HullType.Battleship:
                 if self._can_build_big_ships():
                     return True
-            case ShipType.Titan:
+            case HullType.Titan:
                 if Technology.TITAN_CONSTRUCTION in known_techs and self._can_build_big_ships():
                     return True
-            case ShipType.DoomStar:
+            case HullType.DoomStar:
                 if Technology.DOOM_STAR_CONSTRUCTION in known_techs and self._can_build_big_ships():
                     return True
         return False

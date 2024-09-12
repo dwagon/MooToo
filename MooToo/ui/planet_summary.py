@@ -204,6 +204,7 @@ class PlanetSummaryWindow(BaseGraphics):
         empire = self.game.galaxy.empires[self.empire_id]
         for ship_id in empire.ships:
             ship = self.game.galaxy.ships[ship_id]
+            print(f"DBG {ship.name} {ship.coloniser=} {ship.destination=}")
             if ship.coloniser and not ship.destination:
                 return True
         return False
@@ -245,13 +246,12 @@ class PlanetSummaryWindow(BaseGraphics):
                     else:
                         self.planet_clicked = planet_id
 
-        if self.planet_clicked and self.button_clicked:
-            if self.button_clicked == SummaryButtons.SEND_COLONY:
-                empire = self.game.galaxy.empires[self.empire_id]
-                empire.send_coloniser(self.planet_clicked)
-                self.planet_clicked = None
-                self.button_clicked = None
-                self.data = self.collect_data()
+        if self.button_clicked == SummaryButtons.SEND_COLONY and self.planet_clicked:
+            empire = self.game.galaxy.empires[self.empire_id]
+            empire.send_coloniser(self.planet_clicked)
+            self.planet_clicked = None
+            self.button_clicked = None
+            self.data = self.collect_data()
 
 
 #####################################################################################################

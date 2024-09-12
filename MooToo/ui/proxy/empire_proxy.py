@@ -1,6 +1,8 @@
 """ Act as a copy of the empire class for UI purposes"""
 
 from enum import StrEnum, auto
+from typing import Optional
+
 import requests
 
 from MooToo.research import TechCategory
@@ -93,9 +95,11 @@ class EmpireProxy(Proxy):
         return self.research_points
 
     #####################################################################################################
-    def send_coloniser(self, dest_planet_id: PlanetId) -> None:
-        self.post(f"{self.url}/send_coloniser", params={"dest_planet_id": dest_planet_id})
+    def send_coloniser(self, dest_planet_id: PlanetId) -> Optional[ShipId]:
+        data = self.post(f"{self.url}/send_coloniser", params={"dest_planet_id": dest_planet_id})
+        coloniser = data["ship"]
         self.reset_cache()
+        return coloniser
 
     #####################################################################################################
     def migrate(

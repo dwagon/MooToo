@@ -25,7 +25,7 @@ class TestBuildQueue(unittest.TestCase):
     def test_add(self):
         self.q.add(Building.MARINE_BARRACKS)
         self.assertEqual(type(self.q._queue[0]), Construct)
-        self.assertEqual(self.q._queue[0].tag, Building.MARINE_BARRACKS)
+        self.assertEqual(self.q._queue[0].building_tag, Building.MARINE_BARRACKS)
 
         self.q.add(ConstructType.SPY)
         self.assertEqual(type(self.q._queue[1]), Construct)
@@ -48,7 +48,7 @@ class TestBuildQueue(unittest.TestCase):
         self.q.add(Building.BATTLESTATION)
         self.assertIn(Building.BATTLESTATION, self.q)
         self.assertNotIn(Building.TRADE_GOODS, self.q)
-        con = Construct(ConstructType.BUILDING, galaxy=self.galaxy, building_tag=Building.MARINE_BARRACKS)
+        con = Construct(ConstructType.BUILDING, building_tag=Building.MARINE_BARRACKS)
         self.assertIn(con, self.q)
 
     #################################################################################################

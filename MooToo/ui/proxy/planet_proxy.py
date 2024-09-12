@@ -13,7 +13,9 @@ from MooToo.constants import (
     Building,
 )
 from MooToo.construct import ConstructType
+from MooToo.ship import HullType
 from MooToo.ui.proxy.proxy_util import Proxy
+from MooToo.ui.proxy.build_queue_proxy import BuildQueueProxy
 from MooToo.utils import get_building
 
 
@@ -60,7 +62,7 @@ class PlanetProxy(Proxy):
             PopulationJobs.WORKERS: data["jobs"][PopulationJobs.WORKERS],
             PopulationJobs.SCIENTISTS: data["jobs"][PopulationJobs.SCIENTISTS],
         }
-        self.build_queue = []
+        self.build_queue = BuildQueueProxy(f"/build_queue/{self.id}")
 
     #################################################################################################
     @property
@@ -90,6 +92,14 @@ class PlanetProxy(Proxy):
         )["planet"]
 
         return ans["can_build"][con.name.lower()]
+
+    #####################################################################################################
+    def can_build_ship(self, ship_type: HullType) -> bool:
+        ans = self.get_cache(
+            CacheKeys.PLANET,
+        )["planet"]
+
+        return ans["can_build_ship"][ship_type.name.lower()]
 
     #################################################################################################
     @property

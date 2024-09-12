@@ -4,9 +4,10 @@ import math
 import random
 from MooToo.galaxy import Galaxy
 from MooToo.empire import Empire
+from MooToo.ship import ColonyShip
+from MooToo.ship_design import ShipDesign, HullType
 from MooToo.system import System
 from MooToo.planet import Planet
-from MooToo.ship import select_ship_type_by_name
 from MooToo.names import EMPIRE_NAMES, EMPIRE_COLOURS, ORBIT_NAMES, SYSTEM_NAMES
 from MooToo.constants import (
     STAR_COLOURS,
@@ -290,9 +291,14 @@ def average_start(empire_id: EmpireId, galaxy: Galaxy) -> None:
     empire.learnt(Technology.OUTPOST_SHIP)
     empire.learnt(Technology.TRANSPORT)
 
-    empire.add_ship(ship_id=select_ship_type_by_name("Frigate", galaxy), system_id=home_system_id)
-    empire.add_ship(ship_id=select_ship_type_by_name("Frigate", galaxy), system_id=home_system_id)
-    empire.add_ship(ship_id=select_ship_type_by_name("ColonyShip", galaxy), system_id=home_system_id)
+    frigate_design = ShipDesign(HullType.Frigate, "Scout")
+    frigate_design_id = galaxy.add_design(frigate_design)
+
+    colony_ship = ColonyShip("Colony", galaxy)
+
+    empire.build_ship_design(frigate_design_id, home_system_id)
+    empire.build_ship_design(frigate_design_id, home_system_id)
+    empire.build_ship(colony_ship, home_system_id)
 
 
 #####################################################################################################

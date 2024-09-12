@@ -1,25 +1,14 @@
 from typing import Any, TYPE_CHECKING, Annotated
-from fastapi import APIRouter, status, HTTPException, Depends
-from ..server_utils import get_galaxy, URL_PREFIX_PLANETS
-from MooToo.ship import str_to_ship_type
+from fastapi import APIRouter, Depends
+from ..server_utils import get_galaxy, URL_PREFIX_PLANETS, get_safe_planet
 from ..serializers.planet import planet_serializer
 from ..serializers import planet_reference_serializer
 from ...constants import PopulationJobs
 from ...galaxy import Galaxy
+from ...ship_design import HullType
 
-if TYPE_CHECKING:
-    from MooToo.planet import Planet
 
 router = APIRouter(prefix=URL_PREFIX_PLANETS)
-
-
-#####################################################################################################
-def get_safe_planet(planet_id: int, gal: Galaxy) -> "Planet":
-    try:
-        planet = gal.planets[planet_id]
-    except KeyError as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND) from e
-    return planet
 
 
 #####################################################################################################
@@ -42,11 +31,7 @@ def planet_can_build_ship(
     planet_id: int, ship_type: str, gal: Annotated[Galaxy, Depends(get_galaxy)]
 ) -> dict[str, Any]:
     planet = get_safe_planet(planet_id, gal)
-    try:
-        real_ship_type = str_to_ship_type(ship_type)
-    except NotImplementedError as e:
-        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY) from e
-
+    real_ship_type = HullType(ship_type)
     can_build = planet.can_build_ship(real_ship_type)
     return {"status": "OK", "result": {"ship_type": real_ship_type.name, "can_build": can_build}}
 

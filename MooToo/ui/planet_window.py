@@ -425,7 +425,6 @@ class PlanetWindow(BaseGraphics):
     def loop(self, planet_id: PlanetId) -> DisplayMode:
         self.planet_id = planet_id
         self.display_mode = DisplayMode.PLANET
-        planet = self.game.galaxy.planets[planet_id]
         while True:
             self.event_loop()
 
