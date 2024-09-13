@@ -27,7 +27,6 @@ class Ship:
         self.destination: Optional[SystemId] = None
         self.location: tuple[int, int] = (-1, -1)
         self.orbit: Optional[SystemId] = None
-        self.design: DesignId = 0
         self.target_planet_id: Optional[PlanetId] = None
 
     #################################################################################################
@@ -40,7 +39,7 @@ class Ship:
     #################################################################################################
     @property
     def icon(self):
-        return self.galaxy.designs[self.design].icon
+        return self.galaxy.designs[self.design_id].icon
 
     #################################################################################################
     def speed(self):

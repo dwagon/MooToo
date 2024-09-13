@@ -13,7 +13,7 @@ from MooToo.constants import (
     Building,
 )
 from MooToo.construct import ConstructType
-from MooToo.ship import HullType
+from MooToo.ship_design import HullType
 from MooToo.ui.proxy.proxy_util import Proxy
 from MooToo.ui.proxy.build_queue_proxy import BuildQueueProxy
 from MooToo.utils import get_building
