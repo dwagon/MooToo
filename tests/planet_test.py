@@ -9,7 +9,7 @@ from MooToo.constants import (
     PlanetGravity,
     StarColour,
 )
-from MooToo.ship import HullType
+from MooToo.ship_design import HullType
 from MooToo.bigbang import create_galaxy
 from MooToo.system import System
 from MooToo.construct import Construct, ConstructType
