@@ -1,17 +1,18 @@
 import unittest
 
+from MooToo.bigbang import create_galaxy
 from MooToo.construct import Construct, ConstructType
 from MooToo.constants import Building
-from MooToo.galaxy import Galaxy
 from MooToo.ship_design import ShipDesign, HullType
 
 
 #################################################################################################
 class TestConstruct(unittest.TestCase):
     def setUp(self):
-        self.galaxy = Galaxy()
+        self.galaxy = create_galaxy()
+        self.empire_id = 1
         frigate_design = ShipDesign(HullType.Frigate)
-        self.frigate_design_id = self.galaxy.add_design(frigate_design)
+        self.frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
 
     def test_creation(self):
         b = Construct(ConstructType.BUILDING, building_tag=Building.STOCK_EXCHANGE)

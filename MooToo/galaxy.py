@@ -38,9 +38,11 @@ class Galaxy:
         return self.turn_number
 
     #####################################################################################################
-    def add_design(self, design: "ShipDesign") -> DesignId:
+    def add_design(self, design: "ShipDesign", empire_id: EmpireId) -> DesignId:
         design_id = next(self.design_id_generator)
         self.designs[design_id] = design
+        design.design_id = design_id
+        self.empires[empire_id].designs.add(design_id)
         return design_id
 
 

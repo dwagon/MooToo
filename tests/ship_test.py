@@ -9,11 +9,12 @@ from MooToo.utils import get_distance_tuple
 #####################################################################################################
 class TestShip(unittest.TestCase):
     def setUp(self):
+        self.empire_id = 1
         self.galaxy = create_galaxy()
-        self.empire = self.galaxy.empires[1]
+        self.empire = self.galaxy.empires[self.empire_id]
         self.system = self.galaxy.systems[1]
         frigate_design = ShipDesign(HullType.Frigate)
-        self.frigate_design_id = self.galaxy.add_design(frigate_design)
+        self.frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
 
     #####################################################################################################
     def test_move_ship(self):

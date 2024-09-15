@@ -7,7 +7,7 @@ from .gui_button import Button
 from .constants import DisplayMode
 from ..constants import Building
 from ..construct import ConstructType, Construct
-from ..ship import HullType
+from ..ship_design import HullType
 from ..utils import get_building, PlanetId
 
 if TYPE_CHECKING:

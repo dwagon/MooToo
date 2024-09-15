@@ -93,31 +93,4 @@ class Ship:
             self.move_towards_destination()
 
 
-#####################################################################################################
-class ColonyShip(Ship):
-    def __init__(self, name: str, galaxy: "Galaxy"):
-        super().__init__(name, 0, galaxy)
-        self.cost = 25  # ?
-        self.space = 0
-        self.command_points = 1
-        self.maintenance = 10
-        self.coloniser = True
-        # self.icon = "colony"
-
-    #################################################################################################
-    def arrived_at_destination(self):
-        super().arrived_at_destination()
-        if self.target_planet_id:
-            planet = self.galaxy.planets[self.target_planet_id]
-            planet.colonize(self.owner)
-
-
-#####################################################################################################
-class Transport(Ship):
-    def __init__(self, name: str, galaxy: "Galaxy"):
-        super().__init__(name, 0, galaxy)
-        self.cost = 25  # ?
-        self.space = 0
-        self.command_points = 1
-        self.maintenance = 10
-        # self.icon = "transport"
+# EOF

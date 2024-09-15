@@ -118,12 +118,6 @@ class Empire:
         return ship.id
 
     #####################################################################################################
-    def build_ship(self, ship: Ship, system_id: SystemId) -> ShipId:
-        # Should be deleted when fix Colony Ship / Transport creation
-        self._add_ship(ship, system_id)
-        return ship.id
-
-    #####################################################################################################
     def _add_ship(self, ship: Ship, system_id: SystemId):
         assert isinstance(system_id, SystemId)
         self.ships.add(ship.id)

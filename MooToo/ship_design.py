@@ -2,6 +2,7 @@
 
 import random
 from enum import StrEnum, auto
+from typing import Optional
 
 from MooToo.component import ShipComponent
 
@@ -33,6 +34,18 @@ class HullDetails(StrEnum):
 
 #####################################################################################################
 HULL_SIZES = {
+    HullType.ColonyShip: {
+        HullDetails.Cost: 100,  # ?
+        HullDetails.Space: 0,
+        HullDetails.IconRange: 0,
+        HullDetails.IconName: "colony",
+    },
+    HullType.Transport: {
+        HullDetails.Cost: 25,  # ?
+        HullDetails.Space: 0,
+        HullDetails.IconRange: 0,
+        HullDetails.IconName: "transport",
+    },
     HullType.Frigate: {
         HullDetails.Cost: 25,
         HullDetails.Space: 25,
@@ -75,10 +88,13 @@ HULL_SIZES = {
 #####################################################################################################
 class ShipDesign:
     def __init__(self, hull: HullType, name=""):
+        self.design_id: Optional[int] = None
         self.name = name
         self.space = 0
         self.cost = 0
         self.hull: HullType = hull
+        self.shield = None
+        self.computer = None
         self.components: list["ShipComponent"] = []
         self._icon_number = random.randint(0, HULL_SIZES[self.hull][HullDetails.IconRange])
 

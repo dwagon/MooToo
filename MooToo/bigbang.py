@@ -4,7 +4,6 @@ import math
 import random
 from MooToo.galaxy import Galaxy
 from MooToo.empire import Empire
-from MooToo.ship import ColonyShip
 from MooToo.ship_design import ShipDesign, HullType
 from MooToo.system import System
 from MooToo.planet import Planet
@@ -63,6 +62,7 @@ def create_empires(galaxy: Galaxy, tech: str):
         colour = pick_colour(colours)
         empire_id: EmpireId = next(emp_id_generator)
         make_empire(empire_name, empire_id, colour, home_system, galaxy)
+        base_designs(galaxy, empire_id)
         match tech:
             case "pre":
                 pre_start(empire_id, galaxy)
@@ -70,6 +70,15 @@ def create_empires(galaxy: Galaxy, tech: str):
                 average_start(empire_id, galaxy)
             case "adv":
                 advanced_start(empire_id, galaxy)
+
+
+#####################################################################################################
+def base_designs(galaxy: Galaxy, empire_id: EmpireId) -> None:
+    """Base designs that are the same every game"""
+    coloniser = ShipDesign(HullType.ColonyShip, "Colony")
+    galaxy.add_design(coloniser, empire_id)
+    transport = ShipDesign(HullType.Transport, "Transport")
+    galaxy.add_design(transport, empire_id)
 
 
 #####################################################################################################
@@ -292,13 +301,12 @@ def average_start(empire_id: EmpireId, galaxy: Galaxy) -> None:
     empire.learnt(Technology.TRANSPORT)
 
     frigate_design = ShipDesign(HullType.Frigate, "Scout")
-    frigate_design_id = galaxy.add_design(frigate_design)
+    frigate_design_id = galaxy.add_design(frigate_design, empire_id)
 
-    colony_ship = ColonyShip("Colony", galaxy)
-
+    colony_design_id = [num for num, _ in galaxy.designs.items() if _.hull == HullType.ColonyShip][0]
     empire.build_ship_design(frigate_design_id, home_system_id)
     empire.build_ship_design(frigate_design_id, home_system_id)
-    empire.build_ship(colony_ship, home_system_id)
+    empire.build_ship_design(colony_design_id, home_system_id)
 
 
 #####################################################################################################
