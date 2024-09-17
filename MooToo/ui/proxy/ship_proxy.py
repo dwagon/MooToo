@@ -2,10 +2,15 @@
 
 import requests
 from enum import StrEnum, auto
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
+from MooToo.ship_design import HullType
+from MooToo.ui.proxy.design_proxy import ShipDesignProxy
 from MooToo.utils import SystemId
 from MooToo.ui.proxy.proxy_util import Proxy
+
+if TYPE_CHECKING:
+    from MooToo.ui.proxy.galaxy_proxy import GalaxyProxy
 
 
 #####################################################################################################
@@ -16,13 +21,14 @@ class CacheKeys(StrEnum):
 
 #####################################################################################################
 class ShipProxy(Proxy):
-    def __init__(self, url: str, getter=requests.get, poster=requests.post):
+    def __init__(self, url: str, galaxy: "GalaxyProxy", getter=requests.get, poster=requests.post):
         super().__init__(url, getter, poster)
         data = self.get(self.url)["ship"]
+        self.galaxy = galaxy
         self.id = data["id"]
+        self.design_id = data["design_id"]
         self.name = data["name"]
         self.icon = data["icon"]
-        self.coloniser = data["coloniser"]
         self.target_planet_id = data["target_planet_id"]
 
     #################################################################################################
@@ -31,6 +37,16 @@ class ShipProxy(Proxy):
             return f"<ShipProxy {self.id} '{self.name}' {self.orbit}>"
         else:
             return f"<ShipProxy {self.id} '{self.name}' {self.location}>"
+
+    #################################################################################################
+    @property
+    def design(self) -> ShipDesignProxy:
+        return self.galaxy.designs[self.design_id]
+
+    #################################################################################################
+    @property
+    def coloniser(self) -> bool:
+        return self.design.hull == HullType.ColonyShip
 
     #################################################################################################
     @property

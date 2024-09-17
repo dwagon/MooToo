@@ -204,7 +204,6 @@ class PlanetSummaryWindow(BaseGraphics):
         empire = self.game.galaxy.empires[self.empire_id]
         for ship_id in empire.ships:
             ship = self.game.galaxy.ships[ship_id]
-            print(f"DBG {ship.name} {ship.coloniser=} {ship.destination=}")
             if ship.coloniser and not ship.destination:
                 return True
         return False

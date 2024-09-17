@@ -12,6 +12,7 @@ URL_PREFIX_PLANETS = "/planets"
 URL_PREFIX_EMPIRES = "/empires"
 URL_PREFIX_GALAXY = "/galaxy"
 URL_PREFIX_BUILD_QUEUE = "/build_queue"
+URL_PREFIX_DESIGN = "/design"
 
 
 GALAXY = None

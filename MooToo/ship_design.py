@@ -88,7 +88,7 @@ HULL_SIZES = {
 #####################################################################################################
 class ShipDesign:
     def __init__(self, hull: HullType, name=""):
-        self.design_id: Optional[int] = None
+        self.id: Optional[int] = None
         self.name = name
         self.space = 0
         self.cost = 0
@@ -109,7 +109,9 @@ class ShipDesign:
     #################################################################################################
     @property
     def icon(self) -> str:
-        return f"{HULL_SIZES[self.hull][HullDetails.IconName]}_{self._icon_number}"
+        if HULL_SIZES[self.hull][HullDetails.IconRange]:
+            return f"{HULL_SIZES[self.hull][HullDetails.IconName]}_{self._icon_number}"
+        return HULL_SIZES[self.hull][HullDetails.IconName]
 
 
 # EOF

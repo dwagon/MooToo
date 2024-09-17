@@ -13,7 +13,6 @@ def ship_serializer(ship: "Ship") -> Any:
         "design_id": ship.design_id,
         "location_id": ship.location,
         "owner_id": ship.owner,
-        "coloniser": ship.coloniser,
         "target_planet_id": ship.target_planet_id,
         "speed": ship.speed(),
         "orbit": ship.orbit,

@@ -48,14 +48,14 @@ class TestBigBang(unittest.TestCase):
 
         # Scout Frigate
         frigate_design = [design for design in empire_designs if design.hull == HullType.Frigate][0]
-        frigates = [_ for _ in player_ships if _.design_id == frigate_design.design_id]
+        frigates = [_ for _ in player_ships if _.design_id == frigate_design.id]
         self.assertEqual(len(frigates), 2)
         design_id = frigates[0].design_id
         self.assertEqual(galaxy.designs[design_id].hull, HullType.Frigate)
 
         # Colony ship
         colony_design = [design for design in empire_designs if design.hull == HullType.ColonyShip][0]
-        colonies = [_ for _ in player_ships if _.design_id == colony_design.design_id]
+        colonies = [_ for _ in player_ships if _.design_id == colony_design.id]
         self.assertEqual(len(colonies), 1)
 
         self.assertEqual(len(galaxy.ships), 3 * len(galaxy.empires))

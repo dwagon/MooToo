@@ -4,6 +4,7 @@ from . import (
     system_reference_serializer,
     ship_reference_serializer,
     planet_reference_serializer,
+    design_reference_serializer,
 )
 
 
@@ -18,5 +19,6 @@ def galaxy_serializer(galaxy: "Galaxy") -> dict[str, Any]:
         "empires": [empire_reference_serializer(_) for _ in galaxy.empires.keys()],
         "planets": [planet_reference_serializer(_) for _ in galaxy.planets.keys()],
         "ships": [ship_reference_serializer(_) for _ in galaxy.ships.keys()],
+        "designs": [design_reference_serializer(_) for _ in galaxy.designs.keys()],
         "turn_number": galaxy.turn_number,
     }

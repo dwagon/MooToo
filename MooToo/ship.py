@@ -4,6 +4,7 @@ import math
 
 from typing import TYPE_CHECKING, Optional
 
+from MooToo.ship_design import ShipDesign, HullType
 from MooToo.utils import get_distance_tuple, ShipId, EmpireId, SystemId, PlanetId, DesignId
 
 
@@ -22,12 +23,21 @@ class Ship:
         self.owner: EmpireId = 0
         self.command_points = 0
         self.maintenance = 0
-        self.coloniser = False
         self.name = name
         self.destination: Optional[SystemId] = None
         self.location: tuple[int, int] = (-1, -1)
         self.orbit: Optional[SystemId] = None
         self.target_planet_id: Optional[PlanetId] = None
+
+    #################################################################################################
+    @property
+    def design(self) -> ShipDesign:
+        return self.galaxy.designs[self.design_id]
+
+    #################################################################################################
+    @property
+    def coloniser(self) -> bool:
+        return self.design.hull == HullType.ColonyShip
 
     #################################################################################################
     def __repr__(self):
@@ -39,7 +49,7 @@ class Ship:
     #################################################################################################
     @property
     def icon(self):
-        return self.galaxy.designs[self.design_id].icon
+        return self.design.icon
 
     #################################################################################################
     def speed(self):

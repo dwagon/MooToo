@@ -97,9 +97,9 @@ class EmpireProxy(Proxy):
     #####################################################################################################
     def send_coloniser(self, dest_planet_id: PlanetId) -> Optional[ShipId]:
         data = self.post(f"{self.url}/send_coloniser", params={"dest_planet_id": dest_planet_id})
-        coloniser = data["ship"]
+        colony_ship = data["ship"]
         self.reset_cache()
-        return coloniser
+        return colony_ship
 
     #####################################################################################################
     def migrate(

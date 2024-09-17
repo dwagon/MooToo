@@ -17,6 +17,12 @@ class TestShip(unittest.TestCase):
         self.frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
 
     #####################################################################################################
+    def test_coloniser(self):
+        frigate_id = self.empire.build_ship_design(self.frigate_design_id, self.system.id)
+        frigate = self.galaxy.ships[frigate_id]
+        self.assertFalse(frigate.coloniser)
+
+    #####################################################################################################
     def test_move_ship(self):
         source = System(98, "Source", StarColour.WHITE, (0, 0), self.galaxy)
         destination = System(99, "Target", StarColour.WHITE, (20, 0), self.galaxy)

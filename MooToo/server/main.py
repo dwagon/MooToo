@@ -5,7 +5,7 @@ import time
 import uvicorn
 from fastapi import FastAPI, Request, Depends
 from MooToo.galaxy import save, Galaxy
-from .routers import system, ship, planet, empire, galaxy, build_queue
+from .routers import system, ship, planet, empire, galaxy, build_queue, design
 from .server_utils import get_galaxy
 
 app = FastAPI()
@@ -15,6 +15,7 @@ app.include_router(planet.router)
 app.include_router(empire.router)
 app.include_router(galaxy.router)
 app.include_router(build_queue.router)
+app.include_router(design.router)
 
 
 #####################################################################################################

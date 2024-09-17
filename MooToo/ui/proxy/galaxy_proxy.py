@@ -9,6 +9,7 @@ from MooToo.ui.proxy.planet_proxy import PlanetProxy
 from MooToo.ui.proxy.empire_proxy import EmpireProxy
 from MooToo.ui.proxy.ship_proxy import ShipProxy
 from MooToo.ui.proxy.research_proxy import ResearchProxy
+from MooToo.ui.proxy.design_proxy import ShipDesignProxy
 
 
 #####################################################################################################
@@ -20,6 +21,7 @@ class GalaxyProxy(Proxy):
         self.planets = {}
         self.systems = {}
         self.ships = {}
+        self.designs = {}
         self.turn_number = 0
         self.init()
         self.research_cache: dict[Technology:ResearchProxy] = {}
@@ -36,7 +38,9 @@ class GalaxyProxy(Proxy):
         for empire in data["empires"]:
             self.empires[empire["id"]] = EmpireProxy(empire["url"])
         for ship in data["ships"]:
-            self.ships[ship["id"]] = ShipProxy(ship["url"])
+            self.ships[ship["id"]] = ShipProxy(ship["url"], self)
+        for design in data["designs"]:
+            self.designs[design["id"]] = ShipDesignProxy(design["url"])
 
     #################################################################################################
     def turn(self):
