@@ -2,7 +2,7 @@ import unittest
 from MooToo.planet import Planet
 from MooToo.system import System
 from MooToo.galaxy import Galaxy
-from MooToo.constants import PlanetSize, PlanetRichness, PlanetGravity, PopulationJobs, Building
+from MooToo.constants import PlanetSize, PlanetRichness, PlanetGravity, PopulationJobs, Building, StarColour
 from MooToo.planet_work import work_cost, work_production, work_surplus
 
 
@@ -11,14 +11,15 @@ class TestPlanetWork(unittest.TestCase):
     #################################################################################################
     def setUp(self):
         self.galaxy = Galaxy()
-        self.system = System(99, "test", "white", (0, 0), self.galaxy)
+        self.system = System(99, "test", StarColour.WHITE, (0, 0), self.galaxy)
+        self.galaxy.systems[self.system.id] = self.system
 
     #################################################################################################
     def test_pollution(self):
         """Test Pollution"""
         planet = Planet(
             99,
-            self.system,
+            self.system.id,
             self.galaxy,
             size=PlanetSize.MEDIUM,
             richness=PlanetRichness.ABUNDANT,
@@ -32,7 +33,7 @@ class TestPlanetWork(unittest.TestCase):
     def test_work(self):
         planet = Planet(
             99,
-            self.system,
+            self.system.id,
             self.galaxy,
             size=PlanetSize.MEDIUM,
             gravity=PlanetGravity.NORMAL,

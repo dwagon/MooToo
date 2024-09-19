@@ -1,11 +1,12 @@
 """ Run the game server"""
 
+from typing import Annotated
 import time
 import uvicorn
-from fastapi import FastAPI, Request
-from .util import GALAXY
-from MooToo.galaxy import save
-from .routers import system, ship, planet, empire, galaxy
+from fastapi import FastAPI, Request, Depends
+from MooToo.galaxy import save, Galaxy
+from .routers import system, ship, planet, empire, galaxy, build_queue, design
+from .server_utils import get_galaxy
 
 app = FastAPI()
 app.include_router(system.router)
@@ -13,6 +14,8 @@ app.include_router(ship.router)
 app.include_router(planet.router)
 app.include_router(empire.router)
 app.include_router(galaxy.router)
+app.include_router(build_queue.router)
+app.include_router(design.router)
 
 
 #####################################################################################################
@@ -27,11 +30,12 @@ async def add_process_time_header(request: Request, call_next):
 
 #####################################################################################################
 @app.post("/save/{filename}")
-def save_game(filename):
-    save(GALAXY, filename)
+def save_game(filename, gal: Annotated[Galaxy, Depends(get_galaxy)]):
+    save(gal, filename)
 
 
 #####################################################################################################
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
+
 # EOF

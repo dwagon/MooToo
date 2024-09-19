@@ -4,7 +4,7 @@ import math
 import random
 from typing import TYPE_CHECKING
 
-from MooToo.utils import get_research, get_building, EmpireId, PlanetId
+from MooToo.utils import get_research, get_building, EmpireId, PlanetId, SystemId
 from MooToo.constants import Technology
 from MooToo.constants import (
     PopulationJobs,
@@ -21,10 +21,9 @@ from MooToo.planet_building import Building
 from MooToo.planet_work import work_surplus
 from MooToo.build_queue import BuildQueue
 from MooToo.construct import Construct, ConstructType
-from MooToo.ship import ShipType
+from MooToo.ship_design import HullType
 
 if TYPE_CHECKING:
-    from MooToo.system import System
     from MooToo.galaxy import Galaxy
 
 
@@ -32,10 +31,10 @@ if TYPE_CHECKING:
 #####################################################################################################
 #####################################################################################################
 class Planet:
-    def __init__(self, planet_id: PlanetId, system: "System", galaxy: "Galaxy", **kwargs):
+    def __init__(self, planet_id: PlanetId, system_id: SystemId, galaxy: "Galaxy", **kwargs):
         self.id = planet_id
         self.name = ""
-        self.system = system
+        self.system_id = system_id
         self.galaxy = galaxy
 
         self.owner: EmpireId = 0
@@ -45,20 +44,12 @@ class Planet:
         self.richness = kwargs.get("richness", PlanetRichness.ABUNDANT)
         self.climate = kwargs.get("climate", PlanetClimate.TERRAN)
         self.gravity = kwargs.get("gravity", PlanetGravity.NORMAL)
-        self._population = 0.0
+        self.raw_population = 0.0
         self.buildings: set[Building] = set()  # Built buildings
-        self._buildings_available: set[Building] = set()
         self.build_queue = BuildQueue(self)
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
         self.climate_image = self.gen_climate_image()
-
-    #####################################################################################################
-    @property
-    def buildings_available(self) -> set[Building]:
-        if not self._buildings_available:
-            self._buildings_available = self.available_to_build()
-        return self._buildings_available
 
     #####################################################################################################
     def __getitem__(self, item):
@@ -86,7 +77,7 @@ class Planet:
         return min(10000, (self.build_queue.cost - self.construction_spent) // work_surplus(self))
 
     #####################################################################################################
-    def can_build_big_ships(self) -> bool:
+    def _can_build_big_ships(self) -> bool:
         return (
             Building.STAR_BASE in self.buildings
             or Building.BATTLESTATION in self.buildings
@@ -102,7 +93,7 @@ class Planet:
         for tech in self.galaxy.empires[self.owner].known_techs:
             if building := get_research(tech).enabled_building:
                 if building.available_to_build(self):
-                    avail.add(building.tag)
+                    avail.add(building.building_tag)
         return avail
 
     #####################################################################################################
@@ -132,9 +123,8 @@ class Planet:
         self.arc = random.randint(0, 359)
         if not self.owner:
             return
-        self.building_production()
-        self.grow_population()
-        self._buildings_available = self.available_to_build()
+        self._building_production()
+        self._grow_population()
 
     #####################################################################################################
     def remove_workers(self, num: int, job: PopulationJobs) -> int:
@@ -161,12 +151,12 @@ class Planet:
             self.jobs[PopulationJobs.FARMERS] = 1
         else:
             self.jobs[PopulationJobs.WORKERS] = 1
-        self._population = 1e6
+        self.raw_population = 1e6
         self.owner = owner
-        self.galaxy.empires[self.owner].own_planet(self)
+        self.galaxy.empires[self.owner].own_planet(self.id)
 
     #####################################################################################################
-    def building_production(self) -> None:
+    def _building_production(self) -> None:
         """Produce buildings"""
         if not self.build_queue:
             return
@@ -176,29 +166,27 @@ class Planet:
             self.construction_spent = 0
         if self.construction_spent >= cost:
             self.construction_spent -= cost
-            self.finish_construction(self.build_queue.pop(0))
+            self._finish_construction(self.build_queue.pop(0))
 
     #####################################################################################################
-    def finish_construction(self, construct: Construct) -> None:
+    def _finish_construction(self, construct: Construct) -> None:
         """Create a new building or ship"""
         match construct.category:
             case ConstructType.BUILDING:
-                self.buildings.add(construct.tag)
+                self.buildings.add(construct.building_tag)
             case ConstructType.SHIP:
-                self.galaxy.empires[self.owner].add_ship(construct.ship, self.system)
-                if not construct.ship.built():
-                    self.galaxy.empires[self.owner].delete_ship(construct.ship)
+                self.build_ship_design(construct.design_id)
             case ConstructType.FREIGHTER:
                 self.galaxy.empires[self.owner].freighters += 5
 
     #####################################################################################################
-    def grow_population(self) -> None:
+    def _grow_population(self) -> None:
         from MooToo.planet_food import food_surplus
 
-        old_pop = int(self._population / 1e6)
-        self._population += self.population_increment()
-        if int(self._population / 1e6) > old_pop:
-            for _ in range(int(self._population / 1e6) - old_pop):  # Assign to new jobs
+        old_pop = int(self.raw_population / 1e6)
+        self.raw_population += self.population_increment()
+        if int(self.raw_population / 1e6) > old_pop:
+            for _ in range(int(self.raw_population / 1e6) - old_pop):  # Assign to new jobs
                 if FOOD_CLIMATE_MAP[self.climate] and food_surplus(self) < 5:
                     self.jobs[PopulationJobs.FARMERS] += 1
                 else:
@@ -214,7 +202,7 @@ class Planet:
         race_bonus = 0  # TBA: Racial growth bonus
         medicine_bonus = 0  # TBA: medical skill bonus
         if self.build_queue.is_building(Building.HOUSING):
-            housing_bonus = int((work_surplus(self) * 40) / (self._population / 1e6))
+            housing_bonus = int((work_surplus(self) * 40) / (self.raw_population / 1e6))
         else:
             housing_bonus = 0
         if self.current_population() == self.max_population():
@@ -224,8 +212,8 @@ class Planet:
             food_lack_penalty = -50 * food_surplus(self)
         else:
             food_lack_penalty = 0
-        free_space = max_pop - self._population
-        basic_increment = int(math.sqrt(2000 * self._population * free_space / max_pop))
+        free_space = max_pop - self.raw_population
+        basic_increment = int(math.sqrt(2000 * self.raw_population * free_space / max_pop))
         population_inc = (
             int(basic_increment * (100 + race_bonus + medicine_bonus + housing_bonus) / 100) - food_lack_penalty
         )
@@ -235,21 +223,24 @@ class Planet:
 
     #####################################################################################################
     def current_population(self) -> int:
-        return int(self._population / 1e6)
+        return int(self.raw_population / 1e6)
 
     #####################################################################################################
     def can_build(self, con: ConstructType) -> bool:
+        if not self.owner:
+            return False
         match con:
             case ConstructType.SPY:
                 return True
             case ConstructType.FREIGHTER:
                 return Technology.FREIGHTERS in self.galaxy.empires[self.owner].known_techs
             case ConstructType.COLONY_BASE:
-                return self.system.unoccupied_planet()
+                system = self.galaxy.systems[self.system_id]
+                return system.unoccupied_planet()
         return False
 
     #####################################################################################################
-    def can_build_ship(self, ship: ShipType) -> bool:
+    def can_build_ship(self, ship_type: HullType) -> bool:
         """Can this empire build a type of ship"""
         if not self.owner:
             return False
@@ -259,26 +250,26 @@ class Planet:
         if Technology.STANDARD_FUEL_CELLS not in known_techs or Technology.NUCLEAR_DRIVE not in known_techs:
             return False
 
-        match ship:
-            case ShipType.ColonyShip:
+        match ship_type:
+            case HullType.ColonyShip:
                 if Technology.COLONY_SHIP in known_techs:
                     return True
-            case ShipType.OutpostShip:
+            case HullType.OutpostShip:
                 if Technology.OUTPOST_SHIP in known_techs:
                     return True
-            case ShipType.Transport:
+            case HullType.Transport:
                 if Technology.TRANSPORT in known_techs and Building.MARINE_BARRACKS in self.buildings:
                     return True
-            case ShipType.Frigate | ShipType.Destroyer:
+            case HullType.Frigate | HullType.Destroyer:
                 return True
-            case ShipType.Cruiser | ShipType.Battleship:
-                if self.can_build_big_ships():
+            case HullType.Cruiser | HullType.Battleship:
+                if self._can_build_big_ships():
                     return True
-            case ShipType.Titan:
-                if Technology.TITAN_CONSTRUCTION in known_techs and self.can_build_big_ships():
+            case HullType.Titan:
+                if Technology.TITAN_CONSTRUCTION in known_techs and self._can_build_big_ships():
                     return True
-            case ShipType.DoomStar:
-                if Technology.DOOM_STAR_CONSTRUCTION in known_techs and self.can_build_big_ships():
+            case HullType.DoomStar:
+                if Technology.DOOM_STAR_CONSTRUCTION in known_techs and self._can_build_big_ships():
                     return True
         return False
 

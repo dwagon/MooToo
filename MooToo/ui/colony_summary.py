@@ -6,14 +6,13 @@ from typing import TYPE_CHECKING, Optional
 import pygame
 
 from MooToo.constants import PopulationJobs
-from MooToo.ui.constants import DisplayMode
-from MooToo.ui.base_graphics import BaseGraphics, load_image
-from MooToo.ui.gui_button import Button
-
+from .constants import DisplayMode
+from .base_graphics import BaseGraphics, load_image
+from .gui_button import Button
+from ..utils import PlanetId
 
 if TYPE_CHECKING:
-    from MooToo.ui.game import Game
-    from MooToo.planet import Planet
+    from .game import Game
 
 
 #####################################################################################################
@@ -32,29 +31,14 @@ class ColonySummaryWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
         super().__init__(game)
         self.screen = screen
-        self.images: dict[ImageNames, pygame.Surface] = self.load_images()
+        self.images: dict[ImageNames, pygame.Surface] = load_images()
         self.return_button = Button(self.images[ImageNames.RETURN_BUTTON], pygame.Vector2(530, 445))
-        self.buy_now_rects: dict[Planet, pygame.Rect] = {}
-        self.building_rect: dict[Planet, pygame.Rect] = {}
-        self.planet_rect: dict[Planet, pygame.Rect] = {}
-        self.population_rects: dict[tuple[Planet, PopulationJobs], list[pygame.Rect]] = {}
-        self.destination_rects: dict[tuple[Planet, PopulationJobs], pygame.Rect] = {}
-        self.pop_selected: Optional[tuple[Planet, PopulationJobs, int]] = None
-
-    #####################################################################################################
-    def load_images(self) -> dict[ImageNames, pygame.Surface]:
-        images = {}
-        start = time.time()
-        images[ImageNames.WINDOW] = load_image("COLSUM.LBX", 0, palette_index=2)
-        images[ImageNames.RETURN_BUTTON] = load_image("COLSUM.LBX", 1, palette_index=2)
-        images[ImageNames.PURCHASE_BUTTON] = load_image("COLSUM.LBX", 11, palette_index=2)
-
-        images[ImageNames.FARMER] = load_image("RACEICON.LBX", 0, palette_index=2)
-        images[ImageNames.WORKER] = load_image("RACEICON.LBX", 3, palette_index=2)
-        images[ImageNames.SCIENTIST] = load_image("RACEICON.LBX", 5, palette_index=2)
-        end = time.time()
-        print(f"Colonies: Loaded {len(images)} in {end-start} seconds")
-        return images
+        self.buy_now_rects: dict[PlanetId, pygame.Rect] = {}
+        self.building_rect: dict[PlanetId, pygame.Rect] = {}
+        self.planet_rect: dict[PlanetId, pygame.Rect] = {}
+        self.population_rects: dict[tuple[PlanetId, PopulationJobs], list[pygame.Rect]] = {}
+        self.destination_rects: dict[tuple[PlanetId, PopulationJobs], pygame.Rect] = {}
+        self.pop_selected: Optional[tuple[PlanetId, PopulationJobs, int]] = None
 
     #####################################################################################################
     def draw(self):
@@ -66,48 +50,51 @@ class ColonySummaryWindow(BaseGraphics):
         self.population_rects = {}
         self.destination_rects = {}
         top_left = pygame.Vector2(10, 37)
-        for planet in self.game.empire.owned_planets:
-            self.draw_planet(planet, top_left)
+        empire = self.game.galaxy.empires[self.game.empire_id]
+        for planet_id in empire.owned_planets:
+            self.draw_planet(planet_id, top_left)
             top_left += pygame.Vector2(0, 31)
 
     #####################################################################################################
-    def draw_planet(self, planet: "Planet", top_left: pygame.Vector2) -> None:
+    def draw_planet(self, planet_id: PlanetId, top_left: pygame.Vector2) -> None:
+        planet = self.game.galaxy.planets[planet_id]
         name_surface = self.text_font.render(planet.name, True, "white")
         planet_name_rect = pygame.Rect(top_left.x, top_left.y, 86, 27)
         pygame.draw.rect(self.screen, "purple", planet_name_rect, width=1)
-        self.planet_rect[planet] = planet_name_rect
+        self.planet_rect[planet_id] = planet_name_rect
         self.screen.blit(name_surface, top_left)
-        self.destination_rects[(planet, PopulationJobs.FARMERS)] = pygame.Rect(100, top_left[1], 133, 28)
-        self.destination_rects[(planet, PopulationJobs.WORKERS)] = pygame.Rect(235, top_left[1], 133, 28)
-        self.destination_rects[(planet, PopulationJobs.SCIENTISTS)] = pygame.Rect(375, top_left[1], 133, 28)
+        self.destination_rects[(planet_id, PopulationJobs.FARMERS)] = pygame.Rect(100, top_left[1], 133, 28)
+        self.destination_rects[(planet_id, PopulationJobs.WORKERS)] = pygame.Rect(235, top_left[1], 133, 28)
+        self.destination_rects[(planet_id, PopulationJobs.SCIENTISTS)] = pygame.Rect(375, top_left[1], 133, 28)
 
-        pygame.draw.rect(self.screen, "purple", self.destination_rects[planet, PopulationJobs.FARMERS], width=1)
-        pygame.draw.rect(self.screen, "purple", self.destination_rects[planet, PopulationJobs.WORKERS], width=1)
-        pygame.draw.rect(self.screen, "purple", self.destination_rects[planet, PopulationJobs.SCIENTISTS], width=1)
+        pygame.draw.rect(self.screen, "purple", self.destination_rects[planet_id, PopulationJobs.FARMERS], width=1)
+        pygame.draw.rect(self.screen, "purple", self.destination_rects[planet_id, PopulationJobs.WORKERS], width=1)
+        pygame.draw.rect(self.screen, "purple", self.destination_rects[planet_id, PopulationJobs.SCIENTISTS], width=1)
 
-        self.population_rects[(planet, PopulationJobs.FARMERS)] = self.draw_population_sequence(
+        self.population_rects[(planet_id, PopulationJobs.FARMERS)] = self.draw_population_sequence(
             top_left + pygame.Vector2(90, 0), self.images[ImageNames.FARMER], planet.jobs[PopulationJobs.FARMERS], 130
         )
-        self.population_rects[(planet, PopulationJobs.WORKERS)] = self.draw_population_sequence(
+        self.population_rects[(planet_id, PopulationJobs.WORKERS)] = self.draw_population_sequence(
             top_left + pygame.Vector2(225, 0), self.images[ImageNames.WORKER], planet.jobs[PopulationJobs.WORKERS], 130
         )
-        self.population_rects[(planet, PopulationJobs.SCIENTISTS)] = self.draw_population_sequence(
+        self.population_rects[(planet_id, PopulationJobs.SCIENTISTS)] = self.draw_population_sequence(
             top_left + pygame.Vector2(370, 0),
             self.images[ImageNames.SCIENTIST],
             planet.jobs[PopulationJobs.SCIENTISTS],
             130,
         )
-        self.building_rect[planet] = pygame.Rect(512, top_left.y, 87, 25)
-        pygame.draw.rect(self.screen, "purple", self.building_rect[planet], width=1)  # DBG
+        self.building_rect[planet_id] = pygame.Rect(512, top_left.y, 87, 25)
+        pygame.draw.rect(self.screen, "purple", self.building_rect[planet_id], width=1)
         if planet.build_queue:
-            self.draw_building(planet, top_left)
+            self.draw_building(planet_id, top_left)
             if planet.buy_cost() < planet.owner.money:
                 rect = self.screen.blit(self.images[ImageNames.PURCHASE_BUTTON], top_left + pygame.Vector2(590, 0))
                 self.buy_now_rects[planet] = rect
-                pygame.draw.rect(self.screen, "purple", self.buy_now_rects[planet], width=1)  # DBG
+                pygame.draw.rect(self.screen, "purple", self.buy_now_rects[planet], width=1)
 
     #####################################################################################################
-    def draw_building(self, planet: "Planet", top_left: pygame.Vector2) -> None:
+    def draw_building(self, planet_id: PlanetId, top_left: pygame.Vector2) -> None:
+        planet = self.game.galaxy.planets[planet_id]
         building = planet.build_queue[0]
         text_surface = self.label_font.render(building.name, True, "white")
         self.screen.blit(text_surface, top_left + pygame.Vector2(510, 0))
@@ -129,40 +116,42 @@ class ColonySummaryWindow(BaseGraphics):
                 print(f"DBG Buy on {planet}")
 
         # Change construction on planet
-        for planet, rect in self.building_rect.items():
+        for planet_id, rect in self.building_rect.items():
             if rect.collidepoint(mouse[0], mouse[1]):
-                self.game.look_at_planet(planet)
+                self.game.look_at_planet(planet_id)
                 self.display_mode = DisplayMode.PLANET_BUILD
                 return
 
         # Look at the planet
-        for planet, rect in self.planet_rect.items():
+        for planet_id, rect in self.planet_rect.items():
             if rect.collidepoint(mouse[0], mouse[1]):
-                self.game.look_at_planet(planet)
+                self.game.look_at_planet(planet_id)
                 self.display_mode = DisplayMode.PLANET
                 return
 
         if self.pop_selected:  # Select destination population
             for details, rect in self.destination_rects.items():
-                planet, job = details
+                planet_id, job = details
                 if rect.collidepoint(mouse[0], mouse[1]):
-                    self.move_population(planet, job)
+                    self.move_population(planet_id, job)
                     self.pop_selected = {}
         else:  # Select population to move
             for key, rects in self.population_rects.items():
-                planet, job = key
+                planet_id, job = key
                 for num, rect in enumerate(rects):
                     if rect.collidepoint(mouse[0], mouse[1]):
-                        self.pop_selected = (planet, job, len(rects) - num)
+                        self.pop_selected = (planet_id, job, len(rects) - num)
 
     #####################################################################################################
-    def move_population(self, dest_planet: "Planet", dest_job: PopulationJobs) -> None:
+    def move_population(self, dest_planet_id: PlanetId, dest_job: PopulationJobs) -> None:
         """Move population in {self.pop_selected} to new planet/job"""
-        planet, job, num = self.pop_selected
-        if dest_planet == planet:
+        planet = self.game.galaxy.planets[dest_planet_id]
+        planet_id, job, num = self.pop_selected
+        if dest_planet_id == planet_id:
             planet.move_workers(num, job, dest_job)
             return
-        self.game.empire.migrate(num, planet, job, dest_planet, dest_job)
+        empire = self.game.galaxy.empires[self.game.empire_id]
+        empire.migrate(num, planet_id, job, dest_planet_id, dest_job)
 
     #####################################################################################################
     def mouse_pos(self, event: pygame.event):
@@ -196,6 +185,22 @@ class ColonySummaryWindow(BaseGraphics):
                     pass
                 case _:
                     return self.display_mode
+
+
+#####################################################################################################
+def load_images() -> dict[ImageNames, pygame.Surface]:
+    images = {}
+    start = time.time()
+    images[ImageNames.WINDOW] = load_image("COLSUM.LBX", 0, palette_index=2)
+    images[ImageNames.RETURN_BUTTON] = load_image("COLSUM.LBX", 1, palette_index=2)
+    images[ImageNames.PURCHASE_BUTTON] = load_image("COLSUM.LBX", 11, palette_index=2)
+
+    images[ImageNames.FARMER] = load_image("RACEICON.LBX", 0, palette_index=2)
+    images[ImageNames.WORKER] = load_image("RACEICON.LBX", 3, palette_index=2)
+    images[ImageNames.SCIENTIST] = load_image("RACEICON.LBX", 5, palette_index=2)
+    end = time.time()
+    print(f"Colonies: Loaded {len(images)} in {end-start} seconds")
+    return images
 
 
 # EOF

@@ -12,7 +12,7 @@ class PlanetBuilding:
     """A Building on a Planet"""
 
     def __init__(self, name: str, building_tag: Building):
-        self.tag = building_tag
+        self.building_tag = building_tag
         self.name = name
         self.maintenance = 0
         self.cost = 0
@@ -53,6 +53,6 @@ class PlanetBuilding:
         return 1
 
     def available_to_build(self, planet: "Planet") -> bool:
-        if self.tag in planet.buildings:
+        if self.building_tag in planet.buildings:
             return False
         return True

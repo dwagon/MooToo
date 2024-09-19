@@ -1,10 +1,9 @@
 import time
 import pygame
-from MooToo.ui.base_graphics import BaseGraphics, load_image
+from .base_graphics import BaseGraphics, load_image
+from .gui_button import Button
 from MooToo.constants import Technology
 from MooToo.research import TechCategory
-from MooToo.utils import get_research
-from MooToo.ui.gui_button import Button
 
 
 #####################################################################################################
@@ -15,32 +14,24 @@ class ScienceWindow(BaseGraphics):
     def __init__(self, screen: pygame.Surface, game: "Game"):
         super().__init__(game)
         self.screen = screen
-        self.images = self.load_images()
+        self.images = load_images()
         self.research_rects: dict[tuple[float, float, float, float], Technology] = {}
         self.cancel_button = Button(load_image("TECHSEL.LBX", 27), pygame.Vector2(274, 453))
 
     #####################################################################################################
     def draw_category(self, category: TechCategory, top_left: pygame.Vector2, rp_place: pygame.Vector2) -> None:
-        technologies = self.game.empire.next_research(category)
+        empire = self.galaxy.empires[self.game.empire_id]
+        technologies = empire.next_research(category)
 
-        rp_text_surface = self.text_font.render(f"{get_research(technologies[0]).cost} RP", True, "white")
+        rp_text_surface = self.text_font.render(f"{self.galaxy.get_research(technologies[0]).cost} RP", True, "white")
         self.screen.blit(rp_text_surface, rp_place)
         for tech in technologies:
-            research = get_research(tech)
+            research = self.galaxy.get_research(tech)
             text_surface = self.text_font.render(research.name, True, "white")
             r = self.screen.blit(text_surface, top_left)
             top_left.y += text_surface.get_size()[1]
-            self.research_rects[(r.left, r.top, r.width, r.height)] = research.tag
+            self.research_rects[(r.left, r.top, r.width, r.height)] = research.building_tag
             pygame.draw.rect(self.screen, "purple", r, width=1)  # DBG
-
-    #####################################################################################################
-    def load_images(self) -> dict[str, pygame.surface.Surface]:
-        start = time.time()
-        images = {}
-        images["window"] = load_image("TECHSEL.LBX", 14)
-        end = time.time()
-        print(f"Science: Loaded {len(images)} in {end-start} seconds")
-        return images
 
     #####################################################################################################
     def draw(self):
@@ -63,6 +54,17 @@ class ScienceWindow(BaseGraphics):
         for sys_rect, tech in self.research_rects.items():
             r = pygame.Rect(sys_rect[0], sys_rect[1], sys_rect[2], sys_rect[3])
             if r.collidepoint(pygame.mouse.get_pos()):
-                self.game.empire.start_researching(tech)
+                empire = self.galaxy.empires[self.game.empire_id]
+                empire.start_researching(tech)
                 return True
         return False
+
+
+#####################################################################################################
+def load_images() -> dict[str, pygame.surface.Surface]:
+    start = time.time()
+    images = {}
+    images["window"] = load_image("TECHSEL.LBX", 14)
+    end = time.time()
+    print(f"Science: Loaded {len(images)} in {end-start} seconds")
+    return images

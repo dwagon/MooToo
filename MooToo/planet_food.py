@@ -42,4 +42,5 @@ def food_cost(planet: "Planet") -> int:
 #####################################################################################################
 def empire_food(empire: "Empire") -> int:
     """How much food is being made across the empire"""
-    return sum(food_surplus(planet) for planet in empire.owned_planets)
+    galaxy = empire.galaxy
+    return sum(food_surplus(galaxy.planets[planet_id]) for planet_id in empire.owned_planets)

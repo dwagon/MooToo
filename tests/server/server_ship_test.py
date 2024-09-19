@@ -14,7 +14,20 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["status"], "OK")
-        self.assertEqual(data["result"]["ships"][0], {"id": 0, "url": "/ships/0"})
+        self.assertEqual(data["result"]["ships"][1], {"id": 1, "url": "/ships/1"})
+
+    #################################################################################################
+    def test_ship_get(self):
+        response = self.client.get("/ships/1")
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "OK")
+
+    #################################################################################################
+    def test_set_destination(self):
+        self.client.post("/ships/1/set_destination", params={"destination_id": "3"})
+        response = self.client.get("/ships/1").json()
+        self.assertEqual(response["result"]["ship"]["destination"], 3)
 
 
 #####################################################################################################

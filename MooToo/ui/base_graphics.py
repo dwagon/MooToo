@@ -1,9 +1,9 @@
 """ Class to base all other pygame classes from"""
 
 import pygame
-from MooToo.ui.lbx_image import LBXImage
-from MooToo.ui.constants import DisplayMode
+from .lbx_image import LBXImage
 from MooToo.constants import MOO_PATH
+from .constants import DisplayMode
 
 
 #####################################################################################################
@@ -15,6 +15,7 @@ IMAGE_CACHE: dict[tuple[str, int, int], pygame.Surface] = {}
 class BaseGraphics:
     def __init__(self, game: "Game"):
         self.game = game
+        self.galaxy = self.game.galaxy
         pygame.init()
         self.label_font = pygame.font.SysFont("Ariel", 14)
         self.label_font_bold = pygame.font.SysFont("Ariel", 14, bold=True)

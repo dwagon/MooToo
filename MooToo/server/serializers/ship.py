@@ -1,6 +1,4 @@
 from typing import Any, TYPE_CHECKING
-from . import empire_reference_serializer, system_reference_serializer
-from .location import location_serializer
 
 if TYPE_CHECKING:
     from MooToo.ship import Ship
@@ -9,15 +7,16 @@ if TYPE_CHECKING:
 #####################################################################################################
 def ship_serializer(ship: "Ship") -> Any:
     result: dict[str, Any] = {
+        "id": ship.id,
         "name": ship.name,
         "icon": ship.icon,
-        "location": location_serializer(ship.location),
-        "type": ship.type.name,
-        "owner": empire_reference_serializer(ship.owner),
+        "design_id": ship.design_id,
+        "location_id": ship.location,
+        "owner_id": ship.owner,
+        "target_planet_id": ship.target_planet_id,
+        "speed": ship.speed(),
+        "orbit": ship.orbit,
+        "destination": ship.destination,
     }
-    if ship.destination:
-        result["destination"] = system_reference_serializer(ship.destination)
-    else:
-        result["destination"] = ""
 
     return result

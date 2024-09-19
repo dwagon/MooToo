@@ -1,20 +1,18 @@
-""" Planet Summary Window"""
+""" PlanetUI Summary Window"""
 
 import time
 from typing import TYPE_CHECKING, Any, Optional
 from enum import StrEnum, auto
 import pygame
 
-from MooToo.planet import Planet
-from MooToo.constants import FOOD_CLIMATE_MAP, PROD_RICHNESS_MAP, GRAVITY_MAP
-from MooToo.ui.base_graphics import BaseGraphics, load_image
-from MooToo.ui.constants import DisplayMode
-from MooToo.ui.gui_button import Button
-
+from MooToo.constants import FOOD_CLIMATE_MAP, GRAVITY_MAP, PROD_RICHNESS_MAP
+from .base_graphics import BaseGraphics, load_image
+from .constants import DisplayMode
+from .gui_button import Button
+from ..utils import PlanetId, EmpireId
 
 if TYPE_CHECKING:
-    from MooToo.ui.game import Game
-    from MooToo.empire import Empire
+    from .game import Game
 
 
 #####################################################################################################
@@ -24,8 +22,9 @@ class PlanetDataColumn(StrEnum):
     GRAVITY = auto()
     MINERALS = auto()
     SIZE = auto()
-    PLANET = auto()
+    PLANET_ID = auto()
     COLONISER_EN_ROUTE = auto()
+    MAX_POP = auto()
 
 
 #####################################################################################################
@@ -48,16 +47,16 @@ class SummaryButtons(StrEnum):
 #####################################################################################################
 #####################################################################################################
 class PlanetSummaryWindow(BaseGraphics):
-    def __init__(self, screen: pygame.Surface, game: "Game", empire: "Empire"):
+    def __init__(self, screen: pygame.Surface, game: "Game", empire_id: EmpireId):
         super().__init__(game)
         self.screen = screen
-        self.empire = empire
+        self.empire_id = empire_id
         self.data = []
-        self.images = self.load_images()
+        self.images = load_images()
         self.sorting = PlanetDataColumn.NAME
-        self.planet_clicked: Optional[Planet] = None
+        self.planet_clicked: Optional[PlanetId] = None
         self.button_clicked: Optional[SummaryButtons] = None
-        self.planet_rects: dict[Planet, pygame.Rect] = {}
+        self.planet_rects: dict[PlanetId, pygame.Rect] = {}
         self.buttons = {
             SummaryButtons.CLIMATE: Button(self.images["climate_button"], pygame.Vector2(441, 201)),
             SummaryButtons.RETURN: Button(self.images["return_button"], pygame.Vector2(454, 440)),
@@ -93,32 +92,6 @@ class PlanetSummaryWindow(BaseGraphics):
         }
 
     #####################################################################################################
-    def load_images(self) -> dict[str, pygame.Surface]:
-        images = {}
-        start = time.time()
-        images["window"] = load_image("PLNTSUM.LBX", 0, palette_index=7)
-        images["climate_button"] = load_image("PLNTSUM.LBX", 1, palette_index=7)
-        images["minerals_button"] = load_image("PLNTSUM.LBX", 2, palette_index=7)
-        images["size_button"] = load_image("PLNTSUM.LBX", 3, palette_index=7)
-        images["no_enemy_button"] = load_image("PLNTSUM.LBX", 4, palette_index=7)
-        images["normal_gravity_button"] = load_image("PLNTSUM.LBX", 5, palette_index=7)
-        images["non_hostile_button"] = load_image("PLNTSUM.LBX", 6, palette_index=7)
-        images["abundance_button"] = load_image("PLNTSUM.LBX", 7, palette_index=7)
-        images["in_range_button"] = load_image("PLNTSUM.LBX", 8, palette_index=7)
-        images["send_colony_button_disabled"] = load_image("PLNTSUM.LBX", 9, palette_index=7)
-        images["send_colony_button_enabled"] = load_image("PLNTSUM.LBX", 9, palette_index=7, frame=2)
-        images["send_outpost_button_disabled"] = load_image("PLNTSUM.LBX", 10, palette_index=7)
-        images["send_outpost_button_enabled"] = load_image("PLNTSUM.LBX", 10, palette_index=7, frame=2)
-        images["up_button"] = load_image("PLNTSUM.LBX", 11, palette_index=7)
-        images["down_button"] = load_image("PLNTSUM.LBX", 12, palette_index=7)
-        images["return_button"] = load_image("PLNTSUM.LBX", 14, palette_index=7)
-        images["colony_ship"] = load_image("PLNTSUM.LBX", 76, palette_index=7)
-
-        end = time.time()
-        print(f"PlanetSummary: Loaded {len(images)} in {end-start} seconds")
-        return images
-
-    #####################################################################################################
     def draw(self):
         """Draw the window"""
         self.screen.blit(self.images["window"], pygame.Vector2(0, 0))
@@ -131,12 +104,12 @@ class PlanetSummaryWindow(BaseGraphics):
             self.draw_planet(planet_data, top_left)
             rect = pygame.Rect(top_left.x, top_left.y, 400, 48)
             pygame.draw.rect(self.screen, "purple", rect, width=1)
-            self.planet_rects[planet_data[PlanetDataColumn.PLANET]] = rect
+            self.planet_rects[planet_data[PlanetDataColumn.PLANET_ID]] = rect
             top_left += pygame.Vector2(0, 54)
 
     #####################################################################################################
     def draw_planet(self, planet_data: dict[PlanetDataColumn, Any], top_left: pygame.Vector2):
-        highlight = self.planet_clicked == planet_data[PlanetDataColumn.PLANET]
+        highlight = self.planet_clicked == planet_data[PlanetDataColumn.PLANET_ID]
 
         tl = top_left.copy()
         self.draw_text(planet_data[PlanetDataColumn.NAME], tl, highlight)
@@ -157,7 +130,7 @@ class PlanetSummaryWindow(BaseGraphics):
         self.draw_text(planet_data[PlanetDataColumn.MINERALS], tl, highlight, f"{prod} prod/worker")
 
         tl += pygame.Vector2(90, 0)
-        max_pop = planet_data[PlanetDataColumn.PLANET].max_population()
+        max_pop = planet_data[PlanetDataColumn.MAX_POP]
         self.draw_text(planet_data[PlanetDataColumn.SIZE], tl, highlight, f"{max_pop} max pop")
 
     #####################################################################################################
@@ -193,10 +166,13 @@ class PlanetSummaryWindow(BaseGraphics):
         """Gather all the information required"""
         self.define_colony_button()
         data = []
-        for system in self.empire.known_systems:
-            for planet in self.game.galaxy.systems[system].orbits:
-                if not planet:
+        empire = self.game.galaxy.empires[self.empire_id]
+        for system_id in empire.known_systems:
+            system = self.game.galaxy.systems[system_id]
+            for planet_id in system.orbits:
+                if not planet_id:
                     continue
+                planet = self.game.galaxy.planets[planet_id]
                 if planet.owner:
                     continue
 
@@ -206,23 +182,28 @@ class PlanetSummaryWindow(BaseGraphics):
                     PlanetDataColumn.GRAVITY: planet.gravity,
                     PlanetDataColumn.MINERALS: planet.richness,
                     PlanetDataColumn.SIZE: planet.size,
-                    PlanetDataColumn.PLANET: planet,
-                    PlanetDataColumn.COLONISER_EN_ROUTE: self.has_coloniser_en_route(planet),
+                    PlanetDataColumn.PLANET_ID: planet_id,
+                    PlanetDataColumn.COLONISER_EN_ROUTE: self.has_coloniser_en_route(planet_id),
+                    PlanetDataColumn.MAX_POP: planet.max_population(),
                 }
                 data.append(planet_data)
         return data
 
     #####################################################################################################
-    def has_coloniser_en_route(self, planet: Planet) -> bool:
-        for ship in self.empire.ships:
-            if ship.coloniser and ship.target_planet == planet:
+    def has_coloniser_en_route(self, planet_id: PlanetId) -> bool:
+        empire = self.game.galaxy.empires[self.empire_id]
+        for ship_id in empire.ships:
+            ship = self.game.galaxy.ships[ship_id]
+            if ship.coloniser and ship.target_planet_id == planet_id:
                 return True
         return False
 
     #####################################################################################################
     def has_colony_ship_available(self) -> bool:
         """Does the empire have a colony ship"""
-        for ship in self.empire.ships:
+        empire = self.game.galaxy.empires[self.empire_id]
+        for ship_id in empire.ships:
+            ship = self.game.galaxy.ships[ship_id]
             if ship.coloniser and not ship.destination:
                 return True
         return False
@@ -257,19 +238,19 @@ class PlanetSummaryWindow(BaseGraphics):
             return
         else:
             mouse = pygame.mouse.get_pos()
-            for planet, rect in self.planet_rects.items():
+            for planet_id, rect in self.planet_rects.items():
                 if rect.collidepoint(mouse):
-                    if self.planet_clicked == planet:
+                    if self.planet_clicked == planet_id:
                         self.planet_clicked = None
                     else:
-                        self.planet_clicked = planet
+                        self.planet_clicked = planet_id
 
-        if self.planet_clicked and self.button_clicked:
-            if self.button_clicked == SummaryButtons.SEND_COLONY:
-                self.empire.send_colony(self.planet_clicked)
-                self.planet_clicked = None
-                self.button_clicked = None
-                self.data = self.collect_data()
+        if self.button_clicked == SummaryButtons.SEND_COLONY and self.planet_clicked:
+            empire = self.game.galaxy.empires[self.empire_id]
+            empire.send_coloniser(self.planet_clicked)
+            self.planet_clicked = None
+            self.button_clicked = None
+            self.data = self.collect_data()
 
 
 #####################################################################################################
@@ -282,6 +263,33 @@ def display_percent(num: float) -> str:
         return f"+{frac} %"
     else:
         return "100%"
+
+
+#####################################################################################################
+def load_images() -> dict[str, pygame.Surface]:
+    images = {}
+    start = time.time()
+    images["window"] = load_image("PLNTSUM.LBX", 0, palette_index=7)
+    images["climate_button"] = load_image("PLNTSUM.LBX", 1, palette_index=7)
+    images["minerals_button"] = load_image("PLNTSUM.LBX", 2, palette_index=7)
+    images["size_button"] = load_image("PLNTSUM.LBX", 3, palette_index=7)
+    images["no_enemy_button"] = load_image("PLNTSUM.LBX", 4, palette_index=7)
+    images["normal_gravity_button"] = load_image("PLNTSUM.LBX", 5, palette_index=7)
+    images["non_hostile_button"] = load_image("PLNTSUM.LBX", 6, palette_index=7)
+    images["abundance_button"] = load_image("PLNTSUM.LBX", 7, palette_index=7)
+    images["in_range_button"] = load_image("PLNTSUM.LBX", 8, palette_index=7)
+    images["send_colony_button_disabled"] = load_image("PLNTSUM.LBX", 9, palette_index=7)
+    images["send_colony_button_enabled"] = load_image("PLNTSUM.LBX", 9, palette_index=7, frame=2)
+    images["send_outpost_button_disabled"] = load_image("PLNTSUM.LBX", 10, palette_index=7)
+    images["send_outpost_button_enabled"] = load_image("PLNTSUM.LBX", 10, palette_index=7, frame=2)
+    images["up_button"] = load_image("PLNTSUM.LBX", 11, palette_index=7)
+    images["down_button"] = load_image("PLNTSUM.LBX", 12, palette_index=7)
+    images["return_button"] = load_image("PLNTSUM.LBX", 14, palette_index=7)
+    images["colony_ship"] = load_image("PLNTSUM.LBX", 76, palette_index=7)
+
+    end = time.time()
+    print(f"PlanetSummary: Loaded {len(images)} in {end-start} seconds")
+    return images
 
 
 # EOF
