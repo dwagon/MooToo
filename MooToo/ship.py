@@ -24,10 +24,10 @@ class Ship:
         self.command_points = 0
         self.maintenance = 0
         self.name = name
-        self.destination: Optional[SystemId] = None
-        self.location: tuple[int, int] = (-1, -1)
-        self.orbit: Optional[SystemId] = None
-        self.target_planet_id: Optional[PlanetId] = None
+        self.destination: Optional[SystemId] = None  # Where system we are going to
+        self.location: tuple[int, int] = (-1, -1)  # What coords we are at
+        self.orbit: Optional[SystemId] = None  # What system we are at
+        self.target_planet_id: Optional[PlanetId] = None  # Which planet coloniser is aimed at
 
     #################################################################################################
     @property
@@ -82,6 +82,8 @@ class Ship:
         self.orbit = self.destination
         self.location = dest.position
         self.destination = None
+        if self.coloniser and self.target_planet_id:
+            self.galaxy.empires[self.owner].colonize(self.target_planet_id, self.id)
 
     #################################################################################################
     def move_towards_destination(self):
