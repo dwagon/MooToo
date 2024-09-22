@@ -33,7 +33,6 @@ class TestPlanet(unittest.TestCase):
         self.assertEqual(new_planet.current_population(), 1)
         self.assertEqual(new_planet.jobs[PopulationJobs.FARMERS], 1)
         self.assertEqual(new_planet.jobs[PopulationJobs.WORKERS], 0)
-        self.assertIn(new_planet.id, self.empire.owned_planets)
 
         new_planet = Planet(100, self.system.id, self.galaxy, climate=PlanetClimate.BARREN)
         self.galaxy.planets[new_planet.id] = new_planet

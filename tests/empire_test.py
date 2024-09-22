@@ -42,6 +42,20 @@ class TestEmpire(unittest.TestCase):
     def test_migration(self):
         pass
 
+    #################################################################################################
+    def test_colonize(self):
+        target_planet = self.galaxy.planets[10].id
+        home_system = list(self.empire.known_systems)[0]
+        colony_design = ShipDesign(HullType.ColonyShip)
+        colony_design_id = self.galaxy.add_design(colony_design, self.empire_id)
+        ship_id = self.empire.build_ship_design(colony_design_id, home_system, "Nemo")
+        self.empire.colonize(target_planet, ship_id)
+        self.assertIn(target_planet, self.empire.owned_planets)
+        self.assertEqual(self.galaxy.planets[target_planet].owner, self.empire_id)
+        self.assertNotIn(ship_id, self.empire.ships)
+        self.assertNotIn(ship_id, self.galaxy.ships)
+        self.assertGreater(self.galaxy.planets[target_planet].current_population(), 0)
+
 
 #####################################################################################################
 if __name__ == "__main__":

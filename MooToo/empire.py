@@ -110,6 +110,19 @@ class Empire:
         self.owned_planets.add(planet_id)
 
     #####################################################################################################
+    def colonize(self, planet_id: PlanetId, colonizer: ShipId) -> None:
+        """Colonize the planet"""
+        planet = self.galaxy.planets[planet_id]
+        planet.colonize(self.id)
+        self.own_planet(planet_id)
+        self.delete_ship(colonizer)
+
+    #####################################################################################################
+    def delete_ship(self, ship_id: ShipId):
+        self.ships.remove(ship_id)
+        del self.galaxy.ships[ship_id]
+
+    #####################################################################################################
     def build_ship_design(self, design_id: DesignId, system_id: SystemId, name: str = "") -> ShipId:
         if not name:
             name = self.galaxy.designs[design_id].name
@@ -145,7 +158,7 @@ class Empire:
             planet = self.galaxy.planets[planet_id]
             planet.turn()
             income += money_surplus(planet)
-        for ship_id in self.ships:
+        for ship_id in list(self.ships)[:]:
             ship = self.galaxy.ships[ship_id]
             ship.turn()
             if ship.orbit is not None:

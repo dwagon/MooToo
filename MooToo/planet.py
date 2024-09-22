@@ -153,7 +153,6 @@ class Planet:
             self.jobs[PopulationJobs.WORKERS] = 1
         self.raw_population = 1e6
         self.owner = owner
-        self.galaxy.empires[self.owner].own_planet(self.id)
 
     #####################################################################################################
     def _building_production(self) -> None:
