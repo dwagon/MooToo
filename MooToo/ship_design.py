@@ -35,7 +35,7 @@ class HullDetails(StrEnum):
 #####################################################################################################
 HULL_SIZES = {
     HullType.ColonyShip: {
-        HullDetails.Cost: 100,  # ?
+        HullDetails.Cost: 500,
         HullDetails.Space: 0,
         HullDetails.IconRange: 0,
         HullDetails.IconName: "colony",
