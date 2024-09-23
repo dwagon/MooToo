@@ -1,6 +1,6 @@
 import unittest
 from MooToo.bigbang import create_galaxy
-from MooToo.constants import StarColour
+from MooToo.constants import StarColour, Technology
 from MooToo.ship_design import ShipDesign, HullType
 from MooToo.system import System
 from MooToo.utils import get_distance_tuple
@@ -47,6 +47,15 @@ class TestShip(unittest.TestCase):
         self.assertEqual(ship.orbit, destination.id)
         self.assertEqual(ship.location, destination.position)
         self.assertIsNone(ship.destination)
+
+    #####################################################################################################
+    def test_range(self):
+        system = System(98, "Source", StarColour.WHITE, (0, 0), self.galaxy)
+        self.galaxy.systems[98] = system
+        ship_id = self.empire.build_ship_design(self.frigate_design_id, system.id)
+        self.assertEqual(self.galaxy.ships[ship_id].range, 4)
+        self.empire.learnt(Technology.URIDIUM_FUEL_CELLS)
+        self.assertEqual(self.galaxy.ships[ship_id].range, 12)
 
     #####################################################################################################
     def test_set_destination(self):
