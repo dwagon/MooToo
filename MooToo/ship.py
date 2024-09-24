@@ -59,20 +59,25 @@ class Ship:
 
     #################################################################################################
     @property
-    def range(self):
+    def range(self) -> int:
         """How far the ship moves"""
         # TODO - extended fuel tanks
+        _range = 0
         known_techs = self.galaxy.empires[self.owner].known_techs
         if Technology.THORIUM_FUEL_CELLS in known_techs:
-            return 9999
+            _range = 9999
         elif Technology.URIDIUM_FUEL_CELLS in known_techs:
-            return 12
+            _range = 12
         elif Technology.IRIDIUM_FUEL_CELLS in known_techs:
-            return 9
+            _range = 9
         elif Technology.DEUTERIUM_FUEL_CELLS in known_techs:
-            return 6
+            _range = 6
         else:
-            return 4  # Standard
+            _range = 4  # Standard
+        # Ships that are one way
+        if self.design.hull in (HullType.ColonyShip, HullType.OutpostShip):
+            _range *= 2
+        return _range
 
     #################################################################################################
     def set_destination(self, dest_system_id: SystemId) -> Optional[SystemId]:
@@ -83,6 +88,8 @@ class Ship:
             if dest_system_id == system.id:
                 self.destination = None
                 return
+        if get_distance_tuple(self.location, self.galaxy.systems[dest_system_id].position) > self.range:
+            return
         self.destination = dest_system_id
         return self.destination
 

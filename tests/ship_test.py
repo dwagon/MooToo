@@ -15,6 +15,8 @@ class TestShip(unittest.TestCase):
         self.system = self.galaxy.systems[1]
         frigate_design = ShipDesign(HullType.Frigate)
         self.frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
+        colony_design = ShipDesign(HullType.ColonyShip)
+        self.colony_design_id = self.galaxy.add_design(colony_design, self.empire_id)
 
     #####################################################################################################
     def test_coloniser(self):
@@ -30,6 +32,11 @@ class TestShip(unittest.TestCase):
         self.galaxy.systems[99] = destination
         ship_id = self.empire.build_ship_design(self.frigate_design_id, source.id)
         ship = self.galaxy.ships[ship_id]
+
+        ship.set_destination(destination.id)
+        self.assertIsNone(ship.destination)  # Not in range
+
+        self.empire.learnt(Technology.THORIUM_FUEL_CELLS)  # Make lots of range
         ship.set_destination(destination.id)
         self.assertEqual(ship.destination, destination.id)
         distance = get_distance_tuple(ship.location, destination.position)
@@ -52,24 +59,34 @@ class TestShip(unittest.TestCase):
     def test_range(self):
         system = System(98, "Source", StarColour.WHITE, (0, 0), self.galaxy)
         self.galaxy.systems[98] = system
-        ship_id = self.empire.build_ship_design(self.frigate_design_id, system.id)
-        self.assertEqual(self.galaxy.ships[ship_id].range, 4)
+        frigate_id = self.empire.build_ship_design(self.frigate_design_id, system.id)
+        colony_id = self.empire.build_ship_design(self.colony_design_id, system.id)
+        self.assertEqual(self.galaxy.ships[frigate_id].range, 4)
+        self.assertEqual(self.galaxy.ships[colony_id].range, 8)
+
         self.empire.learnt(Technology.URIDIUM_FUEL_CELLS)
-        self.assertEqual(self.galaxy.ships[ship_id].range, 12)
+        self.assertEqual(self.galaxy.ships[frigate_id].range, 12)
 
     #####################################################################################################
     def test_set_destination(self):
-        system2 = System(99, "test", StarColour.WHITE, (4, 0), self.galaxy)
+        source = System(98, "Source", StarColour.WHITE, (0, 0), self.galaxy)
+        self.galaxy.systems[98] = source
+        dest = System(99, "test", StarColour.WHITE, (8, 0), self.galaxy)
+        self.galaxy.systems[99] = dest
 
         ship_id = 1
         ship = self.galaxy.ships[ship_id]
-        ship.orbit = self.system.id
+        ship.orbit = source.id
 
-        ship.set_destination(self.system.id)
+        ship.set_destination(dest.id)
         self.assertIsNone(ship.destination)
 
-        ship.set_destination(system2.id)
-        self.assertEqual(ship.destination, system2.id)
+        ship.set_destination(dest.id)
+        self.assertIsNone(ship.destination)
+
+        self.empire.learnt(Technology.URIDIUM_FUEL_CELLS)
+        ship.set_destination(dest.id)
+        self.assertEqual(ship.destination, dest.id)
 
 
 #########################################################################################################
