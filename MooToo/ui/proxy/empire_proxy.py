@@ -69,7 +69,7 @@ class EmpireProxy(Proxy):
     @property
     def ships(self) -> list[ShipId]:
         if self.dirty.get(CacheKeys.SHIPS, True):
-            ship_list = self.get("/ships")["ships"]
+            ship_list = self.get(f"{self.url}/ships")["ships"]
             self.cache[CacheKeys.SHIPS] = [_["id"] for _ in ship_list]
             self.dirty[CacheKeys.SHIPS] = False
         return self.cache[CacheKeys.SHIPS]
@@ -99,6 +99,7 @@ class EmpireProxy(Proxy):
         data = self.post(f"{self.url}/send_coloniser", params={"dest_planet_id": dest_planet_id})
         colony_ship = data["ship"]
         self.reset_cache()
+        # Need to reset cache on colony ship
         return colony_ship
 
     #####################################################################################################

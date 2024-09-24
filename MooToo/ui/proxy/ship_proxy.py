@@ -26,17 +26,19 @@ class ShipProxy(Proxy):
         data = self.get(self.url)["ship"]
         self.galaxy = galaxy
         self.id = data["id"]
+        self.owner = data["owner"]
         self.design_id = data["design_id"]
         self.name = data["name"]
         self.icon = data["icon"]
+        self.range = data["range"]
         self.target_planet_id = data["target_planet_id"]
 
     #################################################################################################
     def __repr__(self):
         if self.orbit:
-            return f"<ShipProxy {self.id} '{self.name}' {self.orbit}>"
+            return f"<ShipProxy {self.id}@{self.owner} '{self.name}' {self.orbit}>"
         else:
-            return f"<ShipProxy {self.id} '{self.name}' {self.location}>"
+            return f"<ShipProxy {self.id}@{self.owner} '{self.name}' {self.location} -> {self.destination}>"
 
     #################################################################################################
     @property

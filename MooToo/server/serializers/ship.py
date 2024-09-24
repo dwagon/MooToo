@@ -10,6 +10,7 @@ def ship_serializer(ship: "Ship") -> Any:
         "id": ship.id,
         "name": ship.name,
         "icon": ship.icon,
+        "owner": ship.owner,
         "design_id": ship.design_id,
         "location_id": ship.location,
         "owner_id": ship.owner,
@@ -17,6 +18,7 @@ def ship_serializer(ship: "Ship") -> Any:
         "speed": ship.speed(),
         "orbit": ship.orbit,
         "destination": ship.destination,
+        "range": ship.range,
     }
 
     return result
