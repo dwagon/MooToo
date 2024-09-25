@@ -85,13 +85,17 @@ class Ship:
         if self.orbit:
             system = self.galaxy.systems[self.orbit]
             self.location = system.position
+            # If the destination is where we currently are then don't bother
             if dest_system_id == system.id:
                 self.destination = None
                 return
-        if get_distance_tuple(self.location, self.galaxy.systems[dest_system_id].position) > self.range:
-            return
-        self.destination = dest_system_id
-        return self.destination
+        if self.in_range(dest_system_id):
+            self.destination = dest_system_id
+            return self.destination
+
+    #################################################################################################
+    def in_range(self, destination_id: SystemId) -> bool:
+        return self.galaxy.empires[self.owner].in_range(destination_id, self.id)
 
     #################################################################################################
     def set_destination_planet(self, dest_planet_id: PlanetId) -> None:

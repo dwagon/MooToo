@@ -118,6 +118,15 @@ class Empire:
         self.delete_ship(colonizer)
 
     #####################################################################################################
+    def in_range(self, destination_id: SystemId, ship_id: ShipId) -> bool:
+        _range = self.galaxy.ships[ship_id].range
+        for planet_id in self.owned_planets:
+            dist = self.galaxy.get_system_distance(destination_id, self.galaxy.planets[planet_id].system_id)
+            if dist <= _range:
+                return True
+        return False
+
+    #####################################################################################################
     def delete_ship(self, ship_id: ShipId):
         self.ships.remove(ship_id)
         del self.galaxy.ships[ship_id]

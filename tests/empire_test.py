@@ -1,8 +1,10 @@
 import unittest
-from MooToo.bigbang import create_galaxy
-from MooToo.constants import Technology
+from MooToo.bigbang import create_galaxy, unique_planet_id
+from MooToo.constants import Technology, StarColour
+from MooToo.planet import Planet
 from MooToo.research import TechCategory
 from MooToo.ship_design import ShipDesign, HullType
+from MooToo.system import System
 
 
 #####################################################################################################
@@ -39,8 +41,25 @@ class TestEmpire(unittest.TestCase):
         self.assertTrue(Technology.NUCLEAR_DRIVE in self.empire.known_techs)
 
     #################################################################################################
-    def test_migration(self):
-        pass
+    def test_in_range(self):
+        self.galaxy.systems = {}
+        self.galaxy.planets = {}
+        self.galaxy.systems[1] = System(1, "One", StarColour.WHITE, (0, 0), self.galaxy)
+        self.galaxy.systems[2] = System(2, "Two", StarColour.WHITE, (4, 0), self.galaxy)
+        self.galaxy.systems[3] = System(3, "Three", StarColour.WHITE, (8, 0), self.galaxy)
+        self.galaxy.planets[1] = Planet(1, 1, self.galaxy)
+        self.galaxy.planets[2] = Planet(2, 2, self.galaxy)
+        self.empire.owned_planets = {1}
+        frigate_design = ShipDesign(HullType.Frigate)
+        frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
+        ship_id = self.empire.build_ship_design(frigate_design_id, 1, "Nostromo")
+        self.assertTrue(self.empire.in_range(2, ship_id))
+        self.assertFalse(self.empire.in_range(3, ship_id))
+
+        # System 3 should be in range now that we own system 2
+        self.empire.owned_planets.add(2)
+        self.assertTrue(self.empire.in_range(2, ship_id))
+        self.assertTrue(self.empire.in_range(3, ship_id))
 
     #################################################################################################
     def test_colonize(self):

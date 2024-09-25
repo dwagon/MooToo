@@ -3,7 +3,17 @@
 import io
 import jsonpickle
 from typing import TYPE_CHECKING, Optional
-from MooToo.utils import SystemId, PlanetId, ShipId, EmpireId, unique_ship_id, ConstructId, DesignId, unique_design_id
+from MooToo.utils import (
+    SystemId,
+    PlanetId,
+    ShipId,
+    EmpireId,
+    unique_ship_id,
+    ConstructId,
+    DesignId,
+    unique_design_id,
+    get_distance_tuple,
+)
 
 if TYPE_CHECKING:
     from MooToo.system import System
@@ -36,6 +46,10 @@ class Galaxy:
         for empire in self.empires.values():
             empire.turn()
         return self.turn_number
+
+    #####################################################################################################
+    def get_system_distance(self, a: SystemId, b: SystemId) -> int:
+        return int(get_distance_tuple(self.systems[a].position, self.systems[b].position))
 
     #####################################################################################################
     def add_design(self, design: "ShipDesign", empire_id: EmpireId) -> DesignId:

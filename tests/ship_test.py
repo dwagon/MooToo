@@ -84,7 +84,7 @@ class TestShip(unittest.TestCase):
         ship.set_destination(dest.id)
         self.assertIsNone(ship.destination)
 
-        self.empire.learnt(Technology.URIDIUM_FUEL_CELLS)
+        self.empire.learnt(Technology.THORIUM_FUEL_CELLS)
         ship.set_destination(dest.id)
         self.assertEqual(ship.destination, dest.id)
 
