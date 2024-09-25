@@ -39,21 +39,25 @@ from MooToo.utils import (
 #################################################################################################
 def create_galaxy(tech: str = "avg") -> Galaxy:
     """Fill the galaxy with things"""
+    planet_id_generator = unique_planet_id()
     galaxy = Galaxy()
     create_systems(galaxy)
-    create_empires(galaxy, tech)
-    create_planets(galaxy)
+    create_empires(galaxy, tech, next(planet_id_generator))
+    create_planets(galaxy, planet_id_generator)
+    assert min(galaxy.systems.keys()) == 1
+    assert min(galaxy.empires.keys()) == 1
+    assert min(galaxy.planets.keys()) == 1
     return galaxy
 
 
 #####################################################################################################
-def create_planets(galaxy: Galaxy):
+def create_planets(galaxy: Galaxy, id_generator):
     for system_id in galaxy.systems.keys():
-        make_orbits(galaxy, system_id)
+        make_orbits(galaxy, system_id, id_generator)
 
 
 #####################################################################################################
-def create_empires(galaxy: Galaxy, tech: str):
+def create_empires(galaxy: Galaxy, tech: str, home_planet_id: PlanetId):
     names = EMPIRE_NAMES[:]
     colours = EMPIRE_COLOURS[:]
     emp_id_generator = unique_empire_id()
@@ -61,7 +65,7 @@ def create_empires(galaxy: Galaxy, tech: str):
         empire_name = pick_empire_name(names)
         colour = pick_colour(colours)
         empire_id: EmpireId = next(emp_id_generator)
-        make_empire(empire_name, empire_id, colour, home_system, galaxy)
+        make_empire(empire_name, empire_id, home_planet_id, colour, home_system, galaxy)
         base_designs(galaxy, empire_id)
         match tech:
             case "pre":
@@ -97,9 +101,6 @@ def unique_planet_id() -> PlanetId:
         counter += 1
 
 
-UNIQUE_PLANET_ID = unique_planet_id()
-
-
 #####################################################################################################
 def create_systems(galaxy: Galaxy) -> None:
     positions = get_system_positions(NUM_SYSTEMS)
@@ -116,7 +117,7 @@ def create_systems(galaxy: Galaxy) -> None:
 
 #####################################################################################################
 def unique_system_id() -> SystemId:
-    counter = 0
+    counter = 1
     while True:
         yield counter
         counter += 1
@@ -148,12 +149,13 @@ def find_home_systems(galaxy: Galaxy, num_empires: int) -> list[SystemId]:
 
 
 #####################################################################################################
-def make_orbits(galaxy: Galaxy, system_id: SystemId):
+def make_orbits(galaxy: Galaxy, system_id: SystemId, id_generator):
     system = galaxy.systems[system_id]
     for _ in range(MAX_ORBITS - len(system.orbits)):
         pct = random.randint(0, 100)
         if pct <= STAR_COLOURS[system.colour]["prob_orbit"]:
-            make_planet(galaxy, system_id, system)
+            planet_id = next(id_generator)
+            make_planet(galaxy, planet_id, system_id, system)
         else:
             system.orbits.append(None)
 
@@ -169,8 +171,7 @@ def make_orbits(galaxy: Galaxy, system_id: SystemId):
 
 
 #####################################################################################################
-def make_planet(galaxy: Galaxy, system_id: SystemId, system: System):
-    planet_id = next(UNIQUE_PLANET_ID)
+def make_planet(galaxy: Galaxy, planet_id: PlanetId, system_id: SystemId, system: System):
     size = pick_planet_size()
     richness = pick_planet_richness(STAR_COLOURS[system.colour]["richness"])
     planet = Planet(
@@ -192,6 +193,7 @@ def make_planet(galaxy: Galaxy, system_id: SystemId, system: System):
 def make_empire(
     empire_name: str,
     empire_id: EmpireId,
+    planet_id: PlanetId,
     empire_colour: str,
     home_system_id: SystemId,
     galaxy: Galaxy,
@@ -201,16 +203,15 @@ def make_empire(
     home_system.colour = StarColour.YELLOW
     empire = Empire(empire_id, empire_name, empire_colour, galaxy)
     galaxy.empires[empire.id] = empire
-    home_planet_id = make_home_planet(home_system.id, galaxy)
+    home_planet_id = make_home_planet(home_system.id, planet_id, galaxy)
     set_home_planet(galaxy, empire_id, home_planet_id)
     home_system.orbits.append(home_planet_id)
     return empire
 
 
 #####################################################################################################
-def make_home_planet(system_id: SystemId, galaxy: "Galaxy") -> PlanetId:
+def make_home_planet(system_id: SystemId, planet_id: PlanetId, galaxy: "Galaxy") -> PlanetId:
     """Return a suitable home planet in {system}"""
-    planet_id: PlanetId = next(UNIQUE_PLANET_ID)
     p = Planet(
         planet_id,
         system_id,

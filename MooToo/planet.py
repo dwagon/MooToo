@@ -4,6 +4,7 @@ import math
 import random
 from typing import TYPE_CHECKING
 
+from MooToo.system import System
 from MooToo.utils import get_research, get_building, EmpireId, PlanetId, SystemId
 from MooToo.constants import Technology
 from MooToo.constants import (
@@ -50,6 +51,11 @@ class Planet:
         self.construction_spent = 0
         self.arc = random.randint(0, 359)
         self.climate_image = self.gen_climate_image()
+
+    #####################################################################################################
+    @property
+    def system(self) -> "System":
+        return self.galaxy.systems[self.system_id]
 
     #####################################################################################################
     def __getitem__(self, item):
