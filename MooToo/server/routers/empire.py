@@ -6,7 +6,7 @@ from ..server_utils import URL_PREFIX_EMPIRES
 from ..serializers import empire_reference_serializer, ship_reference_serializer
 from ..serializers.empire import empire_serializer
 from ...galaxy import Galaxy
-from ...utils import EmpireId, SystemId, PlanetId
+from ...utils import EmpireId, SystemId, PlanetId, ShipId
 from MooToo.constants import Technology, PopulationJobs
 
 if TYPE_CHECKING:
@@ -128,6 +128,16 @@ def send_colony(
         "status": "OK",
         "result": {"ship": ship_id},
     }
+
+
+#####################################################################################################
+@router.get("/{empire_id:int}/in_range")
+def in_range(
+    empire_id: EmpireId, destination_id: SystemId, ship_id: ShipId, gal: Annotated[Galaxy, Depends(get_galaxy)]
+):
+    empire = get_safe_empire(empire_id, gal)
+    ans = empire.in_range(destination_id, ship_id)
+    return {"status": "OK", "result": {"in_range": ans}}
 
 
 #####################################################################################################
