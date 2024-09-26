@@ -36,6 +36,7 @@ class Galaxy:
         self.turn_number = 0
         self.ship_id_generator = unique_ship_id()
         self.design_id_generator = unique_design_id()
+        self._jsonpickle_exclude = {"ship_id_generator", "design_id_generator"}
 
     #####################################################################################################
     def turn(self) -> int:
