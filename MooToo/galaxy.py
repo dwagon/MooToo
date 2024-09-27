@@ -3,6 +3,8 @@
 import io
 import jsonpickle
 from typing import TYPE_CHECKING, Optional
+
+from MooToo.constants import GalaxySize
 from MooToo.utils import (
     SystemId,
     PlanetId,
@@ -26,7 +28,8 @@ if TYPE_CHECKING:
 
 #####################################################################################################
 class Galaxy:
-    def __init__(self):
+    def __init__(self, size: GalaxySize = GalaxySize.LARGE):
+        self.size = size
         self.systems: dict[SystemId, "System"] = {}
         self.empires: dict[EmpireId, Optional["Empire"]] = {}
         self.planets: dict[PlanetId, "Planet"] = {}

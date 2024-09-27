@@ -1,6 +1,8 @@
 from typing import TYPE_CHECKING
 import jsonpickle
 from fastapi import status, HTTPException
+
+from ..constants import GalaxySize
 from ..galaxy import Galaxy
 from MooToo.bigbang import create_galaxy
 
@@ -24,9 +26,9 @@ def get_galaxy():
     global GALAXY
     if not GALAXY:
         print("Creating galaxy")
-        GALAXY = create_galaxy()
-        with open("initial.json", "w") as outfh:
-            outfh.write(jsonpickle.dumps(GALAXY, indent=2))
+        GALAXY = create_galaxy(size=GalaxySize.SMALL)
+        with open("initial.json", "w") as out_fh:
+            out_fh.write(jsonpickle.dumps(GALAXY, indent=2))
     yield GALAXY
 
 

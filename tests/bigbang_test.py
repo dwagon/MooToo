@@ -1,7 +1,7 @@
 import unittest
 
 from MooToo.bigbang import get_system_positions, find_home_systems, create_galaxy
-from MooToo.constants import Technology, NUM_SYSTEMS, NUM_EMPIRES
+from MooToo.constants import Technology, NUM_EMPIRES, GALAXY_SIZE_DATA, GalaxySizeKeys, GalaxySize
 from MooToo.empire import Empire
 from MooToo.planet import Planet
 from MooToo.ship import Ship
@@ -18,7 +18,7 @@ class TestBigBang(unittest.TestCase):
     #################################################################################################
     def test_galaxy_creation(self):
         galaxy = create_galaxy()
-        self.assertEqual(len(galaxy.systems), NUM_SYSTEMS)
+        self.assertEqual(len(galaxy.systems), GALAXY_SIZE_DATA[galaxy.size][GalaxySizeKeys.NUM_SYSTEMS])
         self.assertEqual(len(galaxy.empires), NUM_EMPIRES)
         self.assertEqual(len(galaxy.ships), NUM_EMPIRES * 3)
         self.assertTrue(all(isinstance(_, System) for _ in galaxy.systems.values()))
@@ -26,6 +26,11 @@ class TestBigBang(unittest.TestCase):
         self.assertTrue(all(isinstance(_, Planet) for _ in galaxy.planets.values()))
         self.assertTrue(all(isinstance(_, Ship) for _ in galaxy.ships.values()))
         self.assertEqual(galaxy.turn_number, 0)
+
+    #################################################################################################
+    def test_size(self):
+        galaxy = create_galaxy(size=GalaxySize.SMALL)
+        self.assertEqual(len(galaxy.systems), GALAXY_SIZE_DATA[GalaxySize.SMALL][GalaxySizeKeys.NUM_SYSTEMS])
 
     #################################################################################################
     def test_find_home_systems(self):
@@ -73,6 +78,7 @@ class TestBigBang(unittest.TestCase):
     #################################################################################################
     def test_planet_uniqueness(self):
         """Make sure each planet only occurs in one system"""
+        # sourcery skip: no-loop-in-tests, no-conditionals-in-tests
         galaxy = create_galaxy("pre")
         seen_planets = set()
         for system in galaxy.systems.values():
@@ -88,6 +94,7 @@ class TestBigBang(unittest.TestCase):
     def test_system_planet_references(self):
         """Planets system reference points to the correct system"""
         galaxy = create_galaxy("pre")
+        # sourcery skip: no-loop-in-tests, no-conditionals-in-tests
         for system_id, system in galaxy.systems.items():
             for planet_id in system:
                 if planet_id is None:
