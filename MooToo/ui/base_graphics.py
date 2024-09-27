@@ -1,9 +1,15 @@
 """ Class to base all other pygame classes from"""
 
+import math
+from typing import Self, Any, TYPE_CHECKING
+
 import pygame
 from .lbx_image import LBXImage
 from MooToo.constants import MOO_PATH
 from .constants import DisplayMode
+
+if TYPE_CHECKING:
+    from .game import Game
 
 
 #####################################################################################################

@@ -14,7 +14,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["status"], "OK")
-        self.assertEqual(data["result"]["ships"][1], {"id": 1, "url": "/ships/1"})
+        self.assertEqual(data["result"]["ships"][0], {"id": 1, "url": "/ships/1"})
 
     #################################################################################################
     def test_ship_get(self):

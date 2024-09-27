@@ -82,7 +82,7 @@ class PlanetSummaryWindow(BaseGraphics):
                 self.images["in_range_button"],
                 pygame.Vector2(440, 358),
             ),
-            # SummaryButtons.SEND_COLONY: Button(self.images["send_colony_button_disabled"], pygame.Vector2(454, 385)),
+            SummaryButtons.SEND_COLONY: Button(self.images["send_colony_button_disabled"], pygame.Vector2(454, 385)),
             SummaryButtons.SEND_OUTPOST: Button(
                 self.images["send_outpost_button_disabled"],
                 pygame.Vector2(454, 413),

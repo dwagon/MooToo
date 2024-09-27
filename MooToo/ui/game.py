@@ -403,10 +403,12 @@ class Game(BaseGraphics):
         empire = self.galaxy.empires[self.empire_id]
         if empire.is_known_system(system_id):
             colour = self.system_colour(system_id)
-            text_surface = self.label_font.render(system.name, True, colour)
-            text_size = text_surface.get_size()
-            text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
-            self.screen.blit(text_surface, text_coord)
+            text_surface = self.label_font.render(f"{system.name}", True, colour)
+        else:
+            text_surface = self.label_font.render(f"{system.id} @ {sys_coord}", True, "purple")
+        text_size = text_surface.get_size()
+        text_coord = (sys_coord[0] - text_size[0] / 2, sys_coord[1] + img_size[1] / 2)
+        self.screen.blit(text_surface, text_coord)
 
 
 #####################################################################################################

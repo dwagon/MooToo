@@ -10,6 +10,7 @@ from MooToo.ui.proxy.empire_proxy import EmpireProxy
 from MooToo.ui.proxy.ship_proxy import ShipProxy
 from MooToo.ui.proxy.research_proxy import ResearchProxy
 from MooToo.ui.proxy.design_proxy import ShipDesignProxy
+from MooToo.utils import EmpireId, PlanetId, SystemId, ShipId, DesignId
 
 
 #####################################################################################################
@@ -17,11 +18,11 @@ class GalaxyProxy(Proxy):
     def __init__(self, getter=requests.get, poster=requests.post):
         self.url = "/galaxy"
         super().__init__(self.url, getter, poster)
-        self.empires = {}
-        self.planets = {}
-        self.systems = {}
-        self.ships = {}
-        self.designs = {}
+        self.empires: dict[EmpireId, EmpireProxy] = {}
+        self.planets: dict[PlanetId, PlanetProxy] = {}
+        self.systems: dict[SystemId, SystemProxy] = {}
+        self.ships: dict[ShipId, ShipProxy] = {}
+        self.designs: dict[DesignId, ShipDesignProxy] = {}
         self.turn_number = 0
         self.init()
         self.research_cache: dict[Technology:ResearchProxy] = {}
