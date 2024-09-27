@@ -42,7 +42,7 @@ def create_galaxy(tech: str = "avg") -> Galaxy:
     planet_id_generator = unique_planet_id()
     galaxy = Galaxy()
     create_systems(galaxy)
-    create_empires(galaxy, tech, next(planet_id_generator))
+    create_empires(galaxy, tech, planet_id_generator)
     create_planets(galaxy, planet_id_generator)
     assert min(galaxy.systems.keys()) == 1
     assert min(galaxy.empires.keys()) == 1
@@ -57,7 +57,7 @@ def create_planets(galaxy: Galaxy, id_generator):
 
 
 #####################################################################################################
-def create_empires(galaxy: Galaxy, tech: str, home_planet_id: PlanetId):
+def create_empires(galaxy: Galaxy, tech: str, planet_id_generator):
     names = EMPIRE_NAMES[:]
     colours = EMPIRE_COLOURS[:]
     emp_id_generator = unique_empire_id()
@@ -65,7 +65,7 @@ def create_empires(galaxy: Galaxy, tech: str, home_planet_id: PlanetId):
         empire_name = pick_empire_name(names)
         colour = pick_colour(colours)
         empire_id: EmpireId = next(emp_id_generator)
-        make_empire(empire_name, empire_id, home_planet_id, colour, home_system, galaxy)
+        make_empire(empire_name, empire_id, next(planet_id_generator), colour, home_system, galaxy)
         base_designs(galaxy, empire_id)
         match tech:
             case "pre":

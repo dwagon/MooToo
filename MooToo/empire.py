@@ -127,11 +127,6 @@ class Empire:
         return False
 
     #####################################################################################################
-    def delete_ship(self, ship_id: ShipId):
-        self.ships.remove(ship_id)
-        del self.galaxy.ships[ship_id]
-
-    #####################################################################################################
     def build_ship_design(self, design_id: DesignId, system_id: SystemId, name: str = "") -> ShipId:
         if not name:
             name = self.galaxy.designs[design_id].name

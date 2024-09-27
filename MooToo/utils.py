@@ -115,7 +115,7 @@ def arg_parse(sys_args) -> argparse.Namespace:
 
 #####################################################################################################
 def unique_ship_id() -> ShipId:
-    counter = 0
+    counter = 1
     while True:
         yield counter
         counter += 1

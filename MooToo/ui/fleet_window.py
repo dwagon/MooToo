@@ -4,7 +4,7 @@ import time
 from typing import TYPE_CHECKING
 import pygame
 from MooToo.ui.proxy.proxy_util import get_distance_tuple
-from .base_graphics import BaseGraphics, load_image
+from .base_graphics import BaseGraphics, load_image, draw_dashed_line
 from .gui_button import Button, InvisButton
 from ..utils import SystemId, ShipId
 
@@ -24,6 +24,10 @@ class FleetWindow(BaseGraphics):
         self.screen = screen
         self.ship_ids: list[ShipId] = []
         self.images = load_images()
+        self.selected = False  # Has the fleet window been selected for moving
+        self.ship_rects: list[tuple[pygame.Rect, ShipId]] = []
+        self.selected_ships: set[ShipId] = set()
+        self.top_left: pygame.Vector2 = pygame.Vector2(0, 0)
         self.reset([])
 
     #####################################################################################################
@@ -74,11 +78,23 @@ class FleetWindow(BaseGraphics):
     #####################################################################################################
     def mouse_pos(self, event: pygame.event):
         if not self.selected:
+            if system_id := self.game.click_system():
+                self.draw_line_to_destination(system_id)
             return
         self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
         self.all_button.move(self.top_left + ALL_OFFSET)
         self.close_button.move(self.top_left + CLOSE_OFFSET)
         self.title_bar.move(self.top_left + TITLE_OFFSET)
+
+    #####################################################################################################
+    def draw_line_to_destination(self, system_id: SystemId):
+        ship_id = list(self.selected_ships)[0]
+        ship = self.game.galaxy.ships[ship_id]
+        start_pos = ship.location
+        end_pos = self.game.galaxy.systems[system_id].position
+        empire = self.game.galaxy.empires[self.game.empire_id]
+        color = "green" if empire.in_range(system_id, ship_id) else "red"
+        draw_dashed_line(self.screen, color, start_pos, end_pos, dash_length=5)
 
     #####################################################################################################
     def draw(self):
@@ -119,9 +135,8 @@ class FleetWindow(BaseGraphics):
         rect = self.screen.blit(self.images[ship.icon], ship_top_left)
         self.ship_rects.append((rect, ship_id))
 
-    #####################################################################################################
 
-
+#####################################################################################################
 def load_images() -> dict[str, pygame.Surface]:
     images = {}
     start = time.time()

@@ -70,6 +70,30 @@ class TestBigBang(unittest.TestCase):
         galaxy = create_galaxy("adv")
         self.assertIn(Technology.COLONY_SHIP, galaxy.empires[1].known_techs)
 
+    #################################################################################################
+    def test_planet_uniqueness(self):
+        """Make sure each planet only occurs in one system"""
+        galaxy = create_galaxy("pre")
+        seen_planets = set()
+        for system in galaxy.systems.values():
+            for planet_id in system:
+                if planet_id is None:
+                    continue
+                if planet_id in seen_planets:
+                    self.fail(f"Duplicate planet: {planet_id}")
+                else:
+                    seen_planets.add(planet_id)
+
+    #################################################################################################
+    def test_system_planet_references(self):
+        """Planets system reference points to the correct system"""
+        galaxy = create_galaxy("pre")
+        for system_id, system in galaxy.systems.items():
+            for planet_id in system:
+                if planet_id is None:
+                    continue
+                self.assertEqual(galaxy.planets[planet_id].system_id, system_id)
+
 
 #####################################################################################################
 if __name__ == "__main__":

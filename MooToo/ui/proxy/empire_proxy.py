@@ -40,13 +40,19 @@ class EmpireProxy(Proxy):
         self.research_points = data["research_points"]
         self.freighters = data["freighters"]
         self.freight_used = data["freighters_used"]
-        self.research_cache: dict["TechCategory" : list[Technology]] = {}
+        self.research_cache: dict[TechCategory, list[Technology]] = {}
+        self.range_cache: dict[tuple[SystemId, ShipId], bool] = {}
         self.reset_cache()
+
+    #####################################################################################################
+    def __repr__(self):
+        return f"<EmpireProxy {self.id} {self.name}>"
 
     #################################################################################################
     def reset_cache(self):
         super().reset_cache()
         self.research_cache = {}
+        self.range_cache = {}
 
     #################################################################################################
     def freighters_used(self):
@@ -75,9 +81,16 @@ class EmpireProxy(Proxy):
         return self.cache[CacheKeys.SHIPS]
 
     #####################################################################################################
+    def in_range(self, destination_id: SystemId, ship_id: ShipId) -> bool:
+        if (destination_id, ship_id) not in self.range_cache:
+            result = self.get(f"/{self.url}/in_range", {"destination_id": destination_id, "ship_id": ship_id})
+            self.range_cache[(destination_id, ship_id)] = result["in_range"]
+        return self.range_cache[(destination_id, ship_id)]
+
+    #####################################################################################################
     def next_research(self, category: "TechCategory") -> list[Technology]:
         if category not in self.research_cache:
-            ans = self.get(f"/empires/{self.id}/{category}/next_research")["research"]
+            ans = self.get(f"{self.url}/{category}/next_research")["research"]
             self.research_cache[category] = [Technology(_) for _ in ans]
         return self.research_cache[category]
 
