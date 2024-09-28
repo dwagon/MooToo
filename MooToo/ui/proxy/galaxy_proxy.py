@@ -26,6 +26,7 @@ class GalaxyProxy(Proxy):
         self.turn_number = 0
         self.init()
         self.research_cache: dict[Technology:ResearchProxy] = {}
+        self.distance_cache = {}
 
     #################################################################################################
     def init(self):
@@ -53,3 +54,14 @@ class GalaxyProxy(Proxy):
         if tech not in self.research_cache:
             self.research_cache[tech] = ResearchProxy(f"/galaxy/research/{tech}")
         return self.research_cache[tech]
+
+    #################################################################################################
+    def get_system_distance(self, system_a, system_b) -> int:
+        """Return distance in parsecs between systems"""
+        if (system_a, system_b) not in self.distance_cache:
+            result = self.get(f"/{self.url}/distance", {"system_a": system_a, "system_b": system_b})
+            self.distance_cache[(system_a, system_b)] = result["distance"]
+        return self.distance_cache[(system_a, system_b)]
+
+
+# EOF
