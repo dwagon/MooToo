@@ -127,6 +127,45 @@ class Empire:
         return False
 
     #####################################################################################################
+    def eta(self, system_a: SystemId, system_b: SystemId) -> int:
+        """How many turns to reach system_b from system_a"""
+        dist = self.galaxy.get_system_distance(system_a, system_b)
+        return max(1, int(dist / self.ship_speed))
+
+    #####################################################################################################
+    @property
+    def ship_speed(self) -> int:
+        """How fast do our ships travel"""
+        if Technology.INTERPHASED_DRIVE in self.known_techs:
+            return 7
+        elif Technology.HYPER_DRIVE in self.known_techs:
+            return 6
+        elif Technology.ANTI_MATTER_DRIVE in self.known_techs:
+            return 5
+        elif Technology.ION_DRIVE in self.known_techs:
+            return 4
+        elif Technology.FUSION_DRIVE:
+            return 3
+        elif Technology.NUCLEAR_DRIVE in self.known_techs:
+            return 2
+        return 0
+
+    #################################################################################################
+    @property
+    def ship_range(self) -> int:
+        """How far can our ships move"""
+        if Technology.THORIUM_FUEL_CELLS in self.known_techs:
+            return 9999
+        elif Technology.URIDIUM_FUEL_CELLS in self.known_techs:
+            return 12
+        elif Technology.IRIDIUM_FUEL_CELLS in self.known_techs:
+            return 9
+        elif Technology.DEUTERIUM_FUEL_CELLS in self.known_techs:
+            return 6
+        else:
+            return 4  # Standard
+
+    #####################################################################################################
     def build_ship_design(self, design_id: DesignId, system_id: SystemId, name: str = "") -> ShipId:
         if not name:
             name = self.galaxy.designs[design_id].name

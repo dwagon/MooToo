@@ -42,6 +42,7 @@ class EmpireProxy(Proxy):
         self.freight_used = data["freighters_used"]
         self.research_cache: dict[TechCategory, list[Technology]] = {}
         self.range_cache: dict[tuple[SystemId, ShipId], bool] = {}
+        self.eta_cache: dict[tuple[SystemId, ShipId], int] = {}
         self.reset_cache()
 
     #####################################################################################################
@@ -53,6 +54,14 @@ class EmpireProxy(Proxy):
         super().reset_cache()
         self.research_cache = {}
         self.range_cache = {}
+        self.eta_cache = {}
+
+    #################################################################################################
+    def eta(self, system_a: SystemId, system_b: SystemId):
+        if (system_a, system_b) not in self.eta_cache:
+            result = self.get(f"/{self.url}/eta", {"system_a": system_a, "system_b": system_b})
+            self.eta_cache[(system_a, system_b)] = result["eta"]
+        return self.eta_cache[(system_a, system_b)]
 
     #################################################################################################
     def freighters_used(self):

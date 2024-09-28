@@ -103,6 +103,15 @@ def next_research(empire_id: EmpireId, category, gal: Annotated[Galaxy, Depends(
 
 
 #####################################################################################################
+@router.get("/{empire_id:int}/eta")
+def eta(
+    empire_id: EmpireId, system_a: SystemId, system_b: SystemId, gal: Annotated[Galaxy, Depends(get_galaxy)]
+) -> dict[str, Any]:
+    empire = get_safe_empire(empire_id, gal)
+    return {"status": "OK", "result": {"eta": empire.eta(system_a, system_b)}}
+
+
+#####################################################################################################
 @router.post("/{empire_id:int}/start_researching")
 def start_research(
     empire_id: EmpireId, tech: Technology, gal: Annotated[Galaxy, Depends(get_galaxy)]

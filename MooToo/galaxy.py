@@ -4,7 +4,7 @@ import io
 import jsonpickle
 from typing import TYPE_CHECKING, Optional
 
-from MooToo.constants import GalaxySize
+from MooToo.constants import GalaxySize, GALAXY_SIZE_DATA, GalaxySizeKeys
 from MooToo.utils import (
     SystemId,
     PlanetId,
@@ -53,7 +53,10 @@ class Galaxy:
 
     #####################################################################################################
     def get_system_distance(self, a: SystemId, b: SystemId) -> int:
-        return int(get_distance_tuple(self.systems[a].position, self.systems[b].position))
+        return int(
+            get_distance_tuple(self.systems[a].position, self.systems[b].position)
+            / GALAXY_SIZE_DATA[self.size][GalaxySizeKeys.SCALE]
+        )
 
     #####################################################################################################
     def add_design(self, design: "ShipDesign", empire_id: EmpireId) -> DesignId:
