@@ -28,6 +28,8 @@ class FleetWindow(BaseGraphics):
         self.ship_rects: list[tuple[pygame.Rect, ShipId]] = []
         self.selected_ships: set[ShipId] = set()
         self.top_left: pygame.Vector2 = pygame.Vector2(0, 0)
+        self.text = ""  # What to display in fleet window
+        self.text_color = "purple"  # What colour the text should be
         self.reset([])
 
     #####################################################################################################
@@ -80,6 +82,8 @@ class FleetWindow(BaseGraphics):
         if not self.selected:
             if system_id := self.game.click_system():
                 self.draw_line_to_destination(system_id)
+            else:
+                self.text = ""
             return
         self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
         self.all_button.move(self.top_left + ALL_OFFSET)
@@ -92,9 +96,26 @@ class FleetWindow(BaseGraphics):
         ship = self.game.galaxy.ships[ship_id]
         start_pos = ship.location
         end_pos = self.game.galaxy.systems[system_id].position
+        if start_pos == end_pos:
+            return
         empire = self.game.galaxy.empires[self.game.empire_id]
-        color = "green" if empire.in_range(system_id, ship_id) else "red"
+        if empire.in_range(system_id, ship_id):
+            eta = empire.eta(system_id, ship.orbit)
+            color = "green"
+            self.text = f"ETA {eta} turns"
+            self.text_color = "green"
+        else:
+            parsecs = self.galaxy.get_system_distance(system_id, ship.orbit)
+            color = "red"
+            self.text = f"{parsecs} parsecs"
+            self.text_color = "red"
         draw_dashed_line(self.screen, color, start_pos, end_pos, dash_length=5)
+
+    #####################################################################################################
+    def draw_text(self, tl_vector: pygame.Vector2):
+        dest = tl_vector + pygame.Vector2(73, 8)
+        text_surface = self.text_font.render(self.text, True, self.text_color)
+        self.screen.blit(text_surface, dest)
 
     #####################################################################################################
     def draw(self):
@@ -109,6 +130,7 @@ class FleetWindow(BaseGraphics):
         self.screen.blit(self.images["middle_window"], v)
         v.y += self.images["middle_window"].get_size()[1]
         self.screen.blit(self.images["bottom_window"], v)
+        self.draw_text(v)
         v.y += self.images["bottom_window"].get_size()[1]
         ship = self.game.galaxy.ships[self.ship_ids[0]]
         if dest := ship.destination:
@@ -138,6 +160,7 @@ class FleetWindow(BaseGraphics):
 
 #####################################################################################################
 def load_images() -> dict[str, pygame.Surface]:
+    # sourcery skip: merge-dict-assign
     images = {}
     start = time.time()
     images["top_window"] = load_image("BUFFER0.LBX", 52)
