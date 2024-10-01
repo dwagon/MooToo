@@ -144,7 +144,7 @@ class Empire:
             return 5
         elif Technology.ION_DRIVE in self.known_techs:
             return 4
-        elif Technology.FUSION_DRIVE:
+        elif Technology.FUSION_DRIVE in self.known_techs:
             return 3
         elif Technology.NUCLEAR_DRIVE in self.known_techs:
             return 2
