@@ -41,6 +41,25 @@ class TestEmpire(unittest.TestCase):
         self.assertTrue(Technology.NUCLEAR_DRIVE in self.empire.known_techs)
 
     #################################################################################################
+    def test_ship_speed(self):
+        destroyer_design = ShipDesign(HullType.Destroyer)
+        destroyer_design_id = self.galaxy.add_design(destroyer_design, self.empire_id)
+        ship_id = self.empire.build_ship_design(destroyer_design_id, 1, "Fireball")
+        empire = self.galaxy.empires[self.empire_id]
+        empire.learnt(Technology.NUCLEAR_DRIVE)
+        self.assertEqual(empire.ship_speed, 2)
+        self.assertEqual(
+            self.galaxy.ships[ship_id].speed(), 2 * GALAXY_SIZE_DATA[self.galaxy.size][GalaxySizeKeys.SCALE]
+        )
+
+    #################################################################################################
+    def test_ship_range(self):
+        empire = self.galaxy.empires[self.empire_id]
+        self.assertEqual(empire.ship_range, 4)
+        empire.learnt(Technology.DEUTERIUM_FUEL_CELLS)
+        self.assertEqual(empire.ship_range, 6)
+
+    #################################################################################################
     def test_in_range(self):
         self.galaxy.systems = {}
         self.galaxy.planets = {}
@@ -52,7 +71,7 @@ class TestEmpire(unittest.TestCase):
         self.empire.owned_planets = {1}
         frigate_design = ShipDesign(HullType.Frigate)
         frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
-        ship_id = self.empire.build_ship_design(frigate_design_id, 1, "Nostromo")
+        ship_id = self.empire.build_ship_design(frigate_design_id, 1, "Dog Star")
         self.assertTrue(self.empire.in_range(2, ship_id))
         self.assertFalse(self.empire.in_range(3, ship_id))
 
