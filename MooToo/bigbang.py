@@ -17,8 +17,8 @@ from MooToo.constants import (
     Technology,
     Building,
     NUM_EMPIRES,
-    MAX_X,
-    MAX_Y,
+    DISPLAY_MAX_X,
+    DISPLAY_MAX_Y,
     MAX_ORBITS,
     MIN_DIST,
     StarColour,
@@ -132,12 +132,12 @@ def find_home_systems(galaxy: Galaxy, num_empires: int) -> list[SystemId]:
     # Create an arc around the galaxy and put home planets evenly spaced around that arc
     home_systems = []
     arc_distance = 360 // num_empires
-    radius = min(MAX_X, MAX_Y) * 0.75 / 2
+    radius = min(DISPLAY_MAX_X, DISPLAY_MAX_Y) * 0.75 / 2
     for degree in range(0, 359, arc_distance):
         angle = math.radians(degree)
         position = (
-            radius * math.cos(angle) + MAX_X / 2,
-            radius * math.sin(angle) + MAX_Y / 2,
+            radius * math.cos(angle) + DISPLAY_MAX_X / 2,
+            radius * math.sin(angle) + DISPLAY_MAX_Y / 2,
         )
         # Find the system closest to this point
         min_dist = 999999
@@ -253,8 +253,8 @@ def get_system_positions(num_systems: int) -> list[tuple[int, int]]:
     positions = []
     for _ in range(num_systems):
         while True:
-            x = random.randrange(MIN_DIST, MAX_X - MIN_DIST)
-            y = random.randrange(MIN_DIST, MAX_Y - MIN_DIST)
+            x = random.randrange(MIN_DIST, DISPLAY_MAX_X - MIN_DIST)
+            y = random.randrange(MIN_DIST, DISPLAY_MAX_Y - MIN_DIST)
             for a, b in positions:  # Find a spot not too close to existing positions
                 if get_distance(x, y, a, b) < MIN_DIST:
                     break

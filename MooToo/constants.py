@@ -4,8 +4,8 @@ MOO_PATH = "/Applications/Master of Orion 2.app/Contents/Resources/game"
 
 MAX_ORBITS = 5
 NUM_EMPIRES = 4
-MAX_X = 530
-MAX_Y = 420
+DISPLAY_MAX_X = 530
+DISPLAY_MAX_Y = 420
 MIN_DIST = 40  # Distance between systems
 
 
