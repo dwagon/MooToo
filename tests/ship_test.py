@@ -1,6 +1,6 @@
 import unittest
 from MooToo.bigbang import create_galaxy
-from MooToo.constants import StarColour, Technology
+from MooToo.constants import StarColour, Technology, GalaxySize
 from MooToo.ship_design import ShipDesign, HullType
 from MooToo.system import System
 from MooToo.utils import get_distance_tuple
@@ -10,7 +10,7 @@ from MooToo.utils import get_distance_tuple
 class TestShip(unittest.TestCase):
     def setUp(self):
         self.empire_id = 1
-        self.galaxy = create_galaxy()
+        self.galaxy = create_galaxy(size=GalaxySize.TEST)
         self.empire = self.galaxy.empires[self.empire_id]
         self.system = self.galaxy.systems[1]
         frigate_design = ShipDesign(HullType.Frigate)

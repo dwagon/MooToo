@@ -15,6 +15,7 @@ class GalaxySize(StrEnum):
     MEDIUM = auto()
     LARGE = auto()
     HUGE = auto()
+    TEST = auto()
 
 
 #####################################################################################################
@@ -50,6 +51,12 @@ GALAXY_SIZE_DATA: dict[GalaxySize, dict[GalaxySizeKeys, int]] = {
         GalaxySizeKeys.WIDTH: 40,
         GalaxySizeKeys.HEIGHT: 25,
         GalaxySizeKeys.SCALE: 13,
+    },
+    GalaxySize.TEST: {
+        GalaxySizeKeys.NUM_SYSTEMS: 72,
+        GalaxySizeKeys.WIDTH: DISPLAY_MAX_X,
+        GalaxySizeKeys.HEIGHT: DISPLAY_MAX_Y,
+        GalaxySizeKeys.SCALE: 1,
     },
 }
 

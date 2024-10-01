@@ -1,6 +1,6 @@
 import unittest
-from MooToo.bigbang import create_galaxy, unique_planet_id
-from MooToo.constants import Technology, StarColour
+from MooToo.bigbang import create_galaxy
+from MooToo.constants import Technology, StarColour, GalaxySize, GALAXY_SIZE_DATA, GalaxySizeKeys
 from MooToo.planet import Planet
 from MooToo.research import TechCategory
 from MooToo.ship_design import ShipDesign, HullType
@@ -11,7 +11,7 @@ from MooToo.system import System
 class TestEmpire(unittest.TestCase):
 
     def setUp(self):
-        self.galaxy = create_galaxy("pre")
+        self.galaxy = create_galaxy("pre", size=GalaxySize.TEST)
         self.empire_id = 1
         self.empire = self.galaxy.empires[self.empire_id]
 
