@@ -5,24 +5,38 @@ from MooToo.planet import Planet
 from MooToo.research import TechCategory
 from MooToo.ship_design import ShipDesign, HullType
 from MooToo.system import System
+from MooToo.utils import ShipId
 
 
 #####################################################################################################
 class TestEmpire(unittest.TestCase):
 
     def setUp(self):
+        """Create simple galaxy"""
         self.galaxy = create_galaxy("pre", size=GalaxySize.TEST)
         self.empire_id = 1
         self.empire = self.galaxy.empires[self.empire_id]
+        self.home_system = 1
+        self.galaxy.systems = {}
+        self.galaxy.planets = {}
+        self.galaxy.systems[self.home_system] = System(self.home_system, "Home", StarColour.WHITE, (0, 0), self.galaxy)
+        self.galaxy.systems[2] = System(2, "Two", StarColour.WHITE, (4, 0), self.galaxy)
+        self.galaxy.planets[1] = Planet(1, 1, self.galaxy)
+        self.galaxy.planets[2] = Planet(2, 2, self.galaxy)
+        self.empire.owned_planets = {1}
+
+    #################################################################################################
+    def build_frigate(self, name: str) -> ShipId:
+        frigate_design = ShipDesign(HullType.Frigate)
+        frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
+        return self.empire.build_ship_design(frigate_design_id, self.home_system, name)
 
     #################################################################################################
     def test_build_ship_design(self):
-        home_system = list(self.empire.known_systems)[0]
-        frigate_design = ShipDesign(HullType.Frigate)
-        frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
-        ship_id = self.empire.build_ship_design(frigate_design_id, home_system, "Nostromo")
-        self.assertEqual(self.galaxy.ships[ship_id].name, "Nostromo")
-        self.assertEqual(self.galaxy.ships[ship_id].orbit, home_system)
+        ship_name = "Nostromo"
+        ship_id = self.build_frigate(ship_name)
+        self.assertEqual(self.galaxy.ships[ship_id].name, ship_name)
+        self.assertEqual(self.galaxy.ships[ship_id].orbit, self.home_system)
 
     #################################################################################################
     def test_next_research(self):
@@ -60,18 +74,23 @@ class TestEmpire(unittest.TestCase):
         self.assertEqual(empire.ship_range, 6)
 
     #################################################################################################
+    def test_eta(self):
+        ship_id = self.build_frigate("Dog Star")
+        self.empire.learnt(Technology.NUCLEAR_DRIVE)
+        eta = self.empire.eta(1, 2)
+        self.assertEqual(eta, 2)
+        ship = self.galaxy.ships[ship_id]
+        ship.set_destination(2)
+        ship.move_towards_destination()
+        self.assertIsNone(ship.orbit)
+        ship.move_towards_destination()
+        self.assertEqual(ship.orbit, 2)
+
+    #################################################################################################
     def test_in_range(self):
-        self.galaxy.systems = {}
-        self.galaxy.planets = {}
-        self.galaxy.systems[1] = System(1, "One", StarColour.WHITE, (0, 0), self.galaxy)
-        self.galaxy.systems[2] = System(2, "Two", StarColour.WHITE, (4, 0), self.galaxy)
         self.galaxy.systems[3] = System(3, "Three", StarColour.WHITE, (8, 0), self.galaxy)
-        self.galaxy.planets[1] = Planet(1, 1, self.galaxy)
-        self.galaxy.planets[2] = Planet(2, 2, self.galaxy)
-        self.empire.owned_planets = {1}
-        frigate_design = ShipDesign(HullType.Frigate)
-        frigate_design_id = self.galaxy.add_design(frigate_design, self.empire_id)
-        ship_id = self.empire.build_ship_design(frigate_design_id, 1, "Dog Star")
+        ship_id = self.build_frigate("Dog Star")
+
         self.assertTrue(self.empire.in_range(2, ship_id))
         self.assertFalse(self.empire.in_range(3, ship_id))
 
@@ -82,11 +101,10 @@ class TestEmpire(unittest.TestCase):
 
     #################################################################################################
     def test_colonize(self):
-        target_planet = self.galaxy.planets[10].id
-        home_system = list(self.empire.known_systems)[0]
+        target_planet = self.galaxy.planets[2].id
         colony_design = ShipDesign(HullType.ColonyShip)
         colony_design_id = self.galaxy.add_design(colony_design, self.empire_id)
-        ship_id = self.empire.build_ship_design(colony_design_id, home_system, "Nemo")
+        ship_id = self.empire.build_ship_design(colony_design_id, self.home_system, "Nemo")
         self.empire.colonize(target_planet, ship_id)
         self.assertIn(target_planet, self.empire.owned_planets)
         self.assertEqual(self.galaxy.planets[target_planet].owner, self.empire_id)
