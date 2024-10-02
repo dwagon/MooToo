@@ -130,6 +130,8 @@ class Empire:
     def eta(self, system_a: SystemId, system_b: SystemId) -> int:
         """How many turns to reach system_b from system_a"""
         dist = self.galaxy.get_system_distance(system_a, system_b)
+        if self.ship_speed == 0:
+            return 99999
         return max(1, int(dist / self.ship_speed))
 
     #####################################################################################################
