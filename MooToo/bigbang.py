@@ -157,17 +157,14 @@ def make_orbits(galaxy: Galaxy, system_id: SystemId, id_generator):
             planet_id = next(id_generator)
             make_planet(galaxy, planet_id, system_id, system)
         else:
-            system.orbits.append(None)
+            system.add_planet(None)
 
     # Name the planets
     random.shuffle(system.orbits)
-    name_index = 0
-    for planet_id in system.orbits:
-        if planet_id is not None:
-            planet = galaxy.planets[planet_id]
-            if not planet.name:
-                planet.name = f"{system.name} {ORBIT_NAMES[name_index]}"
-            name_index += 1
+    for name_index, planet_id in enumerate(system.planets):
+        planet = galaxy.planets[planet_id]
+        if not planet.name:
+            planet.name = f"{system.name} {ORBIT_NAMES[name_index]}"
 
 
 #####################################################################################################
@@ -185,7 +182,7 @@ def make_planet(galaxy: Galaxy, planet_id: PlanetId, system_id: SystemId, system
         gravity=pick_planet_gravity(size, richness),
     )
 
-    system.orbits.append(planet.id)
+    system.add_planet(planet.id)
     galaxy.planets[planet.id] = planet
 
 

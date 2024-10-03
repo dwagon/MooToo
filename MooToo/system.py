@@ -16,21 +16,15 @@ class System:
         self.name = name
         self.colour = colour
         self.orbits: list[Optional[PlanetId]] = []
+        self.planets: list[PlanetId] = []
         self.galaxy = galaxy
         self._index = 0
 
     #####################################################################################################
-    def __iter__(self):
-        self._index = 0
-        return self
-
-    def __next__(self):
-        try:
-            data = self.orbits[self._index]
-        except IndexError as e:
-            raise StopIteration from e
-        self._index += 1
-        return data
+    def add_planet(self, planet_id: Optional[PlanetId]):
+        self.orbits.append(planet_id)
+        if planet_id:
+            self.planets.append(planet_id)
 
     #####################################################################################################
     def __repr__(self):
@@ -39,9 +33,7 @@ class System:
     #####################################################################################################
     def unoccupied_planet(self) -> bool:
         """Return True if there is an unoccupied planet in the system"""
-        for planet_id in self:
-            if not planet_id:
-                continue
+        for planet_id in self.planets:
             planet = self.galaxy.planets[planet_id]
             if not planet.owner:
                 return True
@@ -49,9 +41,7 @@ class System:
 
     #####################################################################################################
     def turn(self):
-        for planet_id in self:
-            if planet_id is None:
-                continue
+        for planet_id in self.planets:
             if planet := self.galaxy.planets[planet_id]:
                 planet.turn()
 

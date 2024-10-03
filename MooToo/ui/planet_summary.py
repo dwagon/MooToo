@@ -169,9 +169,7 @@ class PlanetSummaryWindow(BaseGraphics):
         empire = self.game.galaxy.empires[self.empire_id]
         for system_id in empire.known_systems:
             system = self.game.galaxy.systems[system_id]
-            for planet_id in system.orbits:
-                if not planet_id:
-                    continue
+            for planet_id in system.planets:
                 planet = self.game.galaxy.planets[planet_id]
                 if planet.owner:
                     continue
