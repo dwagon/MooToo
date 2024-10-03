@@ -2,6 +2,64 @@ from enum import Enum, StrEnum, auto
 
 MOO_PATH = "/Applications/Master of Orion 2.app/Contents/Resources/game"
 
+MAX_ORBITS = 5
+NUM_EMPIRES = 4
+DISPLAY_MAX_X = 530
+DISPLAY_MAX_Y = 420
+MIN_DIST = 40  # Distance between systems
+
+
+#####################################################################################################
+class GalaxySize(StrEnum):
+    SMALL = auto()
+    MEDIUM = auto()
+    LARGE = auto()
+    HUGE = auto()
+    TEST = auto()
+
+
+#####################################################################################################
+class GalaxySizeKeys(StrEnum):
+    NUM_SYSTEMS = auto()
+    WIDTH = auto()
+    HEIGHT = auto()
+    SCALE = auto()
+
+
+#####################################################################################################
+GALAXY_SIZE_DATA: dict[GalaxySize, dict[GalaxySizeKeys, int]] = {
+    GalaxySize.SMALL: {
+        GalaxySizeKeys.NUM_SYSTEMS: 20,
+        GalaxySizeKeys.WIDTH: 25,
+        GalaxySizeKeys.HEIGHT: 15,
+        GalaxySizeKeys.SCALE: 21,
+    },
+    GalaxySize.MEDIUM: {
+        GalaxySizeKeys.NUM_SYSTEMS: 36,
+        GalaxySizeKeys.WIDTH: 25,
+        GalaxySizeKeys.HEIGHT: 15,
+        GalaxySizeKeys.SCALE: 21,
+    },
+    GalaxySize.LARGE: {
+        GalaxySizeKeys.NUM_SYSTEMS: 54,
+        GalaxySizeKeys.WIDTH: 30,
+        GalaxySizeKeys.HEIGHT: 25,
+        GalaxySizeKeys.SCALE: 16,
+    },
+    GalaxySize.HUGE: {
+        GalaxySizeKeys.NUM_SYSTEMS: 72,
+        GalaxySizeKeys.WIDTH: 40,
+        GalaxySizeKeys.HEIGHT: 25,
+        GalaxySizeKeys.SCALE: 13,
+    },
+    GalaxySize.TEST: {
+        GalaxySizeKeys.NUM_SYSTEMS: 72,
+        GalaxySizeKeys.WIDTH: DISPLAY_MAX_X,
+        GalaxySizeKeys.HEIGHT: DISPLAY_MAX_Y,
+        GalaxySizeKeys.SCALE: 1,
+    },
+}
+
 
 #####################################################################################################
 class PlanetCategory(Enum):
@@ -463,9 +521,4 @@ PROD_RICHNESS_MAP: dict[PlanetRichness:int] = {
     PlanetRichness.ULTRA_RICH: 8,
 }
 
-MAX_ORBITS = 5
-NUM_SYSTEMS = 40
-NUM_EMPIRES = 4
-MAX_X = 530
-MAX_Y = 420
-MIN_DIST = 40  # Distance between systems
+# EOF

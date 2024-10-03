@@ -1,6 +1,6 @@
 import unittest
 from MooToo.bigbang import create_galaxy
-from MooToo.constants import StarColour, Technology
+from MooToo.constants import StarColour, Technology, GalaxySize
 from MooToo.ship_design import ShipDesign, HullType
 from MooToo.system import System
 from MooToo.utils import get_distance_tuple
@@ -10,7 +10,7 @@ from MooToo.utils import get_distance_tuple
 class TestShip(unittest.TestCase):
     def setUp(self):
         self.empire_id = 1
-        self.galaxy = create_galaxy()
+        self.galaxy = create_galaxy(size=GalaxySize.TEST)
         self.empire = self.galaxy.empires[self.empire_id]
         self.system = self.galaxy.systems[1]
         frigate_design = ShipDesign(HullType.Frigate)
@@ -27,7 +27,7 @@ class TestShip(unittest.TestCase):
     #####################################################################################################
     def test_move_ship(self):
         source = System(98, "Source", StarColour.WHITE, (0, 0), self.galaxy)
-        destination = System(99, "Target", StarColour.WHITE, (20, 0), self.galaxy)
+        destination = System(99, "Target", StarColour.WHITE, (4, 0), self.galaxy)
         self.galaxy.systems[98] = source
         self.galaxy.systems[99] = destination
         ship_id = self.empire.build_ship_design(self.frigate_design_id, source.id)
@@ -39,15 +39,17 @@ class TestShip(unittest.TestCase):
         self.empire.learnt(Technology.THORIUM_FUEL_CELLS)  # Make lots of range
         ship.set_destination(destination.id)
         self.assertEqual(ship.destination, destination.id)
-        distance = get_distance_tuple(ship.location, destination.position)
-        self.assertEqual(distance, 20)
+        distance = int(get_distance_tuple(ship.location, destination.position))
+        self.assertEqual(distance, 4)
+
+        self.assertEqual(self.empire.ship_speed, 2)
 
         # In deep space
         ship.move_towards_destination()
         distance = get_distance_tuple(ship.location, destination.position)
         self.assertIsNone(ship.orbit)
-        self.assertEqual(ship.location, (10, 0))
-        self.assertEqual(distance, 10)
+        self.assertEqual(ship.location, (2, 0))
+        self.assertEqual(distance, 2)
 
         # Arrived
         ship.move_towards_destination()

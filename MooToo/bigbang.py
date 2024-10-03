@@ -1,4 +1,5 @@
-""" Galaxy Creation"""
+""" Galaxy Creation
+"""
 
 import math
 import random
@@ -9,13 +10,15 @@ from MooToo.system import System
 from MooToo.planet import Planet
 from MooToo.names import EMPIRE_NAMES, EMPIRE_COLOURS, ORBIT_NAMES, SYSTEM_NAMES
 from MooToo.constants import (
+    GalaxySize,
+    GalaxySizeKeys,
+    GALAXY_SIZE_DATA,
     STAR_COLOURS,
     Technology,
     Building,
-    NUM_SYSTEMS,
     NUM_EMPIRES,
-    MAX_X,
-    MAX_Y,
+    DISPLAY_MAX_X,
+    DISPLAY_MAX_Y,
     MAX_ORBITS,
     MIN_DIST,
     StarColour,
@@ -37,11 +40,11 @@ from MooToo.utils import (
 
 
 #################################################################################################
-def create_galaxy(tech: str = "avg") -> Galaxy:
+def create_galaxy(tech: str = "avg", size: GalaxySize = GalaxySize.LARGE) -> Galaxy:
     """Fill the galaxy with things"""
     planet_id_generator = unique_planet_id()
-    galaxy = Galaxy()
-    create_systems(galaxy)
+    galaxy = Galaxy(size)
+    create_systems(galaxy, GALAXY_SIZE_DATA[size][GalaxySizeKeys.NUM_SYSTEMS])
     create_empires(galaxy, tech, planet_id_generator)
     create_planets(galaxy, planet_id_generator)
     assert min(galaxy.systems.keys()) == 1
@@ -102,10 +105,10 @@ def unique_planet_id() -> PlanetId:
 
 
 #####################################################################################################
-def create_systems(galaxy: Galaxy) -> None:
-    positions = get_system_positions(NUM_SYSTEMS)
+def create_systems(galaxy: Galaxy, num_systems) -> None:
+    positions = get_system_positions(num_systems)
     sys_id_generator = unique_system_id()
-    for _ in range(NUM_SYSTEMS):
+    for _ in range(num_systems):
         position = random.choice(positions)
         positions.remove(position)
         system_id = next(sys_id_generator)
@@ -129,12 +132,12 @@ def find_home_systems(galaxy: Galaxy, num_empires: int) -> list[SystemId]:
     # Create an arc around the galaxy and put home planets evenly spaced around that arc
     home_systems = []
     arc_distance = 360 // num_empires
-    radius = min(MAX_X, MAX_Y) * 0.75 / 2
+    radius = min(DISPLAY_MAX_X, DISPLAY_MAX_Y) * 0.75 / 2
     for degree in range(0, 359, arc_distance):
         angle = math.radians(degree)
         position = (
-            radius * math.cos(angle) + MAX_X / 2,
-            radius * math.sin(angle) + MAX_Y / 2,
+            radius * math.cos(angle) + DISPLAY_MAX_X / 2,
+            radius * math.sin(angle) + DISPLAY_MAX_Y / 2,
         )
         # Find the system closest to this point
         min_dist = 999999
@@ -247,8 +250,8 @@ def get_system_positions(num_systems: int) -> list[tuple[int, int]]:
     positions = []
     for _ in range(num_systems):
         while True:
-            x = random.randrange(MIN_DIST, MAX_X - MIN_DIST)
-            y = random.randrange(MIN_DIST, MAX_Y - MIN_DIST)
+            x = random.randrange(MIN_DIST, DISPLAY_MAX_X - MIN_DIST)
+            y = random.randrange(MIN_DIST, DISPLAY_MAX_Y - MIN_DIST)
             for a, b in positions:  # Find a spot not too close to existing positions
                 if get_distance(x, y, a, b) < MIN_DIST:
                     break
@@ -375,11 +378,11 @@ def pick_planet_size() -> PlanetSize:
     pct = random.randrange(1, 100)
     if pct < 10:
         return PlanetSize.TINY
-    if pct < 30:
+    elif pct < 30:
         return PlanetSize.SMALL
-    if pct < 70:
+    elif pct < 70:
         return PlanetSize.MEDIUM
-    if pct < 90:
+    elif pct < 90:
         return PlanetSize.LARGE
     return PlanetSize.HUGE
 
@@ -390,7 +393,7 @@ def pick_planet_category() -> PlanetCategory:
     pct = random.randrange(1, 100)
     if pct < 20:
         return PlanetCategory.ASTEROID
-    if pct < 40:
+    elif pct < 40:
         return PlanetCategory.GAS_GIANT
     return PlanetCategory.PLANET
 

@@ -1,6 +1,6 @@
 from typing import Any, Annotated
 from fastapi import APIRouter, Depends
-from MooToo.utils import get_research
+from MooToo.utils import get_research, SystemId
 from MooToo.constants import Technology
 from ..server_utils import URL_PREFIX_GALAXY, get_galaxy
 from ..serializers.galaxy import galaxy_serializer
@@ -26,6 +26,12 @@ def turn(gal: Annotated[Galaxy, Depends(get_galaxy)]) -> dict[str, Any]:
 @router.get("/research/{tech}")
 def research(tech: Technology) -> dict[str, Any]:
     return {"status": "OK", "result": {"research": research_serializer(get_research(tech))}}
+
+
+#####################################################################################################
+@router.get("/distance")
+def research(system_a: SystemId, system_b: SystemId, gal: Annotated[Galaxy, Depends(get_galaxy)]) -> dict[str, Any]:
+    return {"status": "OK", "result": {"distance": gal.get_system_distance(system_a, system_b)}}
 
 
 # EOF

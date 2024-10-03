@@ -4,7 +4,7 @@ import math
 
 from typing import TYPE_CHECKING, Optional
 
-from MooToo.constants import Technology
+from MooToo.constants import Technology, GALAXY_SIZE_DATA, GalaxySizeKeys
 from MooToo.ship_design import ShipDesign, HullType
 from MooToo.utils import get_distance_tuple, ShipId, EmpireId, SystemId, PlanetId, DesignId
 
@@ -55,25 +55,14 @@ class Ship:
     #################################################################################################
     def speed(self):
         """How fast the ship moves"""
-        return 10
+        return self.galaxy.empires[self.owner].ship_speed * GALAXY_SIZE_DATA[self.galaxy.size][GalaxySizeKeys.SCALE]
 
     #################################################################################################
     @property
     def range(self) -> int:
         """How far the ship moves"""
         # TODO - extended fuel tanks
-        _range = 0
-        known_techs = self.galaxy.empires[self.owner].known_techs
-        if Technology.THORIUM_FUEL_CELLS in known_techs:
-            _range = 9999
-        elif Technology.URIDIUM_FUEL_CELLS in known_techs:
-            _range = 12
-        elif Technology.IRIDIUM_FUEL_CELLS in known_techs:
-            _range = 9
-        elif Technology.DEUTERIUM_FUEL_CELLS in known_techs:
-            _range = 6
-        else:
-            _range = 4  # Standard
+        _range = self.galaxy.empires[self.owner].ship_range
         # Ships that are one way
         if self.design.hull in (HullType.ColonyShip, HullType.OutpostShip):
             _range *= 2
