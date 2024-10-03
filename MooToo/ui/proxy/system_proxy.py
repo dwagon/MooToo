@@ -23,6 +23,7 @@ class SystemProxy(Proxy):
         self.position = (data["position"]["x"], data["position"]["y"])
         self.name = data["name"]
         self.orbits = data["orbits"]
+        self.planets = data["planets"]
         self.colour = StarColour(data["colour"].lower())
 
     #####################################################################################################
