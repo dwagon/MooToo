@@ -13,6 +13,7 @@ def system_serializer(system: "System") -> dict[str, Any]:
         "name": system.name,
         "colour": system.colour.name,
         "orbits": [],
+        "planets": system.planets,
     }
     for orbit in system.orbits:
         if not orbit:
