@@ -176,9 +176,7 @@ class Game(BaseGraphics):
         max_pop = -1
         system = self.galaxy.systems[system_id]
         picked_planet = None
-        for planet_id in system.orbits:
-            if not planet_id:
-                continue
+        for planet_id in system.planets:
             planet = self.galaxy.planets[planet_id]
             if planet.current_population() > max_pop:
                 max_pop = planet.current_population()

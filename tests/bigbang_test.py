@@ -76,9 +76,7 @@ class TestBigBang(unittest.TestCase):
         galaxy = create_galaxy("pre")
         seen_planets = set()
         for system in galaxy.systems.values():
-            for planet_id in system:
-                if planet_id is None:
-                    continue
+            for planet_id in system.planets:
                 if planet_id in seen_planets:
                     self.fail(f"Duplicate planet: {planet_id}")
                 else:
@@ -89,9 +87,7 @@ class TestBigBang(unittest.TestCase):
         """Planets system reference points to the correct system"""
         galaxy = create_galaxy("pre")
         for system_id, system in galaxy.systems.items():
-            for planet_id in system:
-                if planet_id is None:
-                    continue
+            for planet_id in system.planets:
                 self.assertEqual(galaxy.planets[planet_id].system_id, system_id)
 
 

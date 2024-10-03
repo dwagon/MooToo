@@ -826,4 +826,4 @@ EMPIRE_NAMES = [
 
 EMPIRE_COLOURS = ["red", "blue", "green", "yellow", "orange", "tan", "light blue", "pink"]
 
-ORBIT_NAMES = ("I", "II", "III", "IV", "V", "VI", "VII", "VIII")
+ORBIT_NAMES = ("Prime", "II", "III", "IV", "V", "VI", "VII", "VIII")
