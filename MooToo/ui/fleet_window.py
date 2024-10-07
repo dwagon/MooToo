@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 ALL_OFFSET = pygame.Vector2(18, 206)
 CLOSE_OFFSET = pygame.Vector2(0, 238)
-TITLE_OFFSET = pygame.Vector2(195, 35)
+TITLE_BAR_SIZE = pygame.Vector2(195, 35)
 
 
 #####################################################################################################
@@ -37,7 +37,7 @@ class FleetWindow(BaseGraphics):
         self.top_left = pygame.Vector2(640 / 2 - self.images["top_window"].get_size()[0] / 2, 100)
         self.all_button = Button(self.images["all_button"], self.top_left + ALL_OFFSET)
         self.close_button = Button(self.images["close_button"], self.top_left + CLOSE_OFFSET)
-        self.title_bar = InvisButton(pygame.Rect(self.top_left.x, self.top_left.y, TITLE_OFFSET.x, TITLE_OFFSET.y))
+        self.title_bar = InvisButton(pygame.Rect(self.top_left.x, self.top_left.y, TITLE_BAR_SIZE.x, TITLE_BAR_SIZE.y))
         self.ship_ids = ships
         self.selected_ships = set(self.ship_ids)
         self.ship_rects = []
@@ -79,16 +79,16 @@ class FleetWindow(BaseGraphics):
 
     #####################################################################################################
     def mouse_pos(self, event: pygame.event):
-        if not self.selected:
-            if system_id := self.game.click_system():
-                self.draw_line_to_destination(system_id)
-            else:
-                self.text = ""
+        if self.selected:
+            self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
+            self.all_button.move(self.top_left + ALL_OFFSET)
+            self.close_button.move(self.top_left + CLOSE_OFFSET)
+            self.title_bar.move(self.top_left)
             return
-        self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
-        self.all_button.move(self.top_left + ALL_OFFSET)
-        self.close_button.move(self.top_left + CLOSE_OFFSET)
-        self.title_bar.move(self.top_left + TITLE_OFFSET)
+        if system_id := self.game.click_system():
+            self.draw_line_to_destination(system_id)
+        else:
+            self.text = ""
 
     #####################################################################################################
     def draw_line_to_destination(self, system_id: SystemId):
@@ -147,6 +147,7 @@ class FleetWindow(BaseGraphics):
         self.screen.blit(self.images["close_button"], v)
         self.all_button.draw(self.screen)
         self.close_button.draw(self.screen)
+        self.title_bar.draw(self.screen)
 
     #####################################################################################################
     def draw_ship(self, ship_id: ShipId, h_idx: int, v_idx: int, top_left: pygame.Vector2):
