@@ -2,6 +2,8 @@
 
 import time
 from typing import TYPE_CHECKING
+
+import math
 import pygame
 from MooToo.ui.proxy.proxy_util import get_distance_tuple
 from .base_graphics import BaseGraphics, load_image, draw_dashed_line
@@ -135,7 +137,7 @@ class FleetWindow(BaseGraphics):
         ship = self.game.galaxy.ships[self.ship_ids[0]]
         if dest := ship.destination:
             dest_system = self.galaxy.systems[dest]
-            turns = int(get_distance_tuple(dest_system.position, ship.location) / ship.speed())
+            turns = int(math.ceil(get_distance_tuple(dest_system.position, ship.location) / ship.speed()))
             distance_surface = self.text_font.render(f"{turns} turns", True, "white")
             self.screen.blit(distance_surface, pygame.Vector2(v.x + 70, v.y - 28))
 
