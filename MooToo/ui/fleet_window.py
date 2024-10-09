@@ -2,6 +2,8 @@
 
 import time
 from typing import TYPE_CHECKING
+
+import math
 import pygame
 from MooToo.ui.proxy.proxy_util import get_distance_tuple
 from .base_graphics import BaseGraphics, load_image, draw_dashed_line
@@ -13,7 +15,7 @@ if TYPE_CHECKING:
 
 ALL_OFFSET = pygame.Vector2(18, 206)
 CLOSE_OFFSET = pygame.Vector2(0, 238)
-TITLE_OFFSET = pygame.Vector2(195, 35)
+TITLE_BAR_SIZE = pygame.Vector2(195, 35)
 
 
 #####################################################################################################
@@ -37,7 +39,7 @@ class FleetWindow(BaseGraphics):
         self.top_left = pygame.Vector2(640 / 2 - self.images["top_window"].get_size()[0] / 2, 100)
         self.all_button = Button(self.images["all_button"], self.top_left + ALL_OFFSET)
         self.close_button = Button(self.images["close_button"], self.top_left + CLOSE_OFFSET)
-        self.title_bar = InvisButton(pygame.Rect(self.top_left.x, self.top_left.y, TITLE_OFFSET.x, TITLE_OFFSET.y))
+        self.title_bar = InvisButton(pygame.Rect(self.top_left.x, self.top_left.y, TITLE_BAR_SIZE.x, TITLE_BAR_SIZE.y))
         self.ship_ids = ships
         self.selected_ships = set(self.ship_ids)
         self.ship_rects = []
@@ -79,16 +81,25 @@ class FleetWindow(BaseGraphics):
 
     #####################################################################################################
     def mouse_pos(self, event: pygame.event):
-        if not self.selected:
-            if system_id := self.game.click_system():
-                self.draw_line_to_destination(system_id)
-            else:
-                self.text = ""
+        if self.selected:
+            self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
+            self.all_button.move(self.top_left + ALL_OFFSET)
+            self.close_button.move(self.top_left + CLOSE_OFFSET)
+            self.title_bar.move(self.top_left)
             return
-        self.top_left = pygame.Vector2(event.pos[0], event.pos[1])
-        self.all_button.move(self.top_left + ALL_OFFSET)
-        self.close_button.move(self.top_left + CLOSE_OFFSET)
-        self.title_bar.move(self.top_left + TITLE_OFFSET)
+        # If mouse is in window don't check what is behind it
+        window_rect = pygame.Rect(
+            self.top_left.x,
+            self.top_left.y,
+            TITLE_BAR_SIZE.x,
+            CLOSE_OFFSET.y + self.images["close_button"].get_size()[1],
+        )
+        if window_rect.collidepoint(event.pos):
+            return
+        if system_id := self.game.click_system():
+            self.draw_line_to_destination(system_id)
+        else:
+            self.text = ""
 
     #####################################################################################################
     def draw_line_to_destination(self, system_id: SystemId):
@@ -135,7 +146,7 @@ class FleetWindow(BaseGraphics):
         ship = self.game.galaxy.ships[self.ship_ids[0]]
         if dest := ship.destination:
             dest_system = self.galaxy.systems[dest]
-            turns = int(get_distance_tuple(dest_system.position, ship.location) / ship.speed())
+            turns = int(math.ceil(get_distance_tuple(dest_system.position, ship.location) / ship.speed()))
             distance_surface = self.text_font.render(f"{turns} turns", True, "white")
             self.screen.blit(distance_surface, pygame.Vector2(v.x + 70, v.y - 28))
 
@@ -147,6 +158,7 @@ class FleetWindow(BaseGraphics):
         self.screen.blit(self.images["close_button"], v)
         self.all_button.draw(self.screen)
         self.close_button.draw(self.screen)
+        self.title_bar.draw(self.screen)
 
     #####################################################################################################
     def draw_ship(self, ship_id: ShipId, h_idx: int, v_idx: int, top_left: pygame.Vector2):
