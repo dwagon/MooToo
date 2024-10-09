@@ -87,6 +87,15 @@ class FleetWindow(BaseGraphics):
             self.close_button.move(self.top_left + CLOSE_OFFSET)
             self.title_bar.move(self.top_left)
             return
+        # If mouse is in window don't check what is behind it
+        window_rect = pygame.Rect(
+            self.top_left.x,
+            self.top_left.y,
+            TITLE_BAR_SIZE.x,
+            CLOSE_OFFSET.y + self.images["close_button"].get_size()[1],
+        )
+        if window_rect.collidepoint(event.pos):
+            return
         if system_id := self.game.click_system():
             self.draw_line_to_destination(system_id)
         else:
