@@ -19,8 +19,10 @@ if TYPE_CHECKING:
 class PlanetDataColumn(StrEnum):
     NAME = auto()
     CLIMATE = auto()
+    FOOD = auto()
     GRAVITY = auto()
     MINERALS = auto()
+    PRODUCTION = auto()
     SIZE = auto()
     PLANET_ID = auto()
     COLONISER_EN_ROUTE = auto()
@@ -98,7 +100,7 @@ class PlanetSummaryWindow(BaseGraphics):
         for button in self.buttons.values():
             button.draw(self.screen)
         top_left = pygame.Vector2(20, 39)
-        self.data.sort(key=lambda x: x[self.sorting])
+        self.data.sort(key=lambda x: x[self.sorting], reverse=True)
 
         for planet_data in self.data:
             self.draw_planet(planet_data, top_left)
@@ -118,7 +120,7 @@ class PlanetSummaryWindow(BaseGraphics):
             self.screen.blit(self.images["colony_ship"], tl + pygame.Vector2(71, 38))
 
         tl += pygame.Vector2(92, 0)
-        food = FOOD_CLIMATE_MAP[planet_data[PlanetDataColumn.CLIMATE]]
+        food = planet_data[PlanetDataColumn.FOOD]
         self.draw_text(planet_data[PlanetDataColumn.CLIMATE], tl, highlight, f"{food} Food")
 
         tl += pygame.Vector2(75, 0)
@@ -126,7 +128,7 @@ class PlanetSummaryWindow(BaseGraphics):
         self.draw_text(planet_data[PlanetDataColumn.GRAVITY], tl, highlight, f"{display_percent(grav)} prod")
 
         tl += pygame.Vector2(90, 0)
-        prod = PROD_RICHNESS_MAP[planet_data[PlanetDataColumn.MINERALS]]
+        prod = planet_data[PlanetDataColumn.PRODUCTION]
         self.draw_text(planet_data[PlanetDataColumn.MINERALS], tl, highlight, f"{prod} prod/worker")
 
         tl += pygame.Vector2(90, 0)
@@ -177,8 +179,10 @@ class PlanetSummaryWindow(BaseGraphics):
                 planet_data = {
                     PlanetDataColumn.NAME: planet.name,
                     PlanetDataColumn.CLIMATE: planet.climate,
+                    PlanetDataColumn.FOOD: FOOD_CLIMATE_MAP[planet.climate],
                     PlanetDataColumn.GRAVITY: planet.gravity,
                     PlanetDataColumn.MINERALS: planet.richness,
+                    PlanetDataColumn.PRODUCTION: PROD_RICHNESS_MAP[planet.richness],
                     PlanetDataColumn.SIZE: planet.size,
                     PlanetDataColumn.PLANET_ID: planet_id,
                     PlanetDataColumn.COLONISER_EN_ROUTE: self.has_coloniser_en_route(planet_id),
@@ -222,13 +226,13 @@ class PlanetSummaryWindow(BaseGraphics):
     #####################################################################################################
     def button_left_down(self):
         if self.buttons[SummaryButtons.SIZE].clicked():
-            self.sorting = PlanetDataColumn.SIZE
+            self.sorting = PlanetDataColumn.MAX_POP
         elif self.buttons[SummaryButtons.GRAVITY].clicked():
             self.sorting = PlanetDataColumn.GRAVITY
         elif self.buttons[SummaryButtons.CLIMATE].clicked():
-            self.sorting = PlanetDataColumn.CLIMATE
+            self.sorting = PlanetDataColumn.FOOD
         elif self.buttons[SummaryButtons.MINERALS].clicked():
-            self.sorting = PlanetDataColumn.MINERALS
+            self.sorting = PlanetDataColumn.PRODUCTION
         elif self.buttons[SummaryButtons.SEND_COLONY].clicked():
             self.button_clicked = SummaryButtons.SEND_COLONY
         elif self.buttons[SummaryButtons.RETURN].clicked():
